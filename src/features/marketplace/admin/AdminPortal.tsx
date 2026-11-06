@@ -7,6 +7,7 @@ import { StatusBadge } from '../seller/SellerCenter'
 import { decisionsFor, sellerPaths, shortDate } from '../sellerApi'
 import type { AdminSeller, AdminSellerPage, SellerDecision, SellerStatus } from '../sellerApi'
 import '../marketplace.css'
+import '../../../shared/auth/auth.css'
 
 type Props = { onExit: () => void }
 
@@ -95,6 +96,7 @@ function SellerRow({ seller, onDone }: { seller: AdminSeller; onDone: (message: 
   async function confirm() {
     if (!decision) return
     if (!reason.trim()) return setError('Please write a reason. The seller will see it.')
+    if (reason.trim().length > 1000) return setError(`The reason can be at most 1000 characters (you typed ${reason.trim().length}).`)
     setBusy(true)
     setError(null)
     try {
@@ -103,7 +105,7 @@ function SellerRow({ seller, onDone }: { seller: AdminSeller; onDone: (message: 
     } catch (reason) {
       // 409 usually means another administrator changed it first; the list reloads to show the latest state.
       if (reason instanceof ApiError && reason.status === 409) onDone(`${account.name}: ${reason.message}`)
-      else setError(reason instanceof ApiError ? reason.message : 'The decision could not be saved.')
+      else setError(reason instanceof ApiError && reason.status === 0 ? reason.message : 'The decision could not be saved. Please try again.')
       setBusy(false)
     }
   }
@@ -135,7 +137,9 @@ function SellerRow({ seller, onDone }: { seller: AdminSeller; onDone: (message: 
         <div className="mp-form">
           <label>
             Reason for “{decision}” (shown to the seller)
-            <textarea rows={3} maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} autoFocus />
+            <textarea rows={3} value={reason} onChange={(e) => { setReason(e.target.value); setError(null) }} autoFocus
+              aria-invalid={error ? true : undefined} />
+            <span className="auth-hint">{reason.trim().length} / 1000 characters</span>
           </label>
           {error && <p className="mp-message error" role="alert">{error}</p>}
           <div className="mp-actions">
