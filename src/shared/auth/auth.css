@@ -15,3 +15,7 @@
 .auth-switch { font-size: 0.9rem; }
 .auth-note { font-size: 0.85rem; color: var(--text); }
 .auth-error { color: #b91c1c; background: rgba(185, 28, 28, 0.1); padding: 8px 10px; border-radius: 8px; }
+/* Per-field messages from our own checks. */
+.auth-field.invalid input { border-color: #b91c1c; }
+.auth-field-error { color: #b91c1c; font-size: 0.8rem; }
+.auth-hint { color: var(--text); font-size: 0.8rem; }
