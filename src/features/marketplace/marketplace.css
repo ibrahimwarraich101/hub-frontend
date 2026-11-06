@@ -1,0 +1,52 @@
+/* File purpose: Plain temporary styles for the E-Commerce store screens. The shared HUB theme will replace these. */
+.mp-app { max-width: 1100px; margin: 0 auto; padding: 16px; text-align: left; color: var(--text-h); }
+.mp-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.mp-header h1 { font-size: 1.6rem; margin: 0; }
+.mp-app button { font: inherit; cursor: pointer; }
+.mp-app button:disabled { cursor: not-allowed; opacity: 0.5; }
+.mp-back { background: none; border: none; color: var(--accent); padding: 4px 0; }
+
+.mp-search { display: flex; gap: 8px; margin-bottom: 12px; }
+.mp-search input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+.mp-search button, .mp-primary { padding: 10px 18px; border: none; border-radius: 8px; background: var(--accent); color: #fff; }
+
+.mp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.mp-chips.sub { margin-left: 8px; }
+.mp-chip { padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text-h); }
+.mp-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.mp-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 0.9rem; }
+.mp-toolbar select { font: inherit; padding: 4px; }
+
+.mp-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.mp-card { width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 0 0 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); text-align: left; overflow: hidden; position: relative; color: var(--text-h); }
+.mp-card img, .mp-noimage { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--border); }
+.mp-noimage { display: flex; align-items: center; justify-content: center; color: var(--text); }
+.mp-noimage.large { border-radius: 10px; }
+.mp-name, .mp-card .mp-price, .mp-card .mp-seller { padding: 0 10px; }
+.mp-name { font-weight: 600; font-size: 0.95rem; }
+.mp-price { font-weight: 700; color: var(--accent); }
+.mp-price s { margin-left: 8px; font-weight: 400; color: var(--text); font-size: 0.85em; }
+.mp-price.large { font-size: 1.5rem; }
+.mp-seller { font-size: 0.8rem; color: var(--text); }
+.mp-badge { position: absolute; top: 8px; left: 8px; background: #b91c1c; color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; }
+
+.mp-pager { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 20px 0; }
+.mp-pager button { padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-h); }
+
+.mp-message { padding: 12px; border-radius: 8px; background: var(--accent-bg); margin: 12px 0; }
+.mp-message.error { background: rgba(185, 28, 28, 0.1); color: #b91c1c; }
+
+.mp-product-body { display: grid; gap: 24px; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+@media (max-width: 720px) { .mp-product-body { grid-template-columns: 1fr; } }
+.mp-main-photo { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
+.mp-thumbs { display: flex; gap: 8px; margin-top: 8px; }
+.mp-thumbs button { padding: 0; border: 2px solid transparent; border-radius: 8px; background: none; width: 64px; }
+.mp-thumbs button.active { border-color: var(--accent); }
+.mp-thumbs img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; }
+.mp-info h1 { font-size: 1.5rem; margin: 4px 0 8px; }
+.mp-info h2 { font-size: 1.1rem; margin-top: 24px; }
+.mp-breadcrumb { color: var(--text); font-size: 0.85rem; margin: 0; }
+.mp-stock { color: #15803d; margin: 4px 0; }
+.mp-stock.out { color: #b91c1c; }
+.mp-description { white-space: pre-line; }
