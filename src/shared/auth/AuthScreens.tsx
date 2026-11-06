@@ -1,7 +1,10 @@
 // File purpose: Login and sign-up screens. Sign-up first asks "Personal or Business?"; a business user then picks a business type.
-import { useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+// All mistakes are checked here and shown under the field (browser popups are turned off with noValidate).
+import { useRef, useState } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import { ApiError } from '../api/client'
+import { collect, firstError, focusFirstError, hasErrors, rules } from '../forms/validation'
+import type { FieldErrors } from '../forms/validation'
 import { useAuth } from './AuthContext'
 import { businessOptions } from './businessOptions'
 import './auth.css'
@@ -23,31 +26,81 @@ export function AuthScreens({ availableBusiness = [] }: Props) {
   )
 }
 
+// One labelled input with its own error message underneath.
+export function Field(props: {
+  label: string
+  name: string
+  value: string
+  onChange: (value: string) => void
+  error?: string
+  type?: string
+  autoComplete?: string
+  placeholder?: string
+  hint?: ReactNode
+}) {
+  const errorId = `${props.name}-error`
+  return (
+    <label className={props.error ? 'auth-field invalid' : 'auth-field'}>
+      {props.label}
+      <input
+        name={props.name}
+        type={props.type ?? 'text'}
+        autoComplete={props.autoComplete}
+        placeholder={props.placeholder}
+        value={props.value}
+        onChange={(e) => props.onChange(e.target.value)}
+        aria-invalid={props.error ? true : undefined}
+        aria-describedby={props.error ? errorId : undefined}
+      />
+      {props.hint && !props.error && <span className="auth-hint">{props.hint}</span>}
+      {props.error && <span id={errorId} className="auth-field-error">{props.error}</span>}
+    </label>
+  )
+}
+
+type LoginFields = 'email' | 'password'
+
+function validateLogin(values: Record<LoginFields, string>): FieldErrors<LoginFields> {
+  return collect({
+    email: firstError(rules.required(values.email, 'email'), rules.email(values.email), rules.maxLength(values.email.trim(), 254, 'Email')),
+    password: firstError(rules.required(values.password, 'password'), rules.maxLength(values.password, 128, 'Password')),
+  })
+}
+
 function LoginForm({ onSignup }: { onSignup: () => void }) {
   const { login } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const formRef = useRef<HTMLFormElement>(null)
+  const [values, setValues] = useState({ email: '', password: '' })
+  const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // After the first attempt, messages update live while the user types.
+  const errors = tried ? validateLogin(values) : {}
+  const set = (field: LoginFields) => (value: string) => setValues({ ...values, [field]: value })
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    setBusy(true)
+    setTried(true)
     setError(null)
+    const found = validateLogin(values)
+    if (hasErrors(found)) return focusFirstError(formRef.current, found)
+    setBusy(true)
     try {
-      await login(email.trim(), password)
+      await login(values.email.trim(), values.password)
     } catch (reason) {
       setError(reason instanceof ApiError && reason.status === 401 ? 'Email or password is incorrect.'
-        : reason instanceof ApiError ? reason.message : 'Login failed. Please try again.')
+        : reason instanceof ApiError && reason.status === 0 ? reason.message
+          : reason instanceof ApiError && reason.status === 429 ? 'Too many attempts. Please wait a minute and try again.'
+            : 'Login failed. Please try again.')
       setBusy(false)
     }
   }
 
   return (
-    <form className="auth-card" onSubmit={submit}>
+    <form ref={formRef} className="auth-card" onSubmit={submit} noValidate>
       <h2>Log in</h2>
-      <label>Email<input type="email" autoComplete="email" required maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-      <label>Password<input type="password" autoComplete="current-password" required maxLength={128} value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+      <Field label="Email" name="email" type="email" autoComplete="email" value={values.email} onChange={set('email')} error={errors.email} />
+      <Field label="Password" name="password" type="password" autoComplete="current-password" value={values.password} onChange={set('password')} error={errors.password} />
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button type="submit" className="auth-primary" disabled={busy}>{busy ? 'Logging in…' : 'Log in'}</button>
       <p className="auth-switch">New to HUB? <button type="button" onClick={onSignup}>Create an account</button></p>
@@ -55,30 +108,49 @@ function LoginForm({ onSignup }: { onSignup: () => void }) {
   )
 }
 
+type SignupFields = 'fullName' | 'email' | 'phone' | 'password' | 'confirm'
+
+function validateSignup(values: Record<SignupFields, string>): FieldErrors<SignupFields> {
+  return collect({
+    fullName: firstError(rules.required(values.fullName, 'full name'), rules.maxLength(values.fullName.trim(), 150, 'Full name')),
+    email: firstError(rules.required(values.email, 'email'), rules.email(values.email), rules.maxLength(values.email.trim(), 254, 'Email')),
+    phone: firstError(rules.required(values.phone.replace('+92', ''), 'phone number'), rules.phone(values.phone)),
+    password: firstError(rules.required(values.password, 'password'), rules.minLength(values.password, 12, 'Password'),
+      rules.maxLength(values.password, 128, 'Password')),
+    confirm: values.confirm === '' ? 'Please type the password again.'
+      : values.confirm !== values.password ? 'The two passwords do not match.' : null,
+  })
+}
+
 function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; availableBusiness: string[] }) {
   const { register, setBusinessIntent } = useAuth()
+  const formRef = useRef<HTMLFormElement>(null)
   const [step, setStep] = useState<'type' | 'business' | 'details'>('type')
   const [business, setBusiness] = useState<string | null>(null)
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '+92', password: '', confirm: '' })
+  const [values, setValues] = useState({ fullName: '', email: '', phone: '+92', password: '', confirm: '' })
+  const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const update = (field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, [field]: e.target.value })
+  const errors = tried ? validateSignup(values) : {}
+  const set = (field: SignupFields) => (value: string) => setValues({ ...values, [field]: value })
 
   async function submit(event: FormEvent) {
     event.preventDefault()
+    setTried(true)
     setError(null)
-    // Same rules as the backend, checked here first for quicker feedback.
-    if (form.password.length < 12) return setError('Password must be at least 12 characters.')
-    if (form.password !== form.confirm) return setError('The two passwords do not match.')
-    if (!/^\+[1-9][0-9]{7,14}$/.test(form.phone)) return setError('Phone must look like +923001234567.')
+    const found = validateSignup(values)
+    if (hasErrors(found)) return focusFirstError(formRef.current, found)
     setBusy(true)
     try {
       setBusinessIntent(business)
-      await register({ fullName: form.fullName.trim(), email: form.email.trim(), phone: form.phone, password: form.password })
+      await register({ fullName: values.fullName.trim(), email: values.email.trim(), phone: values.phone.trim(), password: values.password })
     } catch (reason) {
       setBusinessIntent(null)
-      setError(reason instanceof ApiError && reason.status === 409 ? 'An account with this email or phone already exists.'
-        : reason instanceof ApiError ? reason.message : 'Sign-up failed. Please try again.')
+      // Only things the frontend cannot know (already used, server down) come back from the backend.
+      setError(reason instanceof ApiError && reason.status === 409 ? 'An account with this email or phone number already exists. Try logging in.'
+        : reason instanceof ApiError && reason.status === 0 ? reason.message
+          : reason instanceof ApiError && reason.status === 429 ? 'Too many attempts. Please wait a minute and try again.'
+            : 'Sign-up failed. Please try again.')
       setBusy(false)
     }
   }
@@ -121,15 +193,17 @@ function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; avail
 
   const chosen = businessOptions.find((option) => option.id === business)
   return (
-    <form className="auth-card" onSubmit={submit}>
+    <form ref={formRef} className="auth-card" onSubmit={submit} noValidate>
       <button type="button" className="auth-back" onClick={() => setStep(business ? 'business' : 'type')}>← Back</button>
       <h2>{chosen ? `Sign up as ${chosen.label}` : 'Sign up'}</h2>
       {chosen && <p className="auth-note">After creating your account you will fill in your {chosen.label.toLowerCase()} application.</p>}
-      <label>Full name<input autoComplete="name" required maxLength={150} value={form.fullName} onChange={update('fullName')} /></label>
-      <label>Email<input type="email" autoComplete="email" required maxLength={254} value={form.email} onChange={update('email')} /></label>
-      <label>Phone<input type="tel" autoComplete="tel" required value={form.phone} onChange={update('phone')} placeholder="+923001234567" /></label>
-      <label>Password (at least 12 characters)<input type="password" autoComplete="new-password" required minLength={12} maxLength={128} value={form.password} onChange={update('password')} /></label>
-      <label>Confirm password<input type="password" autoComplete="new-password" required maxLength={128} value={form.confirm} onChange={update('confirm')} /></label>
+      <Field label="Full name" name="fullName" autoComplete="name" value={values.fullName} onChange={set('fullName')} error={errors.fullName} />
+      <Field label="Email" name="email" type="email" autoComplete="email" value={values.email} onChange={set('email')} error={errors.email} />
+      <Field label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+923001234567" value={values.phone} onChange={set('phone')}
+        error={errors.phone} hint="With country code, for example +923001234567" />
+      <Field label="Password" name="password" type="password" autoComplete="new-password" value={values.password} onChange={set('password')}
+        error={errors.password} hint={`At least 12 characters (${values.password.length} typed)`} />
+      <Field label="Confirm password" name="confirm" type="password" autoComplete="new-password" value={values.confirm} onChange={set('confirm')} error={errors.confirm} />
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button type="submit" className="auth-primary" disabled={busy}>{busy ? 'Creating account…' : 'Create account'}</button>
       <p className="auth-switch">Already have an account? <button type="button" onClick={onLogin}>Log in</button></p>
