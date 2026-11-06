@@ -1,121 +1,43 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+// File purpose: TEMPORARY HUB home with login, until the shared app shell (theme, navigation) is merged.
+// Logged out: login / sign-up. Logged in: the user's name, live roles, logout and the service buttons.
+// Modules plug their own entry screens in here.
+import { AuthScreens } from './shared/auth/AuthScreens'
+import { useAuth } from './shared/auth/AuthContext'
+import { businessOptions } from './shared/auth/businessOptions'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { restoring, user, logout, businessIntent, setBusinessIntent } = useAuth()
 
+  if (restoring) return <main className="hub-home"><p>Loading…</p></main>
+  if (!user) return <AuthScreens />
+
+  const intent = businessOptions.find((option) => option.id === businessIntent)
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="hub-home">
+      <header className="hub-top">
+        <h1>HUB</h1>
+        <div className="hub-user">
+          <span>Hello, {user.fullName}</span>
+          <button type="button" onClick={() => void logout()}>Log out</button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
+      <p className="hub-roles">Your roles: {user.roles.join(', ')}</p>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {intent && (
+        <div className="hub-intent" role="status">
+          You chose <strong>{intent.label}</strong> at sign-up. The application form is provided by the {intent.module} module.
+          <button type="button" onClick={() => setBusinessIntent(null)}>Dismiss</button>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <p>Choose a service</p>
+      <div className="hub-services">
+        <button type="button" disabled title="Built by the HUB Drive module">HUB Drive</button>
+        <button type="button" disabled title="Built by the HUB Food module">HUB Food</button>
+        <button type="button" disabled title="Built by the E-Commerce module">E-Commerce</button>
+      </div>
+    </main>
   )
 }
 
