@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/check-development.sh\"",
+            "timeout": 30,
+            "statusMessage": "Checking development branch for team updates..."
+          }
+        ]
+      }
+    ]
+  }
+}

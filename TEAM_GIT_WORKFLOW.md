@@ -80,6 +80,15 @@ This takes about a minute. It does **not** undo or restart your work; Git adds y
 teammate's new code next to yours. If Git reports a conflict, it will be small because
 only a few days of changes are involved. Fix it, commit, push.
 
+Your AI does this check for you at the start of every session:
+
+- **Claude Code** runs it automatically when it opens (`.claude/hooks/check-development.sh`) and shows
+  "HUB check: development has N new commit(s)" or "up to date".
+- **Codex** is told to do it first by the "START OF EVERY SESSION" section at the top of `AGENTS.md`.
+
+The AI tells you what arrived, merges it into your `_Merge` branch, fixes conflicts in your own module,
+and **asks you first** if a conflict touches someone else's code or a shared file.
+
 Why: if everyone works alone for weeks and merges at the end, the shared files collide
 all at once and take hours to fix.
 
