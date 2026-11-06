@@ -1,5 +1,27 @@
 # HUB repository instructions
 
+## START OF EVERY SESSION - do this first (all HUB repos)
+
+Before doing anything else the user asks in a new session:
+
+1. Identify the person from the current branch (`dev.<name>/...`) or `git config user.name`; ask if unclear.
+2. Run `git fetch origin` and `git log --oneline HEAD..origin/development`.
+   (Claude Code runs this check automatically at session start and shows the result.)
+3. If `development` has new commits:
+   - Tell the user in one or two lines what arrived and from whom.
+   - If there are uncommitted changes, ask the user to commit or stash them first.
+   - Update their merge branch: `git checkout dev.<name>/<Module>_Merge`, `git merge origin/development`, `git push`.
+     If they are working on a feature branch, then merge their `_Merge` branch into that feature branch.
+4. If the merge has conflicts:
+   - Resolve them yourself only when every conflicting file belongs to this person's own module.
+   - If a conflict touches another person's module or a shared file (`Program.cs`, `Data/HubDbContext.cs`,
+     migrations, `HubDbContextModelSnapshot.cs`, root layout/router, `AGENTS.md`, `TEAM_GIT_WORKFLOW.md`),
+     stop, show the conflict to the user and ask before changing it.
+   - Migration snapshot conflict: delete this person's own new migration, finish the merge, then recreate the migration.
+5. After merging, check that the project still builds (backend `dotnet build`; website `npm run build`;
+   app `npx tsc --noEmit`) and report the result.
+6. Only then start the work the user asked for.
+
 ## HUB project information
 
 Shared project context is in `HUB-Partner-Pack/START_HERE.md` and
