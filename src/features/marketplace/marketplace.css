@@ -50,3 +50,24 @@
 .mp-stock { color: #15803d; margin: 4px 0; }
 .mp-stock.out { color: #b91c1c; }
 .mp-description { white-space: pre-line; }
+
+/* Seller Center and admin portal (temporary styles). */
+.mp-panel { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; }
+.mp-panel h2 { margin: 0; font-size: 1.2rem; }
+.mp-panel p { margin: 0; }
+.mp-form { display: flex; flex-direction: column; gap: 10px; }
+.mp-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.mp-form input, .mp-form textarea { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+.mp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.mp-danger { padding: 10px 18px; border: 1px solid #b91c1c; border-radius: 8px; background: none; color: #b91c1c; }
+.mp-link { background: none; border: none; color: var(--accent); padding: 4px 0; align-self: flex-start; }
+.mp-reason { padding: 8px 10px; border-radius: 8px; background: rgba(185, 28, 28, 0.08); }
+.mp-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 4px 0; font-size: 0.9rem; }
+.mp-facts dt { color: var(--text); }
+.mp-facts dd { margin: 0; }
+.mp-status { align-self: flex-start; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.mp-status-pending { background: rgba(234, 179, 8, 0.2); color: #a16207; }
+.mp-status-approved { background: rgba(22, 163, 74, 0.15); color: #15803d; }
+.mp-status-rejected, .mp-status-suspended { background: rgba(185, 28, 28, 0.12); color: #b91c1c; }
+.mp-admin-list { list-style: none; padding: 0; margin: 0; }
+.mp-admin-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
