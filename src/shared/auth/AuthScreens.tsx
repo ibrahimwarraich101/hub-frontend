@@ -161,10 +161,10 @@ function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; avail
         <h2>Create an account</h2>
         <p>How will you use HUB?</p>
         <button type="button" className="auth-choice" onClick={() => { setBusiness(null); setStep('details') }}>
-          <strong>Personal</strong><span>Ride, order food, shop, pay bills</span>
+          <strong>Personal</strong>
         </button>
         <button type="button" className="auth-choice" onClick={() => setStep('business')}>
-          <strong>Business</strong><span>Drive, run a restaurant or sell products</span>
+          <strong>Business</strong>
         </button>
         <p className="auth-switch">Already have an account? <button type="button" onClick={onLogin}>Log in</button></p>
       </div>
