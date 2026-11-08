@@ -73,7 +73,7 @@ export function AdminPortal({ onExit }: { onExit: () => void }) {
         <header className="adm-top">
           <button type="button" className="adm-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu">Menu</button>
           <button type="button" className="hub-button secondary small adm-back-button" onClick={back.action} aria-label={`Back to ${back.label}`}>
-            Back<span className="adm-back-label"> to {back.label}</span>
+            Back<span className="adm-back-label">{' '}to {back.label}</span>
           </button>
           <h1>{current.label}</h1>
           <div className="adm-user">
