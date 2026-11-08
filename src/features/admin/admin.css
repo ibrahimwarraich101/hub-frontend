@@ -117,3 +117,7 @@
 
 /* Buttons keep their own width inside panels. */
 .adm-panel > .hub-button, .adm-panel > button.hub-button { align-self: flex-start; }
+
+/* Back button in the top bar (one level up). On narrow screens only the arrow shows. */
+.adm-back-button { flex: none; }
+@media (max-width: 600px) { .adm-back-label { display: none; } }

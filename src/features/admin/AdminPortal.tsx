@@ -38,6 +38,13 @@ export function AdminPortal({ onExit }: { onExit: () => void }) {
 
   const current = adminSections.find((item) => item.id === route.section) ?? adminSections[0]
   const groups = [...new Set(adminSections.map((item) => item.group))]
+  // Back goes up one level: an opened item -> its list, a list -> Dashboard, Dashboard -> HUB home.
+  // (For sections whose address part is a tab, e.g. Sellers > Approved, the tab is not a level.)
+  const back = route.id && !current.idIsTab
+    ? { label: current.label, action: () => go({ section: current.id, id: null }) }
+    : current.id !== 'dashboard'
+      ? { label: 'Dashboard', action: () => go({ section: 'dashboard', id: null }) }
+      : { label: 'HUB home', action: exit }
 
   return (
     <div className="adm">
@@ -67,6 +74,9 @@ export function AdminPortal({ onExit }: { onExit: () => void }) {
       <div className="adm-main">
         <header className="adm-top">
           <button type="button" className="adm-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu">☰</button>
+          <button type="button" className="hub-button secondary small adm-back-button" onClick={back.action} aria-label={`Back to ${back.label}`}>
+            ← <span className="adm-back-label">{back.label}</span>
+          </button>
           <h1>{current.label}</h1>
           <div className="adm-user">
             <span className="adm-avatar" aria-hidden="true">{initials(user?.fullName ?? '')}</span>
