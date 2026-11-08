@@ -79,7 +79,6 @@ function UserDetailsView({ userId, go }: { userId: string; go: (route: AdminRout
 
   return (
     <div className="adm-stack">
-      <button type="button" className="hub-button secondary small adm-back" onClick={() => go({ section: 'users', id: null })}>Back to all users</button>
       {error && <p className="adm-alert error" role="alert">{error}</p>}
       {!data && !error && <p className="adm-muted">Loading…</p>}
       {data && (
