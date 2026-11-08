@@ -120,6 +120,7 @@
 
 /* Back button in the top bar (one level up). On narrow screens only the arrow shows. */
 .adm-back-button { flex: none; }
+.adm-back-label { margin-left: 0.3em; }
 @media (max-width: 600px) { .adm-back-label { display: none; } }
 
 /* Buttons: text only in theme-coloured boxes (see .hub-button in index.css). */
