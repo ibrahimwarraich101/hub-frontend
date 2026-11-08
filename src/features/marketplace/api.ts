@@ -40,7 +40,20 @@ export type ProductDetails = {
   imageUrls: string[]
   category: { id: string; name: string; parentId: string | null }
   merchant: { id: string; name: string }
+  // Colour/size options in display order; empty when the product has none.
+  variants: ProductVariant[]
+  specs: ProductSpec[]
 }
+
+export type ProductVariant = {
+  id: string
+  color: string | null
+  size: string | null
+  stockQuantity: number
+  inStock: boolean
+}
+
+export type ProductSpec = { name: string; value: string }
 
 export type ProductSort = 'newest' | 'price_asc' | 'price_desc'
 
