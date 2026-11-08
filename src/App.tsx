@@ -59,17 +59,14 @@ function App() {
       <h2>Choose a service</h2>
       <div className="hub-services">
         <button type="button" className="hub-tile shop" onClick={() => setService('ecommerce')}>
-          <span className="hub-tile-icon" aria-hidden="true">🛒</span>
           <strong>E-Commerce</strong>
           <span>Everything you need</span>
         </button>
         <button type="button" className="hub-tile drive" disabled title="Built by the HUB Drive module">
-          <span className="hub-tile-icon" aria-hidden="true">🚗</span>
           <strong>HUB Drive</strong>
           <span>Coming soon</span>
         </button>
         <button type="button" className="hub-tile food" disabled title="Built by the HUB Food module">
-          <span className="hub-tile-icon" aria-hidden="true">🍔</span>
           <strong>HUB Food</strong>
           <span>Coming soon</span>
         </button>
@@ -78,13 +75,11 @@ function App() {
       <h2>Business</h2>
       <div className="hub-services">
         <button type="button" className="hub-tile business" onClick={() => setService('sell')}>
-          <span className="hub-tile-icon" aria-hidden="true">🏪</span>
           <strong>Sell on HUB Store</strong>
           <span>Open your store and add products</span>
         </button>
         {hasRole('Administrator') && (
           <button type="button" className="hub-tile admin" onClick={() => setService('admin')}>
-            <span className="hub-tile-icon" aria-hidden="true">🛡️</span>
             <strong>Admin portal</strong>
             <span>Users, sellers, categories and products</span>
           </button>

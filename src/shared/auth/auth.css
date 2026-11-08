@@ -12,14 +12,24 @@
 .auth-card input { font-weight: 400; }
 .auth-card button { font: inherit; cursor: pointer; }
 .auth-card button:disabled { cursor: not-allowed; opacity: 0.65; }
-.auth-primary { min-height: var(--hub-button-height); border: none; border-radius: var(--hub-radius-input); background: var(--hub-primary); color: var(--hub-on-primary); font-weight: 700; }
+.auth-primary { min-height: var(--hub-button-height); border: none; border-radius: 12px; background: var(--hub-primary); color: var(--hub-on-primary); font-weight: 700; }
+.auth-primary:not(:disabled):hover { background: #003a2c; }
+/* Choices (Personal / Business, business types): a solid mint box with text. */
 .auth-choice {
-  display: flex; flex-direction: column; gap: 2px; padding: 16px; border: 1px solid var(--hub-border); border-radius: var(--hub-radius-input);
-  background: var(--hub-surface); color: var(--hub-text); text-align: left; font-weight: 700;
+  display: flex; flex-direction: column; gap: 2px; padding: 16px 18px; border: none; border-radius: 12px;
+  background: var(--hub-mint); color: var(--hub-primary); text-align: left; font-weight: 700;
 }
-.auth-choice:not(:disabled):hover { border-color: var(--hub-bright); background: var(--hub-mint); }
-.auth-choice span { font-size: 0.85rem; color: var(--hub-secondary); font-weight: 400; }
-.auth-back, .auth-switch button { background: none; border: none; color: var(--hub-primary); font-weight: 700; padding: 0; align-self: flex-start; }
+.auth-choice:not(:disabled):hover { background: var(--hub-primary); color: var(--hub-on-primary); }
+.auth-choice:not(:disabled):hover span { color: var(--hub-on-primary); }
+.auth-choice:disabled { background: var(--hub-surface-muted); color: var(--hub-secondary); }
+.auth-choice span { font-size: 0.85rem; color: var(--hub-secondary); font-weight: 500; }
+/* Back and "Create an account" / "Log in" switches: small mint buttons. */
+.auth-back, .auth-switch button {
+  min-height: 34px; padding: 0 14px; border: none; border-radius: 10px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 700;
+}
+.auth-back { align-self: flex-start; }
+.auth-switch button { margin-left: 6px; }
+.auth-back:hover, .auth-switch button:hover { background: #c9efd8; }
 .auth-switch { font-size: 0.9rem; color: var(--hub-secondary); }
 .auth-note { font-size: 0.85rem; color: var(--hub-secondary); }
 .auth-error { color: var(--hub-error); background: var(--hub-error-surface); padding: 10px 12px; border-radius: 12px; }

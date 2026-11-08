@@ -15,17 +15,16 @@
 
 .hub-home > h2 { font-size: 19px; margin: 8px 0 12px; }
 .hub-services { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+/* Service tiles: text only, a solid box in the service's theme colour. */
 .hub-tile {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 18px; text-align: left;
-  border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card); background: var(--hub-surface); color: var(--hub-text);
-  box-shadow: var(--hub-shadow); transition: transform 0.15s, border-color 0.15s;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 4px; min-height: 110px;
+  padding: 18px 20px; text-align: left; border: none; border-radius: var(--hub-radius-card); transition: transform 0.15s, box-shadow 0.15s;
 }
-.hub-tile:not(:disabled):hover { transform: translateY(-2px); border-color: var(--hub-bright); }
-.hub-tile strong { font-size: 1rem; color: var(--hub-heading); }
-.hub-tile > span:last-child { font-size: 0.85rem; color: var(--hub-secondary); }
-.hub-tile-icon { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; margin-bottom: 6px; }
-.hub-tile.shop .hub-tile-icon { background: var(--hub-shop-bg); }
-.hub-tile.drive .hub-tile-icon { background: var(--hub-drive-bg); }
-.hub-tile.food .hub-tile-icon { background: var(--hub-food-bg); }
-.hub-tile.business .hub-tile-icon { background: var(--hub-mint); }
-.hub-tile.admin .hub-tile-icon { background: var(--hub-bills-bg); }
+.hub-tile:not(:disabled):hover { transform: translateY(-2px); box-shadow: var(--hub-shadow); }
+.hub-tile strong { font-size: 1.05rem; }
+.hub-tile > span { font-size: 0.85rem; opacity: 0.85; }
+.hub-tile.shop { background: var(--hub-shop-bg); color: var(--hub-shop); }
+.hub-tile.drive { background: var(--hub-drive-bg); color: var(--hub-drive); }
+.hub-tile.food { background: var(--hub-food-bg); color: var(--hub-food); }
+.hub-tile.business { background: var(--hub-mint); color: var(--hub-primary); }
+.hub-tile.admin { background: var(--hub-primary); color: var(--hub-on-primary); }
