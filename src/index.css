@@ -1,111 +1,140 @@
+/* File purpose: HUB website theme. The same colours, sizes and corner radii as the app's theme
+   (hub-app/src/theme/tokens.ts by Muhammad Hassaan). Every module uses these variables; do not hard-code colours. */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Brand and surfaces */
+  --hub-primary: #004d3b;
+  --hub-bright: #2cc779;
+  --hub-mint: #dff7e8;
+  --hub-heading: #08291e;
+  --hub-text: #101820;
+  --hub-secondary: #687078;
+  --hub-background: #f8faf9;
+  --hub-surface: #ffffff;
+  --hub-surface-muted: #f0f2f0;
+  --hub-border: #e9eeeb;
+  --hub-card-border: #edf0ed;
+  --hub-selected: #dff7e8;
+  --hub-on-primary: #ffffff;
+  --hub-disabled: #e4eae6;
+  --hub-notification: #d92d20;
+  --hub-rating: #f7bc22;
+  --hub-scrim: #10182066;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Status colours */
+  --hub-success: #006644;
+  --hub-success-surface: #dff7e8;
+  --hub-warning: #7a4c00;
+  --hub-warning-surface: #fff1ce;
+  --hub-error: #b42318;
+  --hub-error-surface: #feece9;
+  --hub-info: #17618a;
+  --hub-info-surface: #e3f2fc;
+
+  /* Service tiles */
+  --hub-drive-bg: #a5ebc3; --hub-drive: #005437;
+  --hub-food-bg: #ffc5b8; --hub-food: #b53218;
+  --hub-shop-bg: #ffda7d; --hub-shop: #5c470a;
+  --hub-fitness-bg: #dcd2fc; --hub-fitness: #242a66;
+  --hub-bills-bg: #bae0fc; --hub-bills: #00679b;
+
+  /* Sizes */
+  --hub-radius-small: 8px;
+  --hub-radius-input: 14px;
+  --hub-radius-card: 18px;
+  --hub-radius-banner: 24px;
+  --hub-radius-pill: 999px;
+  --hub-button-height: 48px;
+  --hub-max-width: 1100px;
+  --hub-shadow: 0 1px 2px rgba(16, 24, 32, 0.04), 0 4px 16px rgba(16, 24, 32, 0.06);
+  --hub-hero: linear-gradient(120deg, #e7f6e9, #c4ecd4);
+
+  /* Older names still used by some screens; they now point at the HUB theme. */
+  --text: var(--hub-secondary);
+  --text-h: var(--hub-text);
+  --bg: var(--hub-surface);
+  --border: var(--hub-border);
+  --accent: var(--hub-primary);
+  --accent-bg: var(--hub-mint);
+  --accent-border: var(--hub-bright);
+  --shadow: var(--hub-shadow);
+
+  --sans: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --heading: var(--sans);
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  font: 15px/1.5 var(--sans);
+  color-scheme: light;
+  color: var(--hub-text);
+  background: var(--hub-background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
+  background: var(--hub-background);
+  min-height: 100svh;
 }
 
-h1,
-h2 {
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
   font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+  color: var(--hub-heading);
+  font-weight: 800;
+  letter-spacing: -0.2px;
 }
+h1 { font-size: 26px; margin: 0 0 12px; }
+h2 { font-size: 21px; margin: 0 0 8px; }
+h3 { font-size: 15px; margin: 0 0 6px; }
+p { margin: 0; }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
+a { color: var(--hub-primary); }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.65; }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+input, select, textarea {
+  background: var(--hub-surface);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-input);
+  padding: 11px 14px;
+  color: var(--hub-text);
 }
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--hub-bright);
+  outline-offset: 0;
+  border-color: var(--hub-bright);
+}
+button:focus-visible { outline: 2px solid var(--hub-bright); outline-offset: 2px; }
+
+/* Shared building blocks any module can use. */
+.hub-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: var(--hub-button-height); padding: 0 20px; border: none; border-radius: var(--hub-radius-input);
+  background: var(--hub-primary); color: var(--hub-on-primary); font-weight: 700;
+}
+.hub-button.secondary { background: var(--hub-surface); color: var(--hub-primary); border: 1px solid var(--hub-border); }
+.hub-button.danger { background: var(--hub-error); }
+.hub-button.small { min-height: 36px; padding: 0 14px; border-radius: 10px; font-size: 0.9rem; }
+.hub-card {
+  background: var(--hub-surface); border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card);
+  box-shadow: var(--hub-shadow);
+}
+.hub-pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: var(--hub-radius-pill); font-size: 0.8rem; font-weight: 700; }
+.hub-pill.success { background: var(--hub-success-surface); color: var(--hub-success); }
+.hub-pill.warning { background: var(--hub-warning-surface); color: var(--hub-warning); }
+.hub-pill.error { background: var(--hub-error-surface); color: var(--hub-error); }
+.hub-pill.info { background: var(--hub-info-surface); color: var(--hub-info); }
+.hub-pill.muted { background: var(--hub-surface-muted); color: var(--hub-secondary); }
+.hub-logo { font-size: 30px; font-weight: 900; color: var(--hub-primary); letter-spacing: -1px; margin: 0; line-height: 1; }
+.hub-logo::after { content: ''; display: block; width: 60%; height: 4px; margin: 2px auto 0 30%; border-radius: 4px; background: var(--hub-bright); }

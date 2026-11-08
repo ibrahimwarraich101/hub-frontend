@@ -1,21 +1,29 @@
-/* File purpose: Plain temporary styles for login/sign-up. The shared HUB theme will replace these. */
-.auth-page { max-width: 440px; margin: 0 auto; padding: 32px 16px; text-align: left; }
-.auth-brand { text-align: center; font-size: 2.4rem; margin: 0 0 16px; color: var(--text-h); }
-.auth-card { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text-h); }
-.auth-card h2 { margin: 0; font-size: 1.4rem; }
+/* File purpose: Login and sign-up styles, using the HUB theme variables from index.css. */
+.auth-page { width: 100%; max-width: 460px; margin: 0 auto; padding: 40px 20px; text-align: left; }
+.auth-brand { text-align: center; font-size: 40px; font-weight: 900; letter-spacing: -1.5px; margin: 0 0 20px; color: var(--hub-primary); }
+.auth-brand::after { content: ''; display: block; width: 70px; height: 5px; margin: 2px auto 0; border-radius: 4px; background: var(--hub-bright); }
+.auth-card {
+  display: flex; flex-direction: column; gap: 14px; padding: 24px; border: 1px solid var(--hub-card-border);
+  border-radius: var(--hub-radius-card); background: var(--hub-surface); color: var(--hub-text); box-shadow: var(--hub-shadow);
+}
+.auth-card h2 { margin: 0; font-size: 22px; }
 .auth-card p { margin: 0; }
-.auth-card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
-.auth-card input { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+.auth-card label { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; font-weight: 600; color: var(--hub-text); }
+.auth-card input { font-weight: 400; }
 .auth-card button { font: inherit; cursor: pointer; }
-.auth-card button:disabled { cursor: not-allowed; opacity: 0.5; }
-.auth-primary { padding: 12px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 600; }
-.auth-choice { display: flex; flex-direction: column; gap: 2px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--accent-bg); color: var(--text-h); text-align: left; }
-.auth-choice span { font-size: 0.85rem; color: var(--text); }
-.auth-back, .auth-switch button { background: none; border: none; color: var(--accent); padding: 0; align-self: flex-start; }
-.auth-switch { font-size: 0.9rem; }
-.auth-note { font-size: 0.85rem; color: var(--text); }
-.auth-error { color: #b91c1c; background: rgba(185, 28, 28, 0.1); padding: 8px 10px; border-radius: 8px; }
+.auth-card button:disabled { cursor: not-allowed; opacity: 0.65; }
+.auth-primary { min-height: var(--hub-button-height); border: none; border-radius: var(--hub-radius-input); background: var(--hub-primary); color: var(--hub-on-primary); font-weight: 700; }
+.auth-choice {
+  display: flex; flex-direction: column; gap: 2px; padding: 16px; border: 1px solid var(--hub-border); border-radius: var(--hub-radius-input);
+  background: var(--hub-surface); color: var(--hub-text); text-align: left; font-weight: 700;
+}
+.auth-choice:not(:disabled):hover { border-color: var(--hub-bright); background: var(--hub-mint); }
+.auth-choice span { font-size: 0.85rem; color: var(--hub-secondary); font-weight: 400; }
+.auth-back, .auth-switch button { background: none; border: none; color: var(--hub-primary); font-weight: 700; padding: 0; align-self: flex-start; }
+.auth-switch { font-size: 0.9rem; color: var(--hub-secondary); }
+.auth-note { font-size: 0.85rem; color: var(--hub-secondary); }
+.auth-error { color: var(--hub-error); background: var(--hub-error-surface); padding: 10px 12px; border-radius: 12px; }
 /* Per-field messages from our own checks. */
-.auth-field.invalid input { border-color: #b91c1c; }
-.auth-field-error { color: #b91c1c; font-size: 0.8rem; }
-.auth-hint { color: var(--text); font-size: 0.8rem; }
+.auth-field.invalid input, .auth-field.invalid textarea, .auth-field.invalid select { border-color: var(--hub-error); }
+.auth-field-error { color: var(--hub-error); font-size: 0.8rem; font-weight: 500; }
+.auth-hint { color: var(--hub-secondary); font-size: 0.8rem; font-weight: 400; }

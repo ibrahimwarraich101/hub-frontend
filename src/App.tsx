@@ -1,8 +1,7 @@
-// File purpose: TEMPORARY HUB home with login, until the shared app shell (theme, navigation) is merged.
-// Logged out: login / sign-up. Logged in: the user's name, live roles, logout and the service buttons.
-// Modules plug their own entry screens in here.
+// File purpose: TEMPORARY HUB home with login, until the shared app shell (navigation) is merged.
+// Logged out: login / sign-up. Logged in: greeting, the service tiles and business tools. Modules plug their entry screens in here.
 import { useState } from 'react'
-import { AdminPortal } from './features/marketplace/admin/AdminPortal'
+import { AdminPortal } from './features/admin/AdminPortal'
 import { MarketplaceApp } from './features/marketplace/MarketplaceApp'
 import { SellerCenter } from './features/marketplace/seller/SellerCenter'
 import { AuthScreens } from './shared/auth/AuthScreens'
@@ -17,9 +16,10 @@ const AVAILABLE_BUSINESS = ['seller']
 
 function App() {
   const { restoring, user, logout, hasRole, businessIntent, setBusinessIntent } = useAuth()
-  const [service, setService] = useState<Service>('home')
+  // An admin address (#admin/...) reopens the admin portal after a refresh.
+  const [service, setService] = useState<Service>(() => (window.location.hash.startsWith('#admin') ? 'admin' : 'home'))
 
-  if (restoring) return <main className="hub-home"><p>Loading…</p></main>
+  if (restoring) return <main className="hub-home"><p className="hub-loading">Loading…</p></main>
   if (!user) return <AuthScreens availableBusiness={AVAILABLE_BUSINESS} />
 
   // Someone who chose "E-Commerce store seller" at sign-up goes straight to the seller application.
@@ -30,40 +30,72 @@ function App() {
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
 
   const intent = businessOptions.find((option) => option.id === businessIntent)
+  const firstName = user.fullName.split(' ')[0]
   return (
     <main className="hub-home">
       <header className="hub-top">
-        <h1>HUB</h1>
+        <p className="hub-logo">HUB</p>
         <div className="hub-user">
-          <span>Hello, {user.fullName}</span>
-          <button type="button" onClick={() => void logout()}>Log out</button>
+          <span className="hub-avatar" aria-hidden="true">{initials(user.fullName)}</span>
+          <span className="hub-user-name">{user.fullName}</span>
+          <button type="button" className="hub-button secondary small" onClick={() => void logout()}>Log out</button>
         </div>
       </header>
-      <p className="hub-roles">Your roles: {user.roles.join(', ')}</p>
+
+      <section className="hub-hero">
+        <p>Hello, {firstName}</p>
+        <h1>Everyday Services in One App</h1>
+        <p className="hub-hero-sub">Ride. Eat. Shop. Stay fit. Pay bills. All with HUB.</p>
+        <p className="hub-roles">Your roles: {user.roles.join(', ')}</p>
+      </section>
 
       {intent && intent.id !== 'seller' && (
         <div className="hub-intent" role="status">
-          You chose <strong>{intent.label}</strong> at sign-up. The application form is provided by the {intent.module} module.
-          <button type="button" onClick={() => setBusinessIntent(null)}>Dismiss</button>
+          <span>You chose <strong>{intent.label}</strong> at sign-up. The application form is provided by the {intent.module} module.</span>
+          <button type="button" className="hub-button secondary small" onClick={() => setBusinessIntent(null)}>Dismiss</button>
         </div>
       )}
 
-      <p>Choose a service</p>
+      <h2>Choose a service</h2>
       <div className="hub-services">
-        <button type="button" onClick={() => setService('ecommerce')}>E-Commerce</button>
-        <button type="button" disabled title="Built by the HUB Drive module">HUB Drive</button>
-        <button type="button" disabled title="Built by the HUB Food module">HUB Food</button>
+        <button type="button" className="hub-tile shop" onClick={() => setService('ecommerce')}>
+          <span className="hub-tile-icon" aria-hidden="true">🛒</span>
+          <strong>E-Commerce</strong>
+          <span>Everything you need</span>
+        </button>
+        <button type="button" className="hub-tile drive" disabled title="Built by the HUB Drive module">
+          <span className="hub-tile-icon" aria-hidden="true">🚗</span>
+          <strong>HUB Drive</strong>
+          <span>Coming soon</span>
+        </button>
+        <button type="button" className="hub-tile food" disabled title="Built by the HUB Food module">
+          <span className="hub-tile-icon" aria-hidden="true">🍔</span>
+          <strong>HUB Food</strong>
+          <span>Coming soon</span>
+        </button>
       </div>
 
-      <p>Business</p>
+      <h2>Business</h2>
       <div className="hub-services">
-        <button type="button" onClick={() => setService('sell')}>Sell on HUB Store</button>
+        <button type="button" className="hub-tile business" onClick={() => setService('sell')}>
+          <span className="hub-tile-icon" aria-hidden="true">🏪</span>
+          <strong>Sell on HUB Store</strong>
+          <span>Open your store and add products</span>
+        </button>
         {hasRole('Administrator') && (
-          <button type="button" onClick={() => setService('admin')}>Admin portal</button>
+          <button type="button" className="hub-tile admin" onClick={() => setService('admin')}>
+            <span className="hub-tile-icon" aria-hidden="true">🛡️</span>
+            <strong>Admin portal</strong>
+            <span>Users, sellers, categories and products</span>
+          </button>
         )}
       </div>
     </main>
   )
+}
+
+function initials(name: string): string {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'U'
 }
 
 export default App

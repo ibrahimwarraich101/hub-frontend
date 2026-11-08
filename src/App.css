@@ -1,11 +1,31 @@
-/* File purpose: Temporary styles for the placeholder HUB home until the shared theme is merged. */
-.hub-home { max-width: 760px; margin: 0 auto; padding: 32px 16px; text-align: left; color: var(--text-h); }
-.hub-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.hub-top h1 { font-size: 2.2rem; margin: 0; }
+/* File purpose: Styles for the temporary HUB home, using the HUB theme variables from index.css. */
+.hub-home { width: 100%; max-width: var(--hub-max-width); margin: 0 auto; padding: 20px 20px 48px; text-align: left; color: var(--hub-text); }
+.hub-loading { color: var(--hub-secondary); padding: 40px 0; text-align: center; }
+.hub-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
 .hub-user { display: flex; align-items: center; gap: 10px; }
-.hub-user button, .hub-intent button { font: inherit; padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-h); cursor: pointer; }
-.hub-roles { color: var(--text); font-size: 0.9rem; }
-.hub-intent { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px; border-radius: 10px; background: var(--accent-bg); margin: 12px 0; }
-.hub-services { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 12px; }
-.hub-services button { padding: 24px 12px; font: inherit; font-weight: 600; border: 1px solid var(--border); border-radius: 12px; background: var(--accent-bg); color: var(--text-h); cursor: pointer; }
-.hub-services button:disabled { cursor: not-allowed; opacity: 0.5; }
+.hub-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--hub-primary); color: var(--hub-on-primary); display: grid; place-items: center; font-weight: 800; font-size: 0.9rem; }
+.hub-user-name { font-weight: 600; }
+
+.hub-hero { background: var(--hub-hero); border-radius: var(--hub-radius-banner); padding: 28px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 6px; }
+.hub-hero h1 { font-size: 30px; margin: 0; max-width: 520px; line-height: 1.15; }
+.hub-hero-sub { color: var(--hub-secondary); }
+.hub-roles { color: var(--hub-secondary); font-size: 0.85rem; margin-top: 6px; }
+
+.hub-intent { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 14px 16px; border-radius: var(--hub-radius-card); background: var(--hub-info-surface); color: var(--hub-info); margin-bottom: 20px; }
+
+.hub-home > h2 { font-size: 19px; margin: 8px 0 12px; }
+.hub-services { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.hub-tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 18px; text-align: left;
+  border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card); background: var(--hub-surface); color: var(--hub-text);
+  box-shadow: var(--hub-shadow); transition: transform 0.15s, border-color 0.15s;
+}
+.hub-tile:not(:disabled):hover { transform: translateY(-2px); border-color: var(--hub-bright); }
+.hub-tile strong { font-size: 1rem; color: var(--hub-heading); }
+.hub-tile > span:last-child { font-size: 0.85rem; color: var(--hub-secondary); }
+.hub-tile-icon { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; margin-bottom: 6px; }
+.hub-tile.shop .hub-tile-icon { background: var(--hub-shop-bg); }
+.hub-tile.drive .hub-tile-icon { background: var(--hub-drive-bg); }
+.hub-tile.food .hub-tile-icon { background: var(--hub-food-bg); }
+.hub-tile.business .hub-tile-icon { background: var(--hub-mint); }
+.hub-tile.admin .hub-tile-icon { background: var(--hub-bills-bg); }
