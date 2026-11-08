@@ -114,3 +114,6 @@
   .adm-user-name { display: none; }
   .adm-content { padding: 16px; }
 }
+
+/* Buttons keep their own width inside panels. */
+.adm-panel > .hub-button, .adm-panel > button.hub-button { align-self: flex-start; }
