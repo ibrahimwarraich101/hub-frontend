@@ -118,14 +118,21 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 button:focus-visible { outline: 2px solid var(--hub-bright); outline-offset: 2px; }
 
 /* Shared building blocks any module can use. */
+/* Buttons: one HUB style everywhere. Text only (no icons, emojis or arrow symbols), solid theme-coloured box.
+   Green = main action, mint = secondary action, red = dangerous action (block, delete, hide). */
 .hub-button {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: var(--hub-button-height); padding: 0 20px; border: none; border-radius: var(--hub-radius-input);
-  background: var(--hub-primary); color: var(--hub-on-primary); font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 20px; border: none; border-radius: 12px;
+  background: var(--hub-primary); color: var(--hub-on-primary); font-weight: 700; letter-spacing: 0.1px;
+  text-decoration: none; white-space: nowrap; transition: background-color 0.15s, box-shadow 0.15s;
 }
-.hub-button.secondary { background: var(--hub-surface); color: var(--hub-primary); border: 1px solid var(--hub-border); }
-.hub-button.danger { background: var(--hub-error); }
+.hub-button:not(:disabled):hover { background: #003a2c; box-shadow: 0 2px 8px rgba(0, 77, 59, 0.25); }
+.hub-button.secondary { background: var(--hub-mint); color: var(--hub-primary); }
+.hub-button.secondary:not(:disabled):hover { background: #c9efd8; box-shadow: none; }
+.hub-button.danger { background: var(--hub-error); color: #ffffff; }
+.hub-button.danger:not(:disabled):hover { background: #912018; box-shadow: 0 2px 8px rgba(180, 35, 24, 0.25); }
 .hub-button.small { min-height: 36px; padding: 0 14px; border-radius: 10px; font-size: 0.9rem; }
+.hub-button:disabled { opacity: 0.45; }
 .hub-card {
   background: var(--hub-surface); border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card);
   box-shadow: var(--hub-shadow);

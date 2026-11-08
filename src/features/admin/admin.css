@@ -121,3 +121,13 @@
 /* Back button in the top bar (one level up). On narrow screens only the arrow shows. */
 .adm-back-button { flex: none; }
 @media (max-width: 600px) { .adm-back-label { display: none; } }
+
+/* Buttons: text only in theme-coloured boxes (see .hub-button in index.css). */
+.adm-nav { background: var(--hub-surface-muted); color: var(--hub-text); margin-bottom: 4px; }
+.adm-nav:hover { background: var(--hub-mint); color: var(--hub-primary); }
+.adm-nav.active { background: var(--hub-primary); color: var(--hub-on-primary); }
+.adm-exit { background: var(--hub-mint); color: var(--hub-primary); justify-content: center; }
+.adm-exit:hover { background: #c9efd8; }
+.adm-menu-button { width: auto; padding: 0 14px; border: none; border-radius: 10px; background: var(--hub-mint); color: var(--hub-primary); font-size: 0.9rem; font-weight: 700; }
+.adm-back { padding: 0 14px; }
+.adm-chip { padding: 4px 4px 4px 12px; }

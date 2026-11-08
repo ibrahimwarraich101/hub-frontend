@@ -174,7 +174,7 @@ function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; avail
   if (step === 'business') {
     return (
       <div className="auth-card">
-        <button type="button" className="auth-back" onClick={() => setStep('type')}>← Back</button>
+        <button type="button" className="auth-back" onClick={() => setStep('type')}>Back</button>
         <h2>What kind of business?</h2>
         <p className="auth-note">You can also use HUB as a customer. Business features unlock after an administrator approves your application.</p>
         {businessOptions.map((option) => {
@@ -194,7 +194,7 @@ function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; avail
   const chosen = businessOptions.find((option) => option.id === business)
   return (
     <form ref={formRef} className="auth-card" onSubmit={submit} noValidate>
-      <button type="button" className="auth-back" onClick={() => setStep(business ? 'business' : 'type')}>← Back</button>
+      <button type="button" className="auth-back" onClick={() => setStep(business ? 'business' : 'type')}>Back</button>
       <h2>{chosen ? `Sign up as ${chosen.label}` : 'Sign up'}</h2>
       {chosen && <p className="auth-note">After creating your account you will fill in your {chosen.label.toLowerCase()} application.</p>}
       <Field label="Full name" name="fullName" autoComplete="name" value={values.fullName} onChange={set('fullName')} error={errors.fullName} />

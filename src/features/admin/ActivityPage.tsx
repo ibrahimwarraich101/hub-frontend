@@ -24,7 +24,7 @@ export function ActivityPage({ userId, go }: { userId: string | null; go: (route
           {userId && (
             <span className="adm-chip">
               Only {person.data?.user.fullName ?? 'one user'}
-              <button type="button" aria-label="Show everyone" onClick={() => go({ section: 'activity', id: null })}>×</button>
+              <button type="button" className="hub-button secondary small" onClick={() => go({ section: 'activity', id: null })}>Show everyone</button>
             </span>
           )}
         </div>

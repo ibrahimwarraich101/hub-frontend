@@ -2,7 +2,6 @@
 // The page is kept in the address (e.g. #admin/users/<id>) so refreshing or going Back stays in the right place.
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../../shared/auth/AuthContext'
-import { AdminIcon } from './AdminIcon'
 import { adminSections } from './sections'
 import type { AdminRoute } from './sections'
 import './admin.css'
@@ -60,22 +59,21 @@ export function AdminPortal({ onExit }: { onExit: () => void }) {
               {adminSections.filter((item) => item.group === group).map((item) => (
                 <button key={item.id} type="button" className={item.id === current.id ? 'adm-nav active' : 'adm-nav'}
                   aria-current={item.id === current.id ? 'page' : undefined} onClick={() => go({ section: item.id, id: null })}>
-                  <AdminIcon name={item.icon} />
                   {item.label}
                 </button>
               ))}
             </div>
           ))}
         </nav>
-        <button type="button" className="adm-nav adm-exit" onClick={exit}>← Back to HUB</button>
+        <button type="button" className="adm-nav adm-exit" onClick={exit}>Back to HUB</button>
       </aside>
       {menuOpen && <button type="button" className="adm-scrim" aria-label="Close menu" onClick={() => setMenuOpen(false)} />}
 
       <div className="adm-main">
         <header className="adm-top">
-          <button type="button" className="adm-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu">☰</button>
+          <button type="button" className="adm-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu">Menu</button>
           <button type="button" className="hub-button secondary small adm-back-button" onClick={back.action} aria-label={`Back to ${back.label}`}>
-            ← <span className="adm-back-label">{back.label}</span>
+            Back<span className="adm-back-label"> to {back.label}</span>
           </button>
           <h1>{current.label}</h1>
           <div className="adm-user">

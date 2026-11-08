@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 import { ActivityPage } from './ActivityPage'
 import { DashboardPage } from './DashboardPage'
 import { UsersPage } from './UsersPage'
-import type { IconName } from './AdminIcon'
 import { storeAdminSections, storeDashboardCards } from '../marketplace/admin/storeAdminSections'
 
 export type AdminRoute = { section: string; id: string | null }
@@ -15,7 +14,6 @@ export type AdminSection = {
   label: string
   // Menu group heading, e.g. "General" or "E-Commerce".
   group: string
-  icon: IconName
   // True when the address part after the section is a tab (e.g. #admin/sellers/Approved), not an opened item.
   idIsTab?: boolean
   // The page. `id` is the item opened inside the section (e.g. one user), and `go` moves to another page.
@@ -26,9 +24,9 @@ export type AdminSection = {
 export type AdminDashboardCard = { id: string; render: (props: { go: (route: AdminRoute) => void }) => ReactNode }
 
 const sharedSections: AdminSection[] = [
-  { id: 'dashboard', label: 'Dashboard', group: 'General', icon: 'dashboard', render: ({ go }) => <DashboardPage go={go} /> },
-  { id: 'users', label: 'Users', group: 'General', icon: 'users', render: ({ id, go }) => <UsersPage userId={id} go={go} /> },
-  { id: 'activity', label: 'Activity log', group: 'General', icon: 'activity', render: ({ id, go }) => <ActivityPage userId={id} go={go} /> },
+  { id: 'dashboard', label: 'Dashboard', group: 'General', render: ({ go }) => <DashboardPage go={go} /> },
+  { id: 'users', label: 'Users', group: 'General', render: ({ id, go }) => <UsersPage userId={id} go={go} /> },
+  { id: 'activity', label: 'Activity log', group: 'General', render: ({ id, go }) => <ActivityPage userId={id} go={go} /> },
 ]
 
 // Modules: add one line each.
