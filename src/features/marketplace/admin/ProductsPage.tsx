@@ -13,7 +13,7 @@ import { productStatusFilters, statusTone, storeAdminPaths } from './storeAdminA
 import type { AdminCategory, AdminProductDetails, AdminProductPage } from './storeAdminApi'
 
 export function ProductsPage({ productId, go }: { productId: string | null; go: (route: AdminRoute) => void }) {
-  return productId ? <ProductDetailsView productId={productId} go={go} /> : <ProductList go={go} />
+  return productId ? <ProductDetailsView productId={productId} /> : <ProductList go={go} />
 }
 
 function ProductList({ go }: { go: (route: AdminRoute) => void }) {
@@ -73,7 +73,7 @@ function ProductList({ go }: { go: (route: AdminRoute) => void }) {
   )
 }
 
-function ProductDetailsView({ productId, go }: { productId: string; go: (route: AdminRoute) => void }) {
+function ProductDetailsView({ productId }: { productId: string }) {
   const { authFetch } = useAuth()
   const { data, error, replace } = useAdminData<AdminProductDetails>(storeAdminPaths.product(productId))
   const [notice, setNotice] = useState<string | null>(null)
@@ -85,7 +85,6 @@ function ProductDetailsView({ productId, go }: { productId: string; go: (route: 
 
   return (
     <div className="adm-stack">
-      <button type="button" className="adm-back" onClick={() => go({ section: 'products', id: null })}>← All products</button>
       {error && <p className="adm-alert error" role="alert">{error}</p>}
       {!data && !error && <p className="adm-muted">Loading…</p>}
       {data && (() => {

@@ -102,8 +102,8 @@ function CategoryRow({ category, parentHidden, first, last, save, onMove }:
         {!category.active ? 'Hidden' : parentHidden ? 'Hidden with main category' : 'Visible'}
       </span>
       <div className="adm-actions">
-        <button type="button" className="hub-button secondary small" disabled={first} onClick={() => onMove(-1)} aria-label={`Move ${category.name} up`}>↑</button>
-        <button type="button" className="hub-button secondary small" disabled={last} onClick={() => onMove(1)} aria-label={`Move ${category.name} down`}>↓</button>
+        <button type="button" className="hub-button secondary small" disabled={first} onClick={() => onMove(-1)} aria-label={`Move ${category.name} up`}>Up</button>
+        <button type="button" className="hub-button secondary small" disabled={last} onClick={() => onMove(1)} aria-label={`Move ${category.name} down`}>Down</button>
         <button type="button" className="hub-button secondary small" onClick={() => setRenaming(true)} aria-label={`Rename ${category.name}`}>Rename</button>
         {category.active ? (
           confirmHide ? (
@@ -125,7 +125,7 @@ function CategoryRow({ category, parentHidden, first, last, save, onMove }:
 
 function AddSubcategory({ parent, save }: { parent: AdminCategory; save: Save }) {
   const [open, setOpen] = useState(false)
-  if (!open) return <button type="button" className="adm-link st-add" onClick={() => setOpen(true)}>+ Add a subcategory to {parent.name}</button>
+  if (!open) return <button type="button" className="hub-button secondary small st-add" onClick={() => setOpen(true)}>Add subcategory to {parent.name}</button>
   return (
     <div className="st-row">
       <NameForm label={`New subcategory in ${parent.name}`} button="Add subcategory" placeholder="e.g. Shoes" onCancel={() => setOpen(false)}

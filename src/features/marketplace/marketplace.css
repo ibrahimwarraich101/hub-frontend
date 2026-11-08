@@ -155,3 +155,31 @@
 .mp-seller-row:hover { border-color: var(--hub-bright); }
 .mp-badge-main { background: var(--hub-primary); }
 .mp-photo-grid li { border-radius: 14px; background: var(--hub-surface); }
+/* Buttons: text only in theme-coloured boxes, same as .hub-button (index.css).
+   Green = main action, mint = secondary action, red = dangerous action. */
+.mp-primary, .mp-search button { border-radius: 12px; min-height: 44px; }
+.mp-primary:not(:disabled):hover, .mp-search button:hover { background: #003a2c; }
+.mp-back, .mp-link {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border: none; border-radius: 10px;
+  background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; text-decoration: none;
+}
+.mp-back:hover, .mp-link:hover { background: #c9efd8; }
+.mp-back { align-self: flex-start; margin-bottom: 8px; }
+.mp-option-row > .mp-link { margin-top: 26px; }
+.mp-danger { background: var(--hub-error); color: #ffffff; border: none; border-radius: 12px; min-height: 44px; }
+.mp-danger:not(:disabled):hover { background: #912018; }
+.mp-chip { background: var(--hub-mint); color: var(--hub-primary); border: none; font-weight: 700; padding: 8px 16px; }
+.mp-chip:not(:disabled):hover { background: #c9efd8; }
+.mp-chip.active, .mp-chip.active:hover { background: var(--hub-primary); color: var(--hub-on-primary); }
+.mp-app .mp-chip:disabled { background: var(--hub-surface-muted); color: var(--hub-secondary); }
+.mp-pager button { background: var(--hub-mint); color: var(--hub-primary); border: none; font-weight: 700; padding: 8px 16px; border-radius: 10px; }
+.mp-quantity { border: none; background: none; gap: 6px; }
+.mp-quantity button { width: 40px; height: 40px; border-radius: 10px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 800; }
+.mp-photo-tools button { border: none; border-radius: 8px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; }
+.mp-photo-tools .mp-confirm { background: var(--hub-error); color: #ffffff; }
+.mp-viewer button { border-radius: 12px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; padding: 0 18px; }
+.mp-viewer-close { width: auto; height: 44px; font-size: 0.95rem !important; }
+.mp-viewer-nav { width: auto; height: 48px; font-size: 0.95rem !important; }
+
+/* Store buttons use bold text like every other HUB button (.mp-app button resets the font). */
+.mp-app .mp-back, .mp-app .mp-link, .mp-app .mp-chip, .mp-app .mp-primary, .mp-app .mp-danger, .mp-app .mp-pager button, .mp-app .mp-search button { font-weight: 700; }

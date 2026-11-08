@@ -17,7 +17,7 @@ export function MarketplaceApp({ onExit }: Props) {
       <header className="mp-header">
         {onExit && (
           <button type="button" className="mp-back" onClick={onExit}>
-            ← HUB
+            Back to HUB
           </button>
         )}
         <h1>HUB Store</h1>

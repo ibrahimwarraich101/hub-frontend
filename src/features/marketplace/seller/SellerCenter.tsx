@@ -35,7 +35,7 @@ export function SellerCenter({ onExit }: Props) {
   return (
     <section className="mp-app" aria-label="Seller Center">
       <header className="mp-header">
-        <button type="button" className="mp-back" onClick={onExit}>← HUB</button>
+        <button type="button" className="mp-back" onClick={onExit}>Back to HUB</button>
         <h1>Seller Center</h1>
       </header>
       {error && <div className="mp-message error" role="alert">{error}</div>}

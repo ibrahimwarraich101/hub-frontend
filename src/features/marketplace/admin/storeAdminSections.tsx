@@ -7,9 +7,9 @@ import { StoreDashboardCard } from './StoreDashboardCard'
 import './storeAdmin.css'
 
 export const storeAdminSections: AdminSection[] = [
-  { id: 'sellers', label: 'Sellers', group: 'E-Commerce', icon: 'store', idIsTab: true, render: ({ id, go }) => <SellersPage tab={id} go={go} /> },
-  { id: 'categories', label: 'Categories', group: 'E-Commerce', icon: 'tag', render: () => <CategoriesPage /> },
-  { id: 'products', label: 'Products', group: 'E-Commerce', icon: 'box', render: ({ id, go }) => <ProductsPage productId={id} go={go} /> },
+  { id: 'sellers', label: 'Sellers', group: 'E-Commerce', idIsTab: true, render: ({ id, go }) => <SellersPage tab={id} go={go} /> },
+  { id: 'categories', label: 'Categories', group: 'E-Commerce', render: () => <CategoriesPage /> },
+  { id: 'products', label: 'Products', group: 'E-Commerce', render: ({ id, go }) => <ProductsPage productId={id} go={go} /> },
 ]
 
 export const storeDashboardCards: AdminDashboardCard[] = [

@@ -15,3 +15,7 @@
 .st-photos { display: flex; gap: 10px; flex-wrap: wrap; }
 .st-photos img { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid var(--hub-border); }
 .st-description { white-space: pre-line; }
+.adm-tab { border: none; background: var(--hub-mint); color: var(--hub-primary); border-radius: 10px; }
+.adm-tab:hover { background: #c9efd8; }
+.adm-tab.active, .adm-tab.active:hover { background: var(--hub-primary); color: var(--hub-on-primary); }
+.st-add { align-self: flex-start; margin: 8px 0; }

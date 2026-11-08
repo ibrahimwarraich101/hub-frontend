@@ -34,7 +34,7 @@ export function ProductPage({ productId, onBack }: Props) {
   return (
     <div className="mp-product">
       <button type="button" className="mp-back" onClick={onBack}>
-        ← Back to store
+        Back to store
       </button>
 
       {error && <div className="mp-message error" role="alert">{error}</div>}
@@ -212,7 +212,7 @@ function ProductBody({ product }: { product: ProductDetails }) {
 
 type ViewerProps = { urls: string[]; index: number; name: string; onIndex: (index: number) => void; onClose: () => void }
 
-// Full-screen photo viewer: arrows or ← → keys move between photos, Esc or clicking outside closes it.
+// Full-screen photo viewer: Previous/Next buttons or the left/right arrow keys move between photos, Esc or clicking outside closes it.
 function PhotoViewer({ urls, index, name, onIndex, onClose }: ViewerProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const go = (by: number) => onIndex((index + by + urls.length) % urls.length)
@@ -243,13 +243,13 @@ function PhotoViewer({ urls, index, name, onIndex, onClose }: ViewerProps) {
 
   return (
     <div className="mp-viewer" role="dialog" aria-modal="true" aria-label={`${name} photos`} onClick={onClose}>
-      <button ref={closeRef} type="button" className="mp-viewer-close" onClick={onClose} aria-label="Close">×</button>
+      <button ref={closeRef} type="button" className="mp-viewer-close" onClick={onClose} aria-label="Close">Close</button>
       {urls.length > 1 && (
-        <button type="button" className="mp-viewer-nav prev" onClick={(e) => { e.stopPropagation(); go(-1) }} aria-label="Previous photo">‹</button>
+        <button type="button" className="mp-viewer-nav prev" onClick={(e) => { e.stopPropagation(); go(-1) }} aria-label="Previous photo">Previous</button>
       )}
       <img src={mediaUrl(urls[index]) ?? ''} alt={`${name}, photo ${index + 1} of ${urls.length}`} onClick={(e) => e.stopPropagation()} />
       {urls.length > 1 && (
-        <button type="button" className="mp-viewer-nav next" onClick={(e) => { e.stopPropagation(); go(1) }} aria-label="Next photo">›</button>
+        <button type="button" className="mp-viewer-nav next" onClick={(e) => { e.stopPropagation(); go(1) }} aria-label="Next photo">Next</button>
       )}
       <p className="mp-viewer-count">{index + 1} / {urls.length}</p>
     </div>
