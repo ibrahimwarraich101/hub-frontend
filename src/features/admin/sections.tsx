@@ -16,6 +16,8 @@ export type AdminSection = {
   // Menu group heading, e.g. "General" or "E-Commerce".
   group: string
   icon: IconName
+  // True when the address part after the section is a tab (e.g. #admin/sellers/Approved), not an opened item.
+  idIsTab?: boolean
   // The page. `id` is the item opened inside the section (e.g. one user), and `go` moves to another page.
   render: (props: { id: string | null; go: (route: AdminRoute) => void }) => ReactNode
 }
