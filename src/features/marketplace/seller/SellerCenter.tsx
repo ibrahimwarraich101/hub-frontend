@@ -10,6 +10,7 @@ import '../../../shared/auth/auth.css'
 import { sellerPaths, shortDate } from '../sellerApi'
 import type { SellerAccount } from '../sellerApi'
 import '../marketplace.css'
+import { SellerProducts } from './SellerProducts'
 
 type Props = { onExit: () => void }
 
@@ -56,7 +57,7 @@ export function SellerCenter({ onExit }: Props) {
             <p>Your application was sent on {shortDate(account.submittedAt)}. An administrator will review it soon.</p>
           )}
           {account.status === 'Approved' && (
-            <p>Your store is approved. Adding and managing products is the next E-Commerce feature.</p>
+            <p>Your store is approved and open. Add and manage your products below.</p>
           )}
           {account.status === 'Rejected' && (
             <>
@@ -79,6 +80,8 @@ export function SellerCenter({ onExit }: Props) {
           <button type="button" className="mp-link" onClick={load}>Refresh status</button>
         </div>
       )}
+
+      {account?.status === 'Approved' && !editing && <SellerProducts />}
     </section>
   )
 }

@@ -28,15 +28,17 @@ export type RegisterInput = {
 // Send JSON and turn backend errors (ProblemDetails or validation errors) into one readable message.
 export async function sendJson<T>(path: string, method: string, body?: unknown, accessToken?: string): Promise<T> {
   let response: Response
+  // A FormData body (file upload) is sent as-is; the browser sets the multipart Content-Type itself.
+  const isForm = body instanceof FormData
   try {
     response = await fetch(API_BASE_URL + path, {
       method,
       headers: {
         Accept: 'application/json',
-        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...(body === undefined || isForm ? {} : { 'Content-Type': 'application/json' }),
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     })
   } catch {
     throw new ApiError(0, 'Cannot reach the HUB server. Check that the backend is running.')

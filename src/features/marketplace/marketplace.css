@@ -71,3 +71,49 @@
 .mp-status-rejected, .mp-status-suspended { background: rgba(185, 28, 28, 0.12); color: #b91c1c; }
 .mp-admin-list { list-style: none; padding: 0; margin: 0; }
 .mp-admin-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+/* Product page: colour/size choice, quantity, specifications and the full-size photo viewer. */
+.mp-choice { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.mp-choice .mp-chips { margin: 0; }
+.mp-app .mp-chip:disabled { text-decoration: line-through; opacity: 0.4; }
+.mp-choice-error { color: #b91c1c; font-size: 0.85rem; margin: 4px 0; }
+.mp-hint { color: var(--text); font-size: 0.8rem; }
+.mp-quantity { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; align-self: flex-start; }
+.mp-quantity button { width: 40px; height: 40px; border: none; background: none; color: var(--text-h); font-size: 1.2rem; }
+.mp-quantity output { min-width: 40px; text-align: center; font-weight: 600; }
+.mp-specs { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.mp-specs th, .mp-specs td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.mp-specs th { width: 40%; color: var(--text); font-weight: 500; background: var(--accent-bg); }
+.mp-main-button { display: block; width: 100%; padding: 0; border: none; background: none; cursor: zoom-in; }
+.mp-viewer { position: fixed; inset: 0; z-index: 1000; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; }
+.mp-viewer img { max-width: 90vw; max-height: 85vh; object-fit: contain; }
+.mp-viewer button { position: absolute; border: none; background: rgba(255, 255, 255, 0.15); color: #fff; border-radius: 999px; cursor: pointer; font: inherit; }
+.mp-viewer-close { top: 16px; right: 16px; width: 44px; height: 44px; font-size: 1.8rem !important; line-height: 1; }
+.mp-viewer-nav { top: 50%; transform: translateY(-50%); width: 52px; height: 52px; font-size: 2.2rem !important; line-height: 1; }
+.mp-viewer-nav.prev { left: 16px; }
+.mp-viewer-nav.next { right: 16px; }
+.mp-viewer-count { position: absolute; bottom: 16px; left: 0; right: 0; text-align: center; color: #fff; margin: 0; }
+
+/* Seller "My products" list and product editor. */
+.mp-seller-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.mp-seller-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text-h); text-align: left; }
+.mp-seller-row img, .mp-seller-row .mp-noimage { width: 64px; height: 64px; flex: none; border-radius: 8px; object-fit: cover; font-size: 0.7rem; }
+.mp-seller-row-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mp-editor fieldset { border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.mp-editor legend { font-weight: 600; padding: 0 6px; }
+.mp-editor select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; background: var(--bg); color: var(--text-h); }
+.mp-editor .auth-field.invalid select, .mp-editor .auth-field.invalid textarea { border-color: #b91c1c; }
+.mp-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.mp-row > label { flex: 1 1 140px; }
+.mp-option-row > .mp-link { margin-top: 28px; }
+.mp-form .mp-check { flex-direction: row; align-items: center; gap: 8px; }
+.mp-photo-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+.mp-photo-grid li { position: relative; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.mp-photo-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.mp-badge-main { background: var(--accent); }
+.mp-photo-tools { display: flex; justify-content: space-between; gap: 4px; padding: 4px; }
+.mp-photo-tools button { flex: 1; padding: 4px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text-h); font-size: 0.8rem; }
+.mp-photo-tools .mp-confirm { border-color: #b91c1c; color: #b91c1c; }
+.mp-photos { display: flex; flex-direction: column; gap: 10px; }
+.mp-photos > .mp-chip { align-self: flex-start; }
+.mp-panel > .mp-back { align-self: flex-start; }
