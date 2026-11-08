@@ -1,4 +1,4 @@
-/* File purpose: Plain temporary styles for the E-Commerce store screens. The shared HUB theme will replace these. */
+/* File purpose: E-Commerce store, product page and Seller Center styles, using the HUB theme variables from index.css. */
 .mp-app { max-width: 1100px; margin: 0 auto; padding: 16px; text-align: left; color: var(--text-h); }
 .mp-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .mp-header h1 { font-size: 1.6rem; margin: 0; }
@@ -117,3 +117,41 @@
 .mp-photos { display: flex; flex-direction: column; gap: 10px; }
 .mp-photos > .mp-chip { align-self: flex-start; }
 .mp-panel > .mp-back { align-self: flex-start; }
+
+/* HUB theme (same look as the app): rounded cards and inputs, green buttons, themed status colours. */
+.mp-app { max-width: var(--hub-max-width); padding: 20px; color: var(--hub-text); }
+.mp-header h1 { font-size: 26px; color: var(--hub-heading); font-weight: 800; }
+.mp-back, .mp-link { color: var(--hub-primary); font-weight: 700; }
+.mp-search input { border-radius: var(--hub-radius-input); padding: 12px 16px; background: var(--hub-surface); }
+.mp-search button, .mp-primary { min-height: var(--hub-button-height); padding: 0 22px; border-radius: var(--hub-radius-input); background: var(--hub-primary); color: var(--hub-on-primary); font-weight: 700; }
+.mp-danger { border-radius: var(--hub-radius-input); border-color: var(--hub-error); color: var(--hub-error); font-weight: 700; }
+.mp-chip { background: var(--hub-surface); border-color: var(--hub-border); font-weight: 600; }
+.mp-chip.active { background: var(--hub-primary); border-color: var(--hub-primary); color: var(--hub-on-primary); }
+.mp-toolbar select { border-radius: 10px; padding: 6px 10px; }
+.mp-card { border-radius: var(--hub-radius-card); border-color: var(--hub-card-border); background: var(--hub-surface); box-shadow: var(--hub-shadow); transition: transform 0.15s, border-color 0.15s; }
+.mp-card:hover { transform: translateY(-2px); border-color: var(--hub-bright); }
+.mp-card img, .mp-noimage { background: var(--hub-surface-muted); }
+.mp-name { color: var(--hub-heading); }
+.mp-price { color: var(--hub-primary); }
+.mp-badge { background: var(--hub-error); border-radius: 8px; }
+.mp-pager button { border-radius: 10px; background: var(--hub-surface); }
+.mp-message { background: var(--hub-mint); color: var(--hub-textOnMint, #35534a); border-radius: 12px; }
+.mp-message.error { background: var(--hub-error-surface); color: var(--hub-error); }
+.mp-main-photo, .mp-noimage.large { border-radius: var(--hub-radius-card); background: var(--hub-surface-muted); }
+.mp-thumbs button.active { border-color: var(--hub-bright); }
+.mp-info h1 { color: var(--hub-heading); font-weight: 800; }
+.mp-stock { color: var(--hub-success); font-weight: 600; }
+.mp-stock.out, .mp-choice-error { color: var(--hub-error); }
+.mp-quantity { border-radius: 12px; background: var(--hub-surface); }
+.mp-specs th { background: var(--hub-mint); color: var(--hub-heading); }
+.mp-panel { background: var(--hub-surface); border-color: var(--hub-card-border); border-radius: var(--hub-radius-card); box-shadow: var(--hub-shadow); padding: 20px; }
+.mp-form input, .mp-form textarea, .mp-editor select { border-radius: var(--hub-radius-input); }
+.mp-editor fieldset { border-color: var(--hub-border); border-radius: var(--hub-radius-card); }
+.mp-reason { background: var(--hub-error-surface); }
+.mp-status-pending { background: var(--hub-warning-surface); color: var(--hub-warning); }
+.mp-status-approved { background: var(--hub-success-surface); color: var(--hub-success); }
+.mp-status-rejected, .mp-status-suspended { background: var(--hub-error-surface); color: var(--hub-error); }
+.mp-seller-row { border-radius: 14px; border-color: var(--hub-card-border); }
+.mp-seller-row:hover { border-color: var(--hub-bright); }
+.mp-badge-main { background: var(--hub-primary); }
+.mp-photo-grid li { border-radius: 14px; background: var(--hub-surface); }

@@ -5,6 +5,7 @@ import { ActivityPage } from './ActivityPage'
 import { DashboardPage } from './DashboardPage'
 import { UsersPage } from './UsersPage'
 import type { IconName } from './AdminIcon'
+import { storeAdminSections, storeDashboardCards } from '../marketplace/admin/storeAdminSections'
 
 export type AdminRoute = { section: string; id: string | null }
 
@@ -30,9 +31,11 @@ const sharedSections: AdminSection[] = [
 
 // Modules: add one line each.
 const moduleSections: AdminSection[] = [
+  ...storeAdminSections, // E-Commerce (Muhammad Ibrahim)
 ]
 
 export const dashboardCards: AdminDashboardCard[] = [
+  ...storeDashboardCards, // E-Commerce
 ]
 
 export const adminSections: AdminSection[] = [...sharedSections, ...moduleSections]

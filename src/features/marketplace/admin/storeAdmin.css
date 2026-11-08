@@ -1,0 +1,17 @@
+/* File purpose: Styles for the E-Commerce admin pages, using the HUB theme variables. */
+.adm-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.adm-tab { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-text); font-weight: 600; }
+.adm-tab.active { background: var(--hub-primary); border-color: var(--hub-primary); color: var(--hub-on-primary); }
+
+.st-category { gap: 8px; }
+.st-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 0; }
+.st-row.main .st-name strong { font-size: 1.05rem; }
+.st-name { flex: 1 1 220px; display: flex; flex-direction: column; min-width: 0; }
+.st-children { display: flex; flex-direction: column; margin-left: 18px; padding-left: 16px; border-left: 2px solid var(--hub-mint); }
+.st-children .st-row { border-top: 1px solid var(--hub-border); }
+.st-add { padding: 8px 0; }
+.st-name-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; width: 100%; }
+.st-name-form .adm-field { flex: 1 1 260px; }
+.st-photos { display: flex; gap: 10px; flex-wrap: wrap; }
+.st-photos img { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid var(--hub-border); }
+.st-description { white-space: pre-line; }

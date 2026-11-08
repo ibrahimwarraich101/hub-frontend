@@ -79,7 +79,7 @@ function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string
                     {item.variantCount > 0 && ` · ${item.variantCount} options`}
                   </span>
                 </span>
-                <span className={`mp-status ${item.active ? 'mp-status-approved' : 'mp-status-pending'}`}>{item.active ? 'In store' : 'Hidden'}</span>
+                <span className={`mp-status ${item.adminHidden ? 'mp-status-suspended' : item.active ? 'mp-status-approved' : 'mp-status-pending'}`}>{item.adminHidden ? 'Hidden by HUB' : item.active ? 'In store' : 'Hidden'}</span>
               </button>
             </li>
           ))}
@@ -184,6 +184,11 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
     <form ref={formRef} className="mp-panel mp-form mp-editor" onSubmit={save} noValidate>
       <button type="button" className="mp-back" onClick={onClose}>← My products</button>
       <h2>{product ? `Edit: ${product.name}` : 'Add a product'}</h2>
+      {product?.adminHidden && (
+        <p className="mp-message error" role="status">
+          HUB has hidden this product from the store. Reason: {product.adminHiddenReason}. You can still edit it, but only HUB can put it back in the store.
+        </p>
+      )}
 
       <fieldset>
         <legend>Details</legend>

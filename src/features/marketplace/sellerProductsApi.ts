@@ -15,6 +15,9 @@ export type SellerProduct = {
   categoryId: string
   stockQuantity: number | null
   active: boolean
+  // Hidden by a HUB administrator; the seller cannot show it again until HUB allows it.
+  adminHidden: boolean
+  adminHiddenReason: string | null
   version: number
   createdAt: string
   updatedAt: string
@@ -29,6 +32,7 @@ export type SellerProductSummary = {
   price: number
   salePrice: number | null
   active: boolean
+  adminHidden: boolean
   totalStock: number | null
   variantCount: number
   imageUrl: string | null
