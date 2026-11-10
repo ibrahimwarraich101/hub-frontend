@@ -2,18 +2,24 @@
 // stock, seller, description, specifications and the "Add to cart" button.
 import { useEffect, useRef, useState } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
+import { useAuth } from '../../shared/auth/AuthContext'
 import { fetchProduct, formatPrice } from './api'
 import type { ProductDetails, ProductVariant } from './api'
+import { cartPaths } from './cartApi'
+import type { Cart } from './cartApi'
 
 type Props = {
   productId: string
   onBack: () => void
+  // New number of items in the cart after adding.
+  onCount: (count: number) => void
+  onOpenCart: () => void
 }
 
 // Most units one order line can ask for when stock is not tracked.
 const MaxQuantity = 99
 
-export function ProductPage({ productId, onBack }: Props) {
+export function ProductPage({ productId, onBack, onCount, onOpenCart }: Props) {
   const [product, setProduct] = useState<ProductDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -39,7 +45,7 @@ export function ProductPage({ productId, onBack }: Props) {
 
       {error && <div className="mp-message error" role="alert">{error}</div>}
       {!error && !product && <div className="mp-message">Loading product…</div>}
-      {product && <ProductBody product={product} />}
+      {product && <ProductBody product={product} onCount={onCount} onOpenCart={onOpenCart} />}
     </div>
   )
 }
@@ -48,7 +54,10 @@ function unique(values: (string | null)[]): string[] {
   return [...new Set(values.filter((value): value is string => value !== null))]
 }
 
-function ProductBody({ product }: { product: ProductDetails }) {
+function ProductBody({ product, onCount, onOpenCart }: { product: ProductDetails; onCount: (count: number) => void; onOpenCart: () => void }) {
+  const { authFetch } = useAuth()
+  const [adding, setAdding] = useState(false)
+  const [added, setAdded] = useState(false)
   const colors = unique(product.variants.map((v) => v.color))
   const sizes = unique(product.variants.map((v) => v.size))
   // With a single choice there is nothing to pick, so it starts selected.
@@ -89,8 +98,9 @@ function ProductBody({ product }: { product: ProductDetails }) {
     setQuantity(1)
   }
 
-  function addToCart() {
+  async function addToCart() {
     setNotice(null)
+    setAdded(false)
     if (hasOptions && !selected) {
       const missing = [colors.length > 0 && color === null ? 'a colour' : null, sizes.length > 0 && size === null ? 'a size' : null]
         .filter(Boolean).join(' and ')
@@ -98,7 +108,18 @@ function ProductBody({ product }: { product: ProductDetails }) {
       return
     }
     const choice = [selected?.color, selected?.size].filter(Boolean).join(', ')
-    setNotice(`The cart is the next E-Commerce feature. You chose ${quantity} × ${product.name}${choice ? ` (${choice})` : ''}.`)
+    setAdding(true)
+    try {
+      const cart = await authFetch<Cart>(cartPaths.items, 'POST', { productId: product.id, variantId: selected?.id ?? null, quantity })
+      onCount(cart.itemCount)
+      setAdded(true)
+      setNotice(`Added ${quantity} × ${product.name}${choice ? ` (${choice})` : ''} to your cart.`)
+    } catch (reason) {
+      // Only what the page cannot know (stock changed a moment ago, your own store, server down) comes from the server.
+      setChoiceError(reason instanceof ApiError ? reason.message : 'Could not add to your cart. Please try again.')
+    } finally {
+      setAdding(false)
+    }
   }
 
   const stockText = soldOut ? (selected ? 'This option is sold out' : 'Out of stock')
@@ -180,8 +201,13 @@ function ProductBody({ product }: { product: ProductDetails }) {
         </div>
 
         <p className="mp-seller">Sold by {product.merchant.name}</p>
-        <button type="button" className="mp-primary" disabled={soldOut} onClick={addToCart}>Add to cart</button>
-        {notice && <p className="mp-message" role="status">{notice}</p>}
+        <button type="button" className="mp-primary" disabled={soldOut || adding} onClick={() => void addToCart()}>{adding ? 'Adding…' : 'Add to cart'}</button>
+        {notice && (
+          <div className="mp-message mp-added" role="status">
+            <span>{notice}</span>
+            {added && <button type="button" className="mp-primary" onClick={onOpenCart}>Go to cart</button>}
+          </div>
+        )}
 
         {product.description && (
           <>
