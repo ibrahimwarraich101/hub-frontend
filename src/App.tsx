@@ -17,7 +17,9 @@ const AVAILABLE_BUSINESS = ['seller']
 function App() {
   const { restoring, user, logout, hasRole, businessIntent, setBusinessIntent } = useAuth()
   // An admin address (#admin/...) reopens the admin portal after a refresh.
-  const [service, setService] = useState<Service>(() => (window.location.hash.startsWith('#admin') ? 'admin' : 'home'))
+  const [service, setService] = useState<Service>(() => (window.location.hash.startsWith('#admin') ? 'admin'
+    // Coming back from JazzCash (?order=...&payment=...) opens the store on that order.
+    : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'))
 
   if (restoring) return <main className="hub-home"><p className="hub-loading">Loading…</p></main>
   if (!user) return <AuthScreens availableBusiness={AVAILABLE_BUSINESS} />

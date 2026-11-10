@@ -218,3 +218,26 @@
   .mp-cart-line { grid-template-columns: 64px 1fr; }
   .mp-cart-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 }
+
+/* Checkout and orders. */
+.mp-header-link { margin-bottom: 0; }
+.mp-cart-store-checkout { display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 10px; }
+.mp-checkout-line { display: grid; grid-template-columns: 48px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--hub-border); }
+.mp-checkout-line img, .mp-checkout-line .mp-noimage { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; font-size: 0.6rem; display: grid; place-items: center; }
+.mp-methods { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.mp-app .mp-method { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: none; border-radius: 12px; text-align: left; background: var(--hub-mint); color: var(--hub-primary); }
+.mp-app .mp-method span { font-size: 0.85rem; color: var(--hub-secondary); }
+.mp-app .mp-method.active { background: var(--hub-primary); color: var(--hub-on-primary); }
+.mp-app .mp-method.active span { color: #d5efe2; }
+.mp-order-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mp-order-head .mp-cart-title { margin: 4px 0; }
+.mp-orders { display: flex; flex-direction: column; gap: 14px; }
+.mp-pill { display: inline-flex; align-items: center; padding: 3px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.mp-pill.success { background: var(--hub-success-surface); color: var(--hub-success); }
+.mp-pill.warning { background: var(--hub-warning-surface); color: var(--hub-warning); }
+.mp-pill.error { background: var(--hub-error-surface); color: var(--hub-error); }
+.mp-pill.info { background: var(--hub-info-surface); color: var(--hub-info); }
+.mp-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.mp-steps li { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 12px; background: var(--hub-surface-muted); color: var(--hub-secondary); font-size: 0.85rem; }
+.mp-steps li.done { background: var(--hub-mint); color: var(--hub-primary); }
+@media (max-width: 700px) { .mp-steps { grid-template-columns: 1fr; } }

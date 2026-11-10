@@ -11,9 +11,11 @@ type Props = {
   onOpenProduct: (id: string) => void
   // Tells the store header the new number of items.
   onCount: (count: number) => void
+  // Checkout one store's items (each store delivers its own order).
+  onCheckout: (merchantId: string) => void
 }
 
-export function CartPage({ onBack, onOpenProduct, onCount }: Props) {
+export function CartPage({ onBack, onOpenProduct, onCount, onCheckout }: Props) {
   const { authFetch } = useAuth()
   const [cart, setCart] = useState<Cart | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -119,6 +121,11 @@ export function CartPage({ onBack, onOpenProduct, onCount }: Props) {
                   )
                 })}
                 <p className="mp-cart-subtotal">Store subtotal <strong>{formatPrice(store.subtotal, cart.currency)}</strong></p>
+                <div className="mp-cart-store-checkout">
+                  {store.items.some((item) => item.status !== 'ok') && <span className="mp-choice-error">Fix the items above to check out.</span>}
+                  <button type="button" className="mp-primary" disabled={store.items.some((item) => item.status !== 'ok')}
+                    onClick={() => onCheckout(store.merchantId)}>Checkout {store.merchantName}</button>
+                </div>
               </section>
             ))}
           </div>
@@ -132,8 +139,7 @@ export function CartPage({ onBack, onOpenProduct, onCount }: Props) {
             <p className="mp-cart-row total"><span>Total</span><span>{formatPrice(cart.total, cart.currency)}</span></p>
             <p className="mp-hint">Each store delivers its own items.</p>
             {cart.hasProblems && <p className="mp-message error">Some items need your attention. Change or remove them before checkout.</p>}
-            <button type="button" className="mp-primary" disabled>Checkout</button>
-            <p className="mp-hint">Checkout and payment are the next E-Commerce feature.</p>
+            <p className="mp-hint">Each store is checked out and paid separately, because each store delivers its own order.</p>
           </aside>
         </div>
       )}
