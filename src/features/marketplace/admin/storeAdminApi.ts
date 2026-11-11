@@ -12,6 +12,8 @@ export type StoreSummary = {
   productsTotal: number
   categories: number
   categoriesHidden: number
+  reviewsTotal: number
+  reviewsHidden: number
 }
 
 export type AdminCategory = {

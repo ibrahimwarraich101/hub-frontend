@@ -1,5 +1,5 @@
 // File purpose: E-Commerce product page: photos (open big with left/right), price, colour/size choice, quantity,
-// stock, seller, description, specifications and the "Add to cart" button.
+// stock, seller, description, specifications, the "Add to cart" button and customer reviews.
 import { useEffect, useRef, useState } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
@@ -7,6 +7,7 @@ import { fetchProduct, formatPrice } from './api'
 import type { ProductDetails, ProductVariant } from './api'
 import { cartPaths } from './cartApi'
 import type { Cart } from './cartApi'
+import { ProductReviews, RatingLine } from './Reviews'
 
 type Props = {
   productId: string
@@ -46,6 +47,7 @@ export function ProductPage({ productId, onBack, onCount, onOpenCart }: Props) {
       {error && <div className="mp-message error" role="alert">{error}</div>}
       {!error && !product && <div className="mp-message">Loading product…</div>}
       {product && <ProductBody product={product} onCount={onCount} onOpenCart={onOpenCart} />}
+      {product && <ProductReviews productId={product.id} />}
     </div>
   )
 }
@@ -153,6 +155,9 @@ function ProductBody({ product, onCount, onOpenCart }: { product: ProductDetails
       <div className="mp-info">
         <p className="mp-breadcrumb">{product.category.name}</p>
         <h1>{product.name}</h1>
+        {product.reviewCount > 0 ? (
+          <a className="mp-rating-link" href="#reviews"><RatingLine average={product.ratingAverage} count={product.reviewCount} /></a>
+        ) : <RatingLine average={null} count={0} />}
         <p className="mp-price large">
           {formatPrice(product.salePrice ?? product.price, product.currency)}
           {product.salePrice !== null && <s>{formatPrice(product.price, product.currency)}</s>}

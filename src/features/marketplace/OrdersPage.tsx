@@ -1,5 +1,5 @@
 // File purpose: The customer's orders: a list, and one order with its progress, "Pay now" while unpaid, and "Cancel order"
-// until the store confirms it. Also shows the result after coming back from JazzCash.
+// until the store confirms it, and "Rate your items" once delivered. Also shows the result after coming back from JazzCash.
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
@@ -8,6 +8,7 @@ import { OrderBody, StatusPill } from './OrderBody'
 import { orderDate, orderPaths, paymentMethods } from './ordersApi'
 import type { Order, OrderPage, PaymentMethod } from './ordersApi'
 import { paymentResultMessages, startPayment } from './payment'
+import { OrderReviews } from './Reviews'
 
 export function OrdersList({ onOpen, onBack }: { onOpen: (id: string) => void; onBack: () => void }) {
   const { authFetch } = useAuth()
@@ -141,6 +142,12 @@ export function OrderDetails({ orderId, paymentResult, startMessage, onBack }: D
                 {paying ? 'Taking you to JazzCash…' : 'Pay now'}
               </button>
             </section>
+          )}
+
+          {order.status === 'Delivered' && (
+            <OrderReviews order={order} onSaved={(itemId, review) => setOrder((current) => current && {
+              ...current, items: current.items.map((item) => item.id === itemId ? { ...item, review } : item),
+            })} />
           )}
 
           <OrderBody order={order} />

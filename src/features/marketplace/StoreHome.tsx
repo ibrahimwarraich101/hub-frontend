@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { fetchCategories, fetchProducts, formatPrice } from './api'
 import type { Category, ProductPage, ProductSort } from './api'
+import { RatingLine } from './Reviews'
 
 type Props = {
   onOpenProduct: (id: string) => void
@@ -157,6 +158,7 @@ export function StoreHome({ onOpenProduct }: Props) {
                     {formatPrice(product.salePrice ?? product.price, product.currency)}
                     {product.salePrice !== null && <s>{formatPrice(product.price, product.currency)}</s>}
                   </span>
+                  {product.reviewCount > 0 && <RatingLine average={product.ratingAverage} count={product.reviewCount} />}
                   <span className="mp-seller">{product.merchantName}</span>
                   {!product.inStock && <span className="mp-badge">Out of stock</span>}
                 </button>

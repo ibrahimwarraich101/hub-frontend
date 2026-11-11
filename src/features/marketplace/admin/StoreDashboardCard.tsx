@@ -35,6 +35,12 @@ export function StoreDashboardCard({ go }: { go: (route: AdminRoute) => void }) 
               onClick={() => go({ section: 'products', id: null })} />
             <Stat label={`Categories (${data.categoriesHidden} hidden)`} value={data.categories} onClick={() => go({ section: 'categories', id: null })} />
           </div>
+          <h3>Customer reviews</h3>
+          <div className="adm-stats">
+            <Stat label="All reviews" value={data.reviewsTotal} onClick={() => go({ section: 'reviews', id: null })} />
+            <Stat label="Hidden by HUB" value={data.reviewsHidden} tone={data.reviewsHidden > 0 ? 'error' : undefined}
+              onClick={() => go({ section: 'reviews', id: 'hidden' })} />
+          </div>
         </>
       )}
     </section>

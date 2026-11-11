@@ -19,3 +19,10 @@
 .adm-tab:hover { background: #c9efd8; }
 .adm-tab.active, .adm-tab.active:hover { background: var(--hub-primary); color: var(--hub-on-primary); }
 .st-add { align-self: flex-start; margin: 8px 0; }
+
+/* Reviews */
+.sa-review { padding: 14px 0; border-top: 1px solid var(--hub-border); display: flex; flex-direction: column; gap: 8px; }
+.sa-review:first-of-type { border-top: none; }
+.sa-review-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sa-review-text { margin: 0; white-space: pre-line; }
+.sa-review .adm-muted { margin: 0; }

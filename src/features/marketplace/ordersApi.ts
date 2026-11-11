@@ -1,5 +1,6 @@
 // File purpose: Checkout, order and JazzCash payment API types, paths and form rules (matches docs/ECOMMERCE_ORDERS.md in hub-backend).
 import { rules, firstError } from '../../shared/forms/validation'
+import type { MyReview } from './reviewsApi'
 
 export type OrderStatus = 'AwaitingPayment' | 'Placed' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled'
 
@@ -14,6 +15,8 @@ export type OrderItem = {
   unitPrice: number
   quantity: number
   lineTotal: number
+  // The customer's own review (customer view only).
+  review?: MyReview | null
 }
 
 export type Order = {

@@ -2,6 +2,7 @@
 import type { AdminDashboardCard, AdminSection } from '../../admin/sections'
 import { CategoriesPage } from './CategoriesPage'
 import { ProductsPage } from './ProductsPage'
+import { ReviewsPage } from './ReviewsPage'
 import { SellersPage } from './SellersPage'
 import { StoreDashboardCard } from './StoreDashboardCard'
 import './storeAdmin.css'
@@ -10,6 +11,7 @@ export const storeAdminSections: AdminSection[] = [
   { id: 'sellers', label: 'Sellers', group: 'E-Commerce', idIsTab: true, render: ({ id, go }) => <SellersPage tab={id} go={go} /> },
   { id: 'categories', label: 'Categories', group: 'E-Commerce', render: () => <CategoriesPage /> },
   { id: 'products', label: 'Products', group: 'E-Commerce', render: ({ id, go }) => <ProductsPage productId={id} go={go} /> },
+  { id: 'reviews', label: 'Reviews', group: 'E-Commerce', idIsTab: true, render: ({ id, go }) => <ReviewsPage tab={id} go={go} /> },
 ]
 
 export const storeDashboardCards: AdminDashboardCard[] = [

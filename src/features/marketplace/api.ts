@@ -19,6 +19,9 @@ export type ProductSummary = {
   imageUrl: string | null
   categoryId: string
   merchantName: string
+  // Average of visible reviews (one decimal) and how many there are.
+  ratingAverage: number | null
+  reviewCount: number
 }
 
 export type ProductPage = {
@@ -43,6 +46,8 @@ export type ProductDetails = {
   // Colour/size options in display order; empty when the product has none.
   variants: ProductVariant[]
   specs: ProductSpec[]
+  ratingAverage: number | null
+  reviewCount: number
 }
 
 export type ProductVariant = {
