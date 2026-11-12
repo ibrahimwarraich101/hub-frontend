@@ -19,6 +19,11 @@ export type ProductSummary = {
   imageUrl: string | null
   categoryId: string
   merchantName: string
+  // Average of visible reviews (one decimal) and how many there are.
+  ratingAverage: number | null
+  reviewCount: number
+  // The shop selling it.
+  merchantId: string
 }
 
 export type ProductPage = {
@@ -40,11 +45,28 @@ export type ProductDetails = {
   imageUrls: string[]
   category: { id: string; name: string; parentId: string | null }
   merchant: { id: string; name: string }
+  // Colour/size options in display order; empty when the product has none.
+  variants: ProductVariant[]
+  specs: ProductSpec[]
+  ratingAverage: number | null
+  reviewCount: number
 }
 
-export type ProductSort = 'newest' | 'price_asc' | 'price_desc'
+export type ProductVariant = {
+  id: string
+  color: string | null
+  size: string | null
+  stockQuantity: number
+  inStock: boolean
+}
+
+export type ProductSpec = { name: string; value: string }
+
+export type ProductSort = 'newest' | 'price_asc' | 'price_desc' | 'rating'
 
 export type ProductQuery = {
+  // Only this shop's products.
+  merchantId?: string | null
   categoryId?: string | null
   search?: string
   sort?: ProductSort
@@ -60,6 +82,7 @@ export function fetchCategories(signal?: AbortSignal): Promise<Category[]> {
 // One page of visible products, filtered by category/search and sorted.
 export function fetchProducts(query: ProductQuery, signal?: AbortSignal): Promise<ProductPage> {
   const params = new URLSearchParams()
+  if (query.merchantId) params.set('merchantId', query.merchantId)
   if (query.categoryId) params.set('categoryId', query.categoryId)
   if (query.search?.trim()) params.set('search', query.search.trim())
   params.set('sort', query.sort ?? 'newest')
@@ -73,8 +96,38 @@ export function fetchProduct(id: string, signal?: AbortSignal): Promise<ProductD
   return getJson<ProductDetails>(`/api/marketplace/products/${encodeURIComponent(id)}`, signal)
 }
 
+// A shop (seller) as customers see it.
+export type Shop = {
+  id: string
+  name: string
+  description: string | null
+  logoUrl: string | null
+  // When the shop was approved to sell on HUB.
+  sellingSince: string | null
+  productCount: number
+  // Average of the visible reviews of all its products, and how many there are.
+  ratingAverage: number | null
+  reviewCount: number
+  deliveredOrders: number
+}
+
+// Shops with products on sale, best rated first.
+export function fetchShops(signal?: AbortSignal): Promise<Shop[]> {
+  return getJson<Shop[]>('/api/marketplace/shops', signal)
+}
+
+export function fetchShop(id: string, signal?: AbortSignal): Promise<Shop> {
+  return getJson<Shop>(`/api/marketplace/shops/${encodeURIComponent(id)}`, signal)
+}
+
 // Format a PKR amount for display, e.g. "Rs 49,999".
 export function formatPrice(amount: number, currency: string): string {
   const prefix = currency === 'PKR' ? 'Rs ' : currency + ' '
   return prefix + amount.toLocaleString('en-PK', { maximumFractionDigits: 2 })
+}
+
+// "Selling on HUB since March 2026".
+export function sinceText(sellingSince: string | null): string | null {
+  if (!sellingSince) return null
+  return 'Selling on HUB since ' + new Date(sellingSince).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 }
