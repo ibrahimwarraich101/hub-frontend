@@ -50,7 +50,7 @@ function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string
     <div className="mp-panel">
       <div className="mp-admin-head">
         <h2>My products</h2>
-        <button type="button" className="mp-primary" onClick={onAdd}>+ Add product</button>
+        <button type="button" className="mp-primary" onClick={onAdd}>Add product</button>
       </div>
       <form className="mp-search" role="search" onSubmit={(e) => { e.preventDefault(); setQuery({ search, page: 1 }) }}>
         <input type="search" placeholder="Search my products" value={search} onChange={(e) => setSearch(e.target.value)}
@@ -79,7 +79,7 @@ function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string
                     {item.variantCount > 0 && ` · ${item.variantCount} options`}
                   </span>
                 </span>
-                <span className={`mp-status ${item.active ? 'mp-status-approved' : 'mp-status-pending'}`}>{item.active ? 'In store' : 'Hidden'}</span>
+                <span className={`mp-status ${item.adminHidden ? 'mp-status-suspended' : item.active ? 'mp-status-approved' : 'mp-status-pending'}`}>{item.adminHidden ? 'Hidden by HUB' : item.active ? 'In store' : 'Hidden'}</span>
               </button>
             </li>
           ))}
@@ -169,7 +169,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
   if (!form) {
     return (
       <div className="mp-panel">
-        <button type="button" className="mp-back" onClick={onClose}>← My products</button>
+        <button type="button" className="mp-back" onClick={onClose}>Back to my products</button>
         {error ? <p className="mp-message error" role="alert">{error}</p> : <p className="mp-message">Loading…</p>}
       </div>
     )
@@ -182,8 +182,13 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
 
   return (
     <form ref={formRef} className="mp-panel mp-form mp-editor" onSubmit={save} noValidate>
-      <button type="button" className="mp-back" onClick={onClose}>← My products</button>
+      <button type="button" className="mp-back" onClick={onClose}>Back to my products</button>
       <h2>{product ? `Edit: ${product.name}` : 'Add a product'}</h2>
+      {product?.adminHidden && (
+        <p className="mp-message error" role="status">
+          HUB has hidden this product from the store. Reason: {product.adminHiddenReason}. You can still edit it, but only HUB can put it back in the store.
+        </p>
+      )}
 
       <fieldset>
         <legend>Details</legend>
@@ -255,7 +260,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
             {errors.variants && <p className="auth-field-error" role="alert">{errors.variants}</p>}
             {form.variants.length < limits.maxVariants && (
               <button type="button" className="mp-link" onClick={() => update({ variants: [...form.variants, { key: newKey(), color: '', size: '', stock: '' }] })}>
-                + Add option
+                Add option
               </button>
             )}
           </>
@@ -278,7 +283,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
         {errors.specs && <p className="auth-field-error" role="alert">{errors.specs}</p>}
         {form.specs.length < limits.maxSpecs && (
           <button type="button" className="mp-link" onClick={() => update({ specs: [...form.specs, { key: newKey(), name: '', value: '' }] })}>
-            + Add specification
+            Add specification
           </button>
         )}
       </fieldset>
@@ -380,11 +385,11 @@ function PhotoManager({ product, onChange }: { product: SellerProduct; onChange:
               <img src={mediaUrl(image.url) ?? ''} alt={`Photo ${index + 1}`} />
               {index === 0 && <span className="mp-badge mp-badge-main">Main</span>}
               <div className="mp-photo-tools">
-                <button type="button" disabled={busy !== null || index === 0} onClick={() => void move(index, -1)} aria-label={`Move photo ${index + 1} left`}>←</button>
+                <button type="button" disabled={busy !== null || index === 0} onClick={() => void move(index, -1)} aria-label={`Move photo ${index + 1} left`}>Left</button>
                 {confirming === image.id
                   ? <button type="button" className="mp-confirm" disabled={busy !== null} onClick={() => void remove(image.id)}>Sure? Delete</button>
                   : <button type="button" disabled={busy !== null} onClick={() => setConfirming(image.id)} aria-label={`Delete photo ${index + 1}`}>Delete</button>}
-                <button type="button" disabled={busy !== null || index === images.length - 1} onClick={() => void move(index, 1)} aria-label={`Move photo ${index + 1} right`}>→</button>
+                <button type="button" disabled={busy !== null || index === images.length - 1} onClick={() => void move(index, 1)} aria-label={`Move photo ${index + 1} right`}>Right</button>
               </div>
             </li>
           ))}
@@ -393,7 +398,7 @@ function PhotoManager({ product, onChange }: { product: SellerProduct; onChange:
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => void upload(e)}
         aria-label="Choose photos" />
       <button type="button" className="mp-chip" disabled={busy !== null || room === 0} onClick={() => inputRef.current?.click()}>
-        {room === 0 ? `${limits.maxImages} photos (maximum)` : '+ Add photos'}
+        {room === 0 ? `${limits.maxImages} photos (maximum)` : 'Add photos'}
       </button>
       {busy && <p className="mp-message" role="status">{busy}</p>}
       {error && <p className="mp-message error" role="alert">{error}</p>}

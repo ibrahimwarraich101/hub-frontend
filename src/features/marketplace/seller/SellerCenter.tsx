@@ -10,6 +10,7 @@ import '../../../shared/auth/auth.css'
 import { sellerPaths, shortDate } from '../sellerApi'
 import type { SellerAccount } from '../sellerApi'
 import '../marketplace.css'
+import { SellerOrders } from './SellerOrders'
 import { SellerProducts } from './SellerProducts'
 
 type Props = { onExit: () => void }
@@ -35,7 +36,7 @@ export function SellerCenter({ onExit }: Props) {
   return (
     <section className="mp-app" aria-label="Seller Center">
       <header className="mp-header">
-        <button type="button" className="mp-back" onClick={onExit}>← HUB</button>
+        <button type="button" className="mp-back" onClick={onExit}>Back to HUB</button>
         <h1>Seller Center</h1>
       </header>
       {error && <div className="mp-message error" role="alert">{error}</div>}
@@ -81,7 +82,7 @@ export function SellerCenter({ onExit }: Props) {
         </div>
       )}
 
-      {account?.status === 'Approved' && !editing && <SellerProducts />}
+      {account?.status === 'Approved' && !editing && <SellerWorkspace />}
     </section>
   )
 }
@@ -151,4 +152,20 @@ function ApplyForm({ initial, defaultPhone, onSaved }: { initial?: SellerAccount
 
 export function StatusBadge({ status }: { status: string }) {
   return <span className={`mp-status mp-status-${status.toLowerCase()}`}>{status}</span>
+}
+
+// Products and Orders for an approved store.
+function SellerWorkspace() {
+  const [tab, setTab] = useState<'products' | 'orders'>('products')
+  return (
+    <>
+      <div className="mp-chips" role="tablist" aria-label="Seller Center">
+        <button type="button" role="tab" aria-selected={tab === 'products'} className={tab === 'products' ? 'mp-chip active' : 'mp-chip'}
+          onClick={() => setTab('products')}>My products</button>
+        <button type="button" role="tab" aria-selected={tab === 'orders'} className={tab === 'orders' ? 'mp-chip active' : 'mp-chip'}
+          onClick={() => setTab('orders')}>Orders</button>
+      </div>
+      {tab === 'products' ? <SellerProducts /> : <SellerOrders />}
+    </>
+  )
 }
