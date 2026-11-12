@@ -15,12 +15,15 @@ type Props = {
   // New number of items in the cart after adding.
   onCount: (count: number) => void
   onOpenCart: () => void
+  onOpenShop: (merchantId: string) => void
+  // Text of the back button, e.g. "Back to store" or "Back to Lahore Loom".
+  backLabel?: string
 }
 
 // Most units one order line can ask for when stock is not tracked.
 const MaxQuantity = 99
 
-export function ProductPage({ productId, onBack, onCount, onOpenCart }: Props) {
+export function ProductPage({ productId, onBack, onCount, onOpenCart, onOpenShop, backLabel = 'Back to store' }: Props) {
   const [product, setProduct] = useState<ProductDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,12 +44,12 @@ export function ProductPage({ productId, onBack, onCount, onOpenCart }: Props) {
   return (
     <div className="mp-product">
       <button type="button" className="mp-back" onClick={onBack}>
-        Back to store
+        {backLabel}
       </button>
 
       {error && <div className="mp-message error" role="alert">{error}</div>}
       {!error && !product && <div className="mp-message">Loading product…</div>}
-      {product && <ProductBody product={product} onCount={onCount} onOpenCart={onOpenCart} />}
+      {product && <ProductBody product={product} onCount={onCount} onOpenCart={onOpenCart} onOpenShop={onOpenShop} />}
       {product && <ProductReviews productId={product.id} />}
     </div>
   )
@@ -56,7 +59,9 @@ function unique(values: (string | null)[]): string[] {
   return [...new Set(values.filter((value): value is string => value !== null))]
 }
 
-function ProductBody({ product, onCount, onOpenCart }: { product: ProductDetails; onCount: (count: number) => void; onOpenCart: () => void }) {
+function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
+  product: ProductDetails; onCount: (count: number) => void; onOpenCart: () => void; onOpenShop: (merchantId: string) => void
+}) {
   const { authFetch } = useAuth()
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
@@ -205,7 +210,10 @@ function ProductBody({ product, onCount, onOpenCart }: { product: ProductDetails
           {!soldOut && quantity >= maxQuantity && stock !== null && <span className="mp-hint">Only {stock} available.</span>}
         </div>
 
-        <p className="mp-seller">Sold by {product.merchant.name}</p>
+        <div className="mp-sold-by">
+          <span className="mp-seller">Sold by <strong>{product.merchant.name}</strong></span>
+          <button type="button" className="mp-primary mp-small" onClick={() => onOpenShop(product.merchant.id)}>Visit shop</button>
+        </div>
         <button type="button" className="mp-primary" disabled={soldOut || adding} onClick={() => void addToCart()}>{adding ? 'Adding…' : 'Add to cart'}</button>
         {notice && (
           <div className="mp-message mp-added" role="status">

@@ -1,4 +1,4 @@
-// File purpose: Entry point of the E-Commerce store on the website: store home, product page, cart, checkout and orders,
+// File purpose: Entry point of the E-Commerce store on the website: store home, shop pages, product page, cart, checkout and orders,
 // with "My orders" and "Cart" in the header. Coming back from JazzCash opens the paid order with its result.
 // Simple in-page navigation until the common app shell arrives.
 import { useCallback, useEffect, useState } from 'react'
@@ -9,6 +9,7 @@ import { CheckoutPage } from './CheckoutPage'
 import { OrderDetails, OrdersList } from './OrdersPage'
 import { clearPaymentReturn, readPaymentReturn } from './payment'
 import { ProductPage } from './ProductPage'
+import { ShopPage } from './ShopPage'
 import { StoreHome } from './StoreHome'
 import './marketplace.css'
 
@@ -19,6 +20,7 @@ type Props = {
 type View =
   | { page: 'store' }
   | { page: 'product'; productId: string }
+  | { page: 'shop'; merchantId: string }
   | { page: 'cart' }
   | { page: 'checkout'; merchantId: string }
   | { page: 'orders' }
@@ -34,7 +36,9 @@ function firstView(): View {
 
 export function MarketplaceApp({ onExit }: Props) {
   const { authFetch } = useAuth()
-  const [view, setView] = useState<View>(firstView)
+  // Pages visited since the store home, so "Back" returns to where the customer came from (e.g. a shop).
+  const [history, setHistory] = useState<View[]>(() => [firstView()])
+  const view = history[history.length - 1]!
   const [cartCount, setCartCount] = useState(0)
   const [countVersion, setCountVersion] = useState(0)
 
@@ -46,9 +50,19 @@ export function MarketplaceApp({ onExit }: Props) {
   }, [authFetch, countVersion])
 
   const open = useCallback((next: View) => {
-    setView(next)
+    // Opening the store home starts over; anything else is added on top.
+    setHistory((pages) => next.page === 'store' ? [next] : [...pages.slice(-19), next])
     window.scrollTo({ top: 0 })
   }, [])
+
+  const back = useCallback(() => {
+    setHistory((pages) => pages.length > 1 ? pages.slice(0, -1) : [{ page: 'store' }])
+    window.scrollTo({ top: 0 })
+  }, [])
+
+  // The shop page stays mounted while a product opened from it is shown, so "Back" keeps its search and page.
+  const shopView = [...history].reverse().find((page): page is { page: 'shop'; merchantId: string } => page.page === 'shop')
+  const previous = history[history.length - 2]
 
   return (
     <section className="mp-app" aria-label="HUB Store">
@@ -62,8 +76,9 @@ export function MarketplaceApp({ onExit }: Props) {
         </button>
       </header>
       {view.page === 'product' && (
-        <ProductPage key={view.productId} productId={view.productId} onBack={() => open({ page: 'store' })}
-          onCount={setCartCount} onOpenCart={() => open({ page: 'cart' })} />
+        <ProductPage key={view.productId} productId={view.productId} onBack={back}
+          backLabel={previous?.page === 'shop' ? 'Back to shop' : previous?.page === 'cart' ? 'Back to cart' : 'Back to store'}
+          onCount={setCartCount} onOpenCart={() => open({ page: 'cart' })} onOpenShop={(merchantId) => open({ page: 'shop', merchantId })} />
       )}
       {view.page === 'cart' && (
         <CartPage onBack={() => open({ page: 'store' })} onOpenProduct={(id) => open({ page: 'product', productId: id })} onCount={setCartCount}
@@ -77,9 +92,15 @@ export function MarketplaceApp({ onExit }: Props) {
       {view.page === 'order' && (
         <OrderDetails key={view.orderId} orderId={view.orderId} paymentResult={view.paymentResult} startMessage={view.message} onBack={() => open({ page: 'orders' })} />
       )}
+      {shopView && (
+        <div hidden={view.page !== 'shop'}>
+          <ShopPage key={shopView.merchantId} merchantId={shopView.merchantId} onBack={back}
+            onOpenProduct={(id) => open({ page: 'product', productId: id })} />
+        </div>
+      )}
       {/* The store stays mounted (just hidden) so "Back" keeps the customer's search, category and page. */}
       <div hidden={view.page !== 'store'}>
-        <StoreHome onOpenProduct={(id) => open({ page: 'product', productId: id })} />
+        <StoreHome onOpenProduct={(id) => open({ page: 'product', productId: id })} onOpenShop={(merchantId) => open({ page: 'shop', merchantId })} />
       </div>
     </section>
   )

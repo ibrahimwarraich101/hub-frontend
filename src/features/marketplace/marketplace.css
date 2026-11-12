@@ -275,3 +275,30 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
   .mp-item-review-head { grid-template-columns: 48px 1fr; }
   .mp-item-review-head > .mp-link, .mp-item-review-head > .mp-primary { grid-column: 1 / -1; justify-self: start; }
 }
+
+/* Shops: the "Shops on HUB" row on the store home, the shop page header, and "Visit shop" on the product page. */
+.mp-shops { margin: 4px 0 16px; }
+.mp-shops h2 { font-size: 1.05rem; color: var(--hub-heading); margin: 0 0 8px; }
+.mp-shops ul { list-style: none; margin: 0; padding: 2px 2px 8px; display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; }
+.mp-shops li { flex: none; scroll-snap-align: start; }
+.mp-shop-card { width: 150px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px; text-align: center;
+  border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card); background: var(--hub-surface); box-shadow: var(--hub-shadow); color: var(--hub-text); }
+.mp-shop-card:hover { border-color: var(--hub-bright); }
+.mp-shop-card-name { font-weight: 700; color: var(--hub-heading); line-height: 1.2; }
+.mp-shop-star { color: #B45309; }
+.mp-shop-logo { width: 56px; height: 56px; flex: none; border-radius: 50%; display: inline-grid; place-items: center; color: #fff;
+  font-weight: 800; font-size: 1.1rem; object-fit: cover; }
+.mp-shop-logo.large { width: 88px; height: 88px; font-size: 1.8rem; }
+.mp-shop-head { display: flex; gap: 18px; align-items: flex-start; margin: 12px 0 18px; padding: 18px; border: 1px solid var(--hub-card-border);
+  border-radius: var(--hub-radius-card); background: var(--hub-surface); box-shadow: var(--hub-shadow); }
+.mp-shop-head-main { flex: 1; min-width: 0; }
+.mp-shop-head h2 { margin: 0 0 4px; font-size: 1.6rem; color: var(--hub-heading); }
+.mp-shop-rating { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; flex-wrap: wrap; }
+.mp-shop-description { margin: 0 0 10px; }
+.mp-shop-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.mp-shop-facts li { padding: 4px 12px; border-radius: 999px; background: var(--hub-mint); color: var(--hub-primary); font-size: 0.85rem; }
+.mp-sold-by { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+@media (max-width: 560px) {
+  .mp-shop-head { flex-direction: column; align-items: center; text-align: center; }
+  .mp-shop-rating, .mp-shop-facts { justify-content: center; }
+}
