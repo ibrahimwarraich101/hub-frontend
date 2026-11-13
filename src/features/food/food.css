@@ -1,0 +1,86 @@
+/* File purpose: Temporary styles for the HUB Food screens (prefix fd-). The shared HUB theme will replace these. */
+.fd-app { max-width: 1100px; margin: 0 auto; padding: 16px; text-align: left; color: var(--text-h); }
+.fd-app button { font: inherit; cursor: pointer; }
+.fd-app button:disabled { cursor: not-allowed; opacity: 0.5; }
+.fd-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.fd-header h1 { font-size: 1.6rem; margin: 0; flex: 1; }
+.fd-back, .fd-link { background: none; border: none; color: var(--accent); padding: 4px 0; }
+.fd-link { align-self: flex-start; }
+.fd-cart-button { padding: 8px 14px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-bg); color: var(--text-h); }
+.fd-primary { padding: 10px 18px; border: none; border-radius: 8px; background: var(--accent); color: #fff; }
+.fd-secondary { padding: 10px 18px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-h); }
+.fd-danger { padding: 10px 18px; border: 1px solid #b91c1c; border-radius: 8px; background: none; color: #b91c1c; }
+
+.fd-search { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.fd-search input { flex: 1 1 200px; min-width: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+.fd-search label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+
+.fd-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.fd-card { width: 100%; display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text-h); text-align: left; }
+.fd-card.closed { opacity: 0.6; }
+.fd-card-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.fd-card strong { font-size: 1.05rem; }
+.fd-meta { color: var(--text); font-size: 0.85rem; }
+.fd-rating { font-weight: 600; white-space: nowrap; }
+.fd-tag { align-self: flex-start; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: var(--accent-bg); color: var(--text-h); }
+.fd-tag.closed { background: rgba(185, 28, 28, 0.12); color: #b91c1c; }
+
+.fd-layout { display: grid; gap: 20px; grid-template-columns: 1fr 320px; align-items: start; }
+@media (max-width: 820px) { .fd-layout { grid-template-columns: 1fr; } }
+.fd-section h2 { font-size: 1.15rem; margin: 18px 0 8px; }
+.fd-dishes { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.fd-dish { display: flex; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+.fd-dish p { margin: 2px 0; color: var(--text); font-size: 0.85rem; }
+.fd-dish-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; white-space: nowrap; }
+.fd-price { font-weight: 700; color: var(--accent); }
+.fd-soldout { color: #b91c1c; font-size: 0.8rem; font-weight: 600; }
+
+.fd-panel { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; background: var(--bg); }
+.fd-panel h2, .fd-panel h3 { margin: 0; font-size: 1.15rem; }
+.fd-panel p { margin: 0; }
+.fd-sticky { position: sticky; top: 12px; }
+.fd-lines { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.fd-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.fd-line.unavailable { color: #b91c1c; }
+.fd-qty { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; }
+.fd-qty button { width: 32px; height: 32px; border: none; background: none; color: var(--text-h); }
+.fd-qty output { min-width: 28px; text-align: center; font-weight: 600; }
+.fd-totals { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; margin: 6px 0; }
+.fd-totals .grand { font-weight: 700; font-size: 1.05rem; }
+
+.fd-form { display: flex; flex-direction: column; gap: 10px; }
+.fd-form textarea, .fd-form select, .fd-form input[type='number'] { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+.fd-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.fd-check { display: flex; align-items: center; gap: 8px; }
+.fd-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.fd-grow { flex: 1 1 200px; min-width: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
+
+.fd-message { padding: 12px; border-radius: 8px; background: var(--accent-bg); margin: 12px 0; }
+.fd-message.error { background: rgba(185, 28, 28, 0.1); color: #b91c1c; }
+.fd-test { padding: 12px; border-radius: 8px; border: 1px dashed #a16207; background: rgba(234, 179, 8, 0.12); display: flex; flex-direction: column; gap: 8px; }
+
+.fd-status { align-self: flex-start; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; background: var(--accent-bg); }
+.fd-status-cancelled, .fd-status-rejected, .fd-status-suspended { background: rgba(185, 28, 28, 0.12); color: #b91c1c; }
+.fd-status-completed, .fd-status-approved { background: rgba(22, 163, 74, 0.15); color: #15803d; }
+.fd-status-awaitingpayment, .fd-status-pending { background: rgba(234, 179, 8, 0.2); color: #a16207; }
+
+.fd-tracker { list-style: none; padding: 0; margin: 8px 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.fd-tracker li { text-align: center; font-size: 0.8rem; padding-top: 10px; border-top: 4px solid var(--border); color: var(--text); }
+.fd-tracker li.done { border-color: var(--accent); color: var(--text-h); font-weight: 600; }
+
+.fd-orders { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.fd-order-row { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text-h); text-align: left; }
+.fd-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 4px 0; font-size: 0.9rem; }
+.fd-facts dt { color: var(--text); }
+.fd-facts dd { margin: 0; }
+.fd-reason { padding: 8px 10px; border-radius: 8px; background: rgba(185, 28, 28, 0.08); }
+.fd-stars { display: flex; gap: 4px; }
+.fd-stars button { border: 1px solid var(--border); border-radius: 8px; background: var(--bg); padding: 6px 10px; color: var(--text-h); }
+.fd-stars button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.fd-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.fd-tab { padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text-h); }
+.fd-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.fd-pager { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 16px 0; }
+.fd-pager button { padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-h); }
+.fd-menu-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.fd-menu-item.archived { opacity: 0.5; }
