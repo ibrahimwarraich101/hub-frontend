@@ -1,18 +1,21 @@
-// File purpose: E-Commerce store home: category buttons, search, sorting, product grid and paging.
+// File purpose: E-Commerce store home: the shops on HUB, category buttons, search, sorting, product grid and paging.
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, mediaUrl } from '../../shared/api/client'
-import { fetchCategories, fetchProducts, formatPrice } from './api'
-import type { Category, ProductPage, ProductSort } from './api'
+import { ApiError } from '../../shared/api/client'
+import { fetchCategories, fetchProducts, fetchShops } from './api'
+import type { Category, ProductPage, ProductSort, Shop } from './api'
+import { ProductGrid, ShopLogo } from './ProductGrid'
 
 type Props = {
   onOpenProduct: (id: string) => void
+  onOpenShop: (id: string) => void
 }
 
 const PAGE_SIZE = 12
 
-export function StoreHome({ onOpenProduct }: Props) {
+export function StoreHome({ onOpenProduct, onOpenShop }: Props) {
   const [categories, setCategories] = useState<Category[]>([])
+  const [shops, setShops] = useState<Shop[]>([])
   const [rootId, setRootId] = useState<string | null>(null)
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
@@ -28,6 +31,8 @@ export function StoreHome({ onOpenProduct }: Props) {
   useEffect(() => {
     const controller = new AbortController()
     fetchCategories(controller.signal).then(setCategories).catch(() => setCategories([]))
+    // The shops row is extra; if it fails the store still works without it.
+    fetchShops(controller.signal).then(setShops).catch(() => setShops([]))
     return () => controller.abort()
   }, [])
 
@@ -67,7 +72,6 @@ export function StoreHome({ onOpenProduct }: Props) {
   }
 
   const root = categories.find((category) => category.id === rootId)
-  const totalPages = result ? Math.max(1, Math.ceil(result.total / PAGE_SIZE)) : 1
 
   return (
     <div className="mp-home">
@@ -82,6 +86,26 @@ export function StoreHome({ onOpenProduct }: Props) {
         />
         <button type="submit">Search</button>
       </form>
+
+      {shops.length > 0 && rootId === null && !search && (
+        <section className="mp-shops" aria-label="Shops on HUB">
+          <h2>Shops on HUB</h2>
+          <ul>
+            {shops.map((shop) => (
+              <li key={shop.id}>
+                <button type="button" className="mp-shop-card" onClick={() => onOpenShop(shop.id)}>
+                  <ShopLogo name={shop.name} logoUrl={shop.logoUrl} />
+                  <span className="mp-shop-card-name">{shop.name}</span>
+                  <span className="mp-hint">
+                    {shop.ratingAverage !== null && shop.reviewCount > 0 ? <><strong className="mp-shop-star">★ {shop.ratingAverage.toFixed(1)}</strong> · </> : null}
+                    {shop.productCount} product{shop.productCount === 1 ? '' : 's'}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="mp-chips" aria-label="Categories">
         <button type="button" className={rootId === null ? 'mp-chip active' : 'mp-chip'} onClick={() => chooseRoot(null)}>
@@ -125,6 +149,7 @@ export function StoreHome({ onOpenProduct }: Props) {
             }}
           >
             <option value="newest">Newest</option>
+            <option value="rating">Top rated</option>
             <option value="price_asc">Price: low to high</option>
             <option value="price_desc">Price: high to low</option>
           </select>
@@ -144,41 +169,7 @@ export function StoreHome({ onOpenProduct }: Props) {
         <div className="mp-message">No products found. Try another category or search.</div>
       )}
 
-      {!error && result && result.items.length > 0 && (
-        <ul className="mp-grid">
-          {result.items.map((product) => {
-            const image = mediaUrl(product.imageUrl)
-            return (
-              <li key={product.id}>
-                <button type="button" className="mp-card" onClick={() => onOpenProduct(product.id)}>
-                  {image ? <img src={image} alt="" loading="lazy" /> : <div className="mp-noimage">No photo</div>}
-                  <span className="mp-name">{product.name}</span>
-                  <span className="mp-price">
-                    {formatPrice(product.salePrice ?? product.price, product.currency)}
-                    {product.salePrice !== null && <s>{formatPrice(product.price, product.currency)}</s>}
-                  </span>
-                  <span className="mp-seller">{product.merchantName}</span>
-                  {!product.inStock && <span className="mp-badge">Out of stock</span>}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-
-      {result && result.total > PAGE_SIZE && (
-        <div className="mp-pager">
-          <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Previous
-          </button>
-          <span>
-            Page {page} of {totalPages}
-          </span>
-          <button type="button" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-            Next
-          </button>
-        </div>
-      )}
+      {!error && result && <ProductGrid result={result} pageSize={PAGE_SIZE} page={page} onPage={setPage} onOpenProduct={onOpenProduct} />}
     </div>
   )
 }
