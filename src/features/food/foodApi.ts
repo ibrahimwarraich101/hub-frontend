@@ -117,6 +117,9 @@ export type RestaurantAccount = {
   reviewedAt: string | null
   reviewReason: string | null
   version: number
+  // Photo addresses from the backend ("/media/..."), or null when none has been uploaded.
+  logoUrl: string | null
+  coverUrl: string | null
 }
 
 export type AdminRestaurant = {
@@ -181,6 +184,9 @@ export const foodPaths = {
   categories: '/api/food/my-restaurant/menu/categories',
   category: (categoryId: string) => `/api/food/my-restaurant/menu/categories/${id(categoryId)}`,
   items: '/api/food/my-restaurant/menu/items',
+  itemPhoto: (itemId: string) => `/api/food/my-restaurant/menu/items/${id(itemId)}/photo`,
+  restaurantPhoto: (kind: 'logo' | 'cover') => `/api/food/my-restaurant/photos/${kind}`,
+  summary: '/api/food/my-restaurant/summary',
   item: (itemId: string) => `/api/food/my-restaurant/menu/items/${id(itemId)}`,
   restaurantOrders: (status: string, page: number) => `/api/food/my-restaurant/orders?status=${id(status)}&page=${page}&pageSize=20`,
   restaurantOrder: (orderId: string) => `/api/food/my-restaurant/orders/${id(orderId)}`,
@@ -224,4 +230,39 @@ export function foodPhone(value: string): string {
   if (/^923\d{9}$/.test(digits)) return '+' + digits
   if (/^00\d{8,15}$/.test(digits)) return '+' + digits.slice(2)
   return digits
+}
+
+// The numbers at the top of the Restaurant Center ("today" is the Pakistan calendar day; sales exclude delivery fees).
+export type RestaurantSummaryStats = {
+  todayOrders: number
+  todaySales: number
+  waitingOrders: number
+  activeOrders: number
+  deliveredOrders: number
+  rating: number | null
+  ratingCount: number
+  currency: string
+}
+
+// "just now", "5 min ago", "2 h ago", or the date for older times.
+export function timeAgo(value: string, now: number = Date.now()): string {
+  const minutes = Math.floor((now - new Date(value).getTime()) / 60000)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes} min ago`
+  if (minutes < 24 * 60) return `${Math.floor(minutes / 60)} h ago`
+  return dateTime(value)
+}
+
+// Check a chosen photo in the browser before uploading it (the server checks again). Returns a message or null.
+export async function checkFoodPhoto(file: File): Promise<string | null> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return 'Choose a JPEG, PNG or WebP photo.'
+  if (file.size > 8 * 1024 * 1024) return 'The photo must be 8 MB or smaller.'
+  try {
+    const bitmap = await createImageBitmap(file)
+    const small = bitmap.width < 200 || bitmap.height < 200
+    bitmap.close()
+    return small ? 'The photo is too small. Use at least 200 x 200 pixels.' : null
+  } catch {
+    return 'This file could not be opened as a photo.'
+  }
 }

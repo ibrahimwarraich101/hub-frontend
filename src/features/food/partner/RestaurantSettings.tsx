@@ -1,12 +1,14 @@
-// File purpose: The approved owner edits restaurant details, delivery fee, minimum order, delivery time and opens/closes it.
+// File purpose: The approved owner edits restaurant details, delivery fee, minimum order, delivery time and opens/closes it,
+// uploads the logo and cover photo, and sees a live preview of the card customers see.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError } from '../../../shared/api/client'
+import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
 import { collect, firstError, hasErrors, rules } from '../../../shared/forms/validation'
-import { foodPhone, foodPaths } from '../foodApi'
+import { foodPhone, foodPaths, money } from '../foodApi'
 import type { RestaurantAccount } from '../foodApi'
+import { PhotoButton } from './PhotoButton'
 
 type Props = { account: RestaurantAccount; onSaved: (account: RestaurantAccount) => void }
 
@@ -19,6 +21,8 @@ export function RestaurantSettings({ account, onSaved }: Props) {
   const [open, setOpen] = useState(account.open)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [removing, setRemoving] = useState(false)
   const set = (field: keyof typeof values) => (value: string) => setValues({ ...values, [field]: value })
 
   const number = (value: string, min: number, max: number, label: string) => {
@@ -55,7 +59,69 @@ export function RestaurantSettings({ account, onSaved }: Props) {
     }
   }
 
+  async function removePhoto(kind: 'logo' | 'cover') {
+    setRemoving(true)
+    setPhotoError(null)
+    try {
+      onSaved(await authFetch<RestaurantAccount>(foodPaths.restaurantPhoto(kind), 'DELETE'))
+    } catch (reason) {
+      setPhotoError(reason instanceof ApiError ? reason.message : 'Could not remove the photo.')
+    } finally {
+      setRemoving(false)
+    }
+  }
+
+  // The preview uses what is typed now, so the owner sees the card before saving.
+  const fee = Number(values.deliveryFee)
+  const minimum = Number(values.minimumOrder)
   return (
+    <div className="fd-settings">
+    <div className="fd-settings-side">
+      <section className="fd-panel" aria-label="Photos">
+        <h2>Photos</h2>
+        <p className="fd-meta">A cover photo of your best dish and a square logo make customers more likely to order.</p>
+        <div className="fd-photo-row">
+          <div className="fd-photo-slot cover">
+            {account.coverUrl ? <img src={mediaUrl(account.coverUrl) ?? ''} alt="Cover photo" /> : <span className="fd-noimage">No cover photo</span>}
+          </div>
+          <div className="fd-actions">
+            <PhotoButton<RestaurantAccount> path={foodPaths.restaurantPhoto('cover')} label={account.coverUrl ? 'Change cover' : 'Add cover photo'}
+              onUploaded={onSaved} onError={setPhotoError} />
+            {account.coverUrl && <button type="button" className="fd-link" disabled={removing} onClick={() => void removePhoto('cover')}>Remove</button>}
+          </div>
+        </div>
+        <div className="fd-photo-row">
+          <div className="fd-photo-slot logo">
+            {account.logoUrl ? <img src={mediaUrl(account.logoUrl) ?? ''} alt="Logo" /> : <span className="fd-noimage">No logo</span>}
+          </div>
+          <div className="fd-actions">
+            <PhotoButton<RestaurantAccount> path={foodPaths.restaurantPhoto('logo')} label={account.logoUrl ? 'Change logo' : 'Add logo'}
+              onUploaded={onSaved} onError={setPhotoError} />
+            {account.logoUrl && <button type="button" className="fd-link" disabled={removing} onClick={() => void removePhoto('logo')}>Remove</button>}
+          </div>
+        </div>
+        {photoError && <p className="fd-message error" role="alert">{photoError}</p>}
+      </section>
+
+      <section className="fd-panel" aria-label="Customer preview">
+        <h2>What customers see</h2>
+        <div className={open ? 'fd-card' : 'fd-card closed'} aria-hidden="true">
+          <span className="fd-cover">
+            {account.coverUrl ? <img src={mediaUrl(account.coverUrl) ?? ''} alt="" /> : <span className="fd-cover-empty" />}
+            {account.logoUrl && <img className="fd-logo" src={mediaUrl(account.logoUrl) ?? ''} alt="" />}
+            {!open && <span className="fd-closed-badge">Closed now</span>}
+            <span className="fd-time">{values.deliveryMinutes || '?'} min</span>
+          </span>
+          <span className="fd-card-top"><strong>{account.name}</strong><span className="fd-rating">★ New</span></span>
+          <span className="fd-meta">{values.cuisine || 'Cuisine'} · {values.city || 'City'}</span>
+          <span className="fd-meta">🛵 {Number.isFinite(fee) && fee === 0 ? 'Free delivery' : `Delivery ${money(Number.isFinite(fee) ? fee : 0)}`}</span>
+          <span className={open ? 'fd-tag' : 'fd-tag closed'}>
+            {!open ? 'Closed now' : Number.isFinite(minimum) && minimum > 0 ? `Min. order ${money(minimum)}` : 'No minimum order'}
+          </span>
+        </div>
+      </section>
+    </div>
+
     <form className="fd-panel fd-form" onSubmit={submit} noValidate>
       <h2>Restaurant settings</h2>
       <label className="fd-check">
@@ -79,5 +145,6 @@ export function RestaurantSettings({ account, onSaved }: Props) {
       {message && <p className={message.error ? 'fd-message error' : 'fd-message'} role="status">{message.text}</p>}
       <button type="submit" className="fd-primary" disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</button>
     </form>
+    </div>
   )
 }

@@ -1,10 +1,12 @@
-// File purpose: The approved owner manages menu sections and dishes: add, edit price/name, mark sold out, archive.
-import { useCallback, useEffect, useState } from 'react'
+// File purpose: The approved owner manages menu sections and dishes: add, edit price/name, dish photos,
+// mark sold out and hide (archive) in one click.
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError } from '../../../shared/api/client'
+import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { foodPaths, money } from '../foodApi'
 import type { MenuItem, OwnerMenu } from '../foodApi'
+import { PhotoButton } from './PhotoButton'
 
 type Draft = { id: string | null; categoryId: string; name: string; description: string; price: string; available: boolean; archived: boolean; version: number | null }
 
@@ -17,6 +19,10 @@ export function MenuManager() {
   const [busy, setBusy] = useState(false)
   const [sectionName, setSectionName] = useState('')
   const [draft, setDraft] = useState<Draft | null>(null)
+  const draftForm = useRef<HTMLFormElement>(null)
+
+  // Show the dish form where the owner can see it.
+  useEffect(() => { if (draft) draftForm.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }, [draft?.id, draft?.categoryId])
 
   const load = useCallback(() => {
     authFetch<OwnerMenu>(foodPaths.menu)
@@ -99,18 +105,31 @@ export function MenuManager() {
           {category.items.length === 0 && <p className="fd-meta">No dishes yet.</p>}
           {category.items.map((item) => (
             <div key={item.id} className={item.archived ? 'fd-menu-item archived' : 'fd-menu-item'}>
-              <span>
+              <span className="fd-menu-photo">
+                {item.imageUrl ? <img src={mediaUrl(item.imageUrl) ?? ''} alt="" loading="lazy" /> : <span className="fd-noimage">No photo</span>}
+              </span>
+              <span className="fd-menu-text">
                 <strong>{item.name}</strong> · {money(item.price)}
                 {!item.available && <span className="fd-soldout"> · Sold out</span>}
-                {item.archived && <span className="fd-meta"> · Removed from menu</span>}
+                {item.archived && <span className="fd-meta"> · Hidden from customers</span>}
                 {item.description && <><br /><span className="fd-meta">{item.description}</span></>}
+                <span className="fd-actions fd-photo-actions">
+                  <PhotoButton<OwnerMenu> path={foodPaths.itemPhoto(item.id)} label={item.imageUrl ? 'Change photo' : 'Add photo'}
+                    className="fd-link" onUploaded={setMenu} onError={setError} />
+                  {item.imageUrl && (
+                    <button type="button" className="fd-link" disabled={busy}
+                      onClick={() => void save(foodPaths.itemPhoto(item.id), 'DELETE', undefined)}>Remove photo</button>
+                  )}
+                </span>
               </span>
               <span className="fd-actions">
-                <button type="button" className="fd-link" disabled={busy} onClick={() => toggle(item, { available: !item.available })}>
-                  {item.available ? 'Mark sold out' : 'Back in stock'}
+                <button type="button" className={item.available ? 'fd-chip' : 'fd-chip on'} disabled={busy} aria-pressed={!item.available}
+                  onClick={() => toggle(item, { available: !item.available })}>
+                  {item.available ? 'Mark sold out' : 'Sold out · undo'}
                 </button>
-                <button type="button" className="fd-link" disabled={busy} onClick={() => toggle(item, { archived: !item.archived })}>
-                  {item.archived ? 'Restore' : 'Remove'}
+                <button type="button" className={item.archived ? 'fd-chip on' : 'fd-chip'} disabled={busy} aria-pressed={item.archived}
+                  onClick={() => toggle(item, { archived: !item.archived })}>
+                  {item.archived ? 'Hidden · show' : 'Hide'}
                 </button>
                 <button type="button" className="fd-link" onClick={() => setDraft({
                   id: item.id, categoryId: item.categoryId, name: item.name, description: item.description, price: String(item.price),
@@ -123,8 +142,9 @@ export function MenuManager() {
       ))}
 
       {draft && (
-        <form className="fd-panel fd-form" onSubmit={saveDish} aria-label={draft.id ? 'Edit dish' : 'New dish'}>
+        <form ref={draftForm} className="fd-panel fd-form fd-draft" onSubmit={saveDish} aria-label={draft.id ? 'Edit dish' : 'New dish'}>
           <h3>{draft.id ? 'Edit dish' : 'New dish'}</h3>
+          {!draft.id && <p className="fd-meta">Save the dish first, then use “Add photo” on it.</p>}
           <label className="auth-field">
             Section
             <select value={draft.categoryId} onChange={(e) => setDraft({ ...draft, categoryId: e.target.value })}>

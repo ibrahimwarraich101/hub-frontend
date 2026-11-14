@@ -1,9 +1,10 @@
 // File purpose: The restaurant's incoming paid orders: Accept -> On the way -> Delivered, or cancel with a reason.
+// New orders are highlighted, each row shows how long ago it came in, and the next step is one click on the row.
 // The list refreshes every 20 seconds so new orders appear without reloading.
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
-import { dateTime, foodPaths, money, statusLabel } from '../foodApi'
+import { foodPaths, money, statusLabel, timeAgo } from '../foodApi'
 import type { FoodOrder, FoodOrderPage, OrderStatus } from '../foodApi'
 
 const FILTERS = [
@@ -27,6 +28,7 @@ export function RestaurantOrders() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [reason, setReason] = useState('')
+  const [rowBusy, setRowBusy] = useState<string | null>(null)
 
   const load = useCallback(() => {
     authFetch<FoodOrderPage>(foodPaths.restaurantOrders(filter, 1))
@@ -66,6 +68,22 @@ export function RestaurantOrders() {
     }
   }
 
+  // The next step straight from the list (reads the latest version first, so it never overwrites a newer change).
+  async function quickStep(id: string, status: OrderStatus) {
+    setRowBusy(id)
+    setError(null)
+    try {
+      const current = await authFetch<FoodOrder>(foodPaths.restaurantOrder(id))
+      const updated = await authFetch<FoodOrder>(foodPaths.restaurantOrderStatus(id), 'POST', { status, reason: null, expectedVersion: current.version })
+      if (open?.id === id) setOpen(updated)
+      load()
+    } catch (problem) {
+      setError(problem instanceof ApiError ? problem.message : 'Could not update the order.')
+    } finally {
+      setRowBusy(null)
+    }
+  }
+
   const next = open ? NEXT[open.status] : undefined
   return (
     <div className="fd-layout">
@@ -82,21 +100,31 @@ export function RestaurantOrders() {
         {page && page.items.length === 0 && <div className="fd-message">No orders here yet.</div>}
         {page && (
           <ul className="fd-orders">
-            {page.items.map((order) => (
-              <li key={order.id}>
-                <button type="button" className="fd-order-row" onClick={() => void openOrder(order.id)}>
-                  <span>
-                    <strong>{order.number}</strong> · {order.customerName}
-                    <br />
-                    <span className="fd-meta">{order.itemCount} items · {dateTime(order.createdAt)}</span>
-                  </span>
-                  <span className="fd-actions">
-                    <span className={`fd-status fd-status-${order.status.toLowerCase()}`}>{statusLabel[order.status]}</span>
-                    <strong>{money(order.total)}</strong>
-                  </span>
-                </button>
-              </li>
-            ))}
+            {page.items.map((order) => {
+              const step = NEXT[order.status]
+              return (
+                <li key={order.id} className={order.status === 'Placed' ? 'fd-order-item new' : 'fd-order-item'}>
+                  <button type="button" className={open?.id === order.id ? 'fd-order-row selected' : 'fd-order-row'} onClick={() => void openOrder(order.id)}>
+                    <span>
+                      {order.status === 'Placed' && <span className="fd-new">NEW</span>}
+                      <strong>{order.number}</strong> · {order.customerName}
+                      <br />
+                      <span className="fd-meta">{order.itemCount} {order.itemCount === 1 ? 'item' : 'items'} · {timeAgo(order.createdAt)}</span>
+                    </span>
+                    <span className="fd-actions">
+                      <span className={`fd-status fd-status-${order.status.toLowerCase()}`}>{statusLabel[order.status]}</span>
+                      <strong>{money(order.total)}</strong>
+                    </span>
+                  </button>
+                  {step && (
+                    <button type="button" className="fd-primary fd-row-step" disabled={rowBusy === order.id}
+                      onClick={() => void quickStep(order.id, step.status)}>
+                      {rowBusy === order.id ? 'Saving…' : step.label}
+                    </button>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>

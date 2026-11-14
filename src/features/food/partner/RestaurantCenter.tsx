@@ -2,29 +2,36 @@
 // a rejection, and (once approved) manage incoming orders, the menu and restaurant settings.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError } from '../../../shared/api/client'
+import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../../shared/forms/validation'
 import type { FieldErrors } from '../../../shared/forms/validation'
 import '../../../shared/auth/auth.css'
 import { foodPhone, dateTime, foodPaths } from '../foodApi'
-import type { RestaurantAccount } from '../foodApi'
+import type { RestaurantAccount, RestaurantSummaryStats } from '../foodApi'
 import '../food.css'
 import { MenuManager } from './MenuManager'
 import { RestaurantOrders } from './RestaurantOrders'
 import { RestaurantSettings } from './RestaurantSettings'
+import { SummaryBar } from './SummaryBar'
 
-type Props = { onExit: () => void }
-type Tab = 'orders' | 'menu' | 'settings'
+export type CenterTab = 'orders' | 'menu' | 'settings'
+type Tab = CenterTab
+// initialTab: which tool opens first (orders by default).
+type Props = { onExit: () => void; initialTab?: CenterTab }
 
-export function RestaurantCenter({ onExit }: Props) {
+export function RestaurantCenter({ onExit, initialTab = 'orders' }: Props) {
   const { authFetch, user } = useAuth()
   // undefined = loading, null = has not applied yet.
   const [account, setAccount] = useState<RestaurantAccount | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
-  const [tab, setTab] = useState<Tab>('orders')
+  const [tab, setTab] = useState<Tab>(initialTab)
+  const [waiting, setWaiting] = useState(0)
+  const [switching, setSwitching] = useState(false)
+  const [switchError, setSwitchError] = useState<string | null>(null)
+  const onStats = useCallback((stats: RestaurantSummaryStats) => setWaiting(stats.waitingOrders), [])
 
   const load = useCallback(() => {
     authFetch<RestaurantAccount>(foodPaths.account)
@@ -36,6 +43,25 @@ export function RestaurantCenter({ onExit }: Props) {
   }, [authFetch])
 
   useEffect(() => { load() }, [load])
+
+  // One click to open or close: saves the current settings with "open" switched.
+  async function toggleOpen() {
+    if (!account) return
+    setSwitching(true)
+    setSwitchError(null)
+    try {
+      setAccount(await authFetch<RestaurantAccount>(foodPaths.settings, 'PUT', {
+        description: account.description, phone: account.phone, cuisine: account.cuisine, addressLine: account.addressLine, city: account.city,
+        deliveryFee: account.deliveryFee, minimumOrder: account.minimumOrder, deliveryMinutes: account.deliveryMinutes,
+        open: !account.open, expectedVersion: account.version,
+      }))
+    } catch (reason) {
+      setSwitchError(reason instanceof ApiError ? reason.message : 'Could not change open/closed. Please try again.')
+      load()
+    } finally {
+      setSwitching(false)
+    }
+  }
 
   return (
     <section className="fd-app" aria-label="Restaurant Center">
@@ -75,15 +101,34 @@ export function RestaurantCenter({ onExit }: Props) {
 
       {account?.status === 'Approved' && !editing && (
         <>
-          <div className="fd-panel">
-            <h2>{account.name}</h2>
-            <span className={account.open ? 'fd-tag' : 'fd-tag closed'}>{account.open ? 'Open - taking orders' : 'Closed - customers cannot order'}</span>
+          <div className="fd-owner-head">
+            <div className="fd-owner-cover">
+              {account.coverUrl ? <img src={mediaUrl(account.coverUrl) ?? ''} alt="" /> : <span className="fd-cover-empty" />}
+              {account.logoUrl ? <img className="fd-logo" src={mediaUrl(account.logoUrl) ?? ''} alt="" />
+                : <span className="fd-logo fd-logo-empty" aria-hidden="true">{account.name.slice(0, 1).toUpperCase()}</span>}
+            </div>
+            <div className="fd-owner-info">
+              <div>
+                <h2>{account.name}</h2>
+                <p className="fd-meta">{account.cuisine} · {account.addressLine}, {account.city}</p>
+              </div>
+              <div className="fd-open-switch">
+                <span className={account.open ? 'fd-tag' : 'fd-tag closed'}>{account.open ? '● Open - taking orders' : '● Closed'}</span>
+                <button type="button" className={account.open ? 'fd-secondary' : 'fd-primary'} disabled={switching}
+                  onClick={() => void toggleOpen()}>
+                  {switching ? 'Saving…' : account.open ? 'Close for now' : 'Open restaurant'}
+                </button>
+              </div>
+            </div>
           </div>
+          {switchError && <div className="fd-message error" role="alert">{switchError}</div>}
+          <SummaryBar onStats={onStats} />
           <div className="fd-tabs" role="tablist" aria-label="Restaurant tools">
             {(['orders', 'menu', 'settings'] as Tab[]).map((value) => (
               <button key={value} type="button" role="tab" aria-selected={tab === value} className={tab === value ? 'fd-tab active' : 'fd-tab'}
                 onClick={() => setTab(value)}>
-                {value === 'orders' ? 'Orders' : value === 'menu' ? 'Menu' : 'Settings'}
+                {value === 'orders' ? 'Orders' : value === 'menu' ? 'Menu' : 'Settings & photos'}
+                {value === 'orders' && waiting > 0 && <span className="fd-tab-badge">{waiting}</span>}
               </button>
             ))}
           </div>

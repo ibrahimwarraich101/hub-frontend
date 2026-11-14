@@ -208,3 +208,47 @@
 .fd-hero-search h2 { overflow-wrap: anywhere; }
 .fd-header h1 { white-space: nowrap; }
 .fd-totals > :nth-child(even) { text-align: right; }
+
+/* ---------- Restaurant Center (owner) ---------- */
+.fd-owner-head { margin-bottom: 14px; border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card); background: var(--hub-surface); overflow: hidden; }
+.fd-owner-cover { position: relative; height: 170px; background: var(--hub-surface-muted); }
+.fd-owner-cover > img:first-child { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fd-owner-cover .fd-logo { width: 72px; height: 72px; bottom: -30px; left: 20px; border-radius: 18px; border-width: 4px; }
+.fd-logo-empty { display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: var(--hub-on-primary);
+  background: var(--hub-primary); }
+.fd-owner-info { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding: 40px 20px 18px; }
+.fd-owner-info h2 { margin: 0; font-size: 1.5rem; }
+.fd-open-switch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.fd-open-switch .fd-tag { margin-top: 0; }
+.fd-stats { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 0 0 16px; }
+.fd-stat { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: var(--hub-radius-card); background: var(--hub-surface);
+  border: 1px solid var(--hub-card-border); }
+.fd-stat strong { font-size: 1.35rem; color: var(--hub-heading); }
+.fd-stat span { font-size: 0.82rem; color: var(--hub-secondary); }
+.fd-stat.alert { background: var(--hub-warning-surface); border-color: var(--hub-warning); }
+.fd-stat.alert strong, .fd-stat.alert span { color: var(--hub-warning); }
+.fd-tab-badge { margin-left: 6px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--hub-radius-pill); background: var(--hub-notification);
+  color: var(--hub-on-primary); font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center; }
+.fd-order-item { display: flex; flex-direction: column; gap: 6px; }
+.fd-order-item.new .fd-order-row { border-color: var(--hub-bright); background: var(--hub-mint); }
+.fd-order-row.selected { box-shadow: inset 0 0 0 2px var(--hub-primary); }
+.fd-new { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: var(--hub-radius-pill); background: var(--hub-notification);
+  color: var(--hub-on-primary); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; vertical-align: middle; }
+.fd-row-step { align-self: flex-end; min-height: 38px; }
+.fd-menu-item { align-items: flex-start; gap: 14px; }
+.fd-menu-photo { flex-shrink: 0; width: 76px; height: 76px; border-radius: var(--hub-radius-input); overflow: hidden; background: var(--hub-surface-muted);
+  display: flex; align-items: center; justify-content: center; }
+.fd-menu-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fd-menu-text { flex: 1; min-width: 0; }
+.fd-photo-actions { margin-top: 4px; gap: 14px; }
+.fd-noimage { font-size: 0.75rem; color: var(--hub-secondary); text-align: center; padding: 4px; }
+.fd-draft { scroll-margin: 80px; box-shadow: 0 0 0 2px var(--hub-bright); }
+.fd-settings { display: grid; gap: 16px; grid-template-columns: 360px 1fr; align-items: start; }
+@media (max-width: 860px) { .fd-settings { grid-template-columns: 1fr; } }
+.fd-photo-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.fd-photo-slot { overflow: hidden; background: var(--hub-surface-muted); display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--hub-card-border); }
+.fd-photo-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fd-photo-slot.cover { width: 160px; height: 96px; border-radius: var(--hub-radius-input); }
+.fd-photo-slot.logo { width: 72px; height: 72px; border-radius: 18px; }
+.fd-settings .fd-card:hover { transform: none; box-shadow: none; }
