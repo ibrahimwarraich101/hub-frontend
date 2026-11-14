@@ -6,22 +6,36 @@ import type { FormEvent } from 'react'
 import { ApiError, getJson, mediaUrl } from '../../shared/api/client'
 import { foodPaths, money } from './foodApi'
 import type { RestaurantList as RestaurantPage } from './foodApi'
+import bbqPhoto from './cuisines/chicken-tikka.jpg'
+import biryaniPhoto from './cuisines/pulao.jpg'
+import broastPhoto from './cuisines/fried-chicken.jpg'
+import burgerPhoto from './cuisines/cheeseburger.jpg'
+import chaiPhoto from './cuisines/chai.jpg'
+import chinesePhoto from './cuisines/chow-mein.jpg'
+import dessertPhoto from './cuisines/cheesecake.jpg'
+import friesPhoto from './cuisines/fries.jpg'
+import karahiPhoto from './cuisines/karahi.jpg'
+import pizzaPhoto from './cuisines/pepperoni.jpg'
+import shawarmaPhoto from './cuisines/wrap.jpg'
 
 type Props = { onOpen: (restaurantId: string) => void }
 type Query = { search: string; city: string; openOnly: boolean; page: number }
 type SortKey = 'recommended' | 'fastest' | 'rating' | 'fee'
 
-// Each shortcut runs a search that matches a cuisine or dish name.
+// Each shortcut runs a search that matches a cuisine or dish name. Photos are generic food photos (Wikimedia Commons,
+// credits in ./cuisines/CREDITS.json) bundled with the website so the row shows instantly.
 const cuisines = [
-  { label: 'Fast Food', emoji: '🍟', search: 'fries' },
-  { label: 'Pizza', emoji: '🍕', search: 'pizza' },
-  { label: 'Burgers', emoji: '🍔', search: 'burger' },
-  { label: 'Biryani', emoji: '🍛', search: 'biryani' },
-  { label: 'BBQ', emoji: '🍢', search: 'kebab' },
-  { label: 'Chinese', emoji: '🥡', search: 'chow mein' },
-  { label: 'Shawarma', emoji: '🌯', search: 'shawarma' },
-  { label: 'Chai', emoji: '☕', search: 'chai' },
-  { label: 'Desserts', emoji: '🍰', search: 'cake' },
+  { label: 'Fast Food', photo: friesPhoto, search: 'fries' },
+  { label: 'Pizza', photo: pizzaPhoto, search: 'pizza' },
+  { label: 'Burgers', photo: burgerPhoto, search: 'burger' },
+  { label: 'Biryani', photo: biryaniPhoto, search: 'biryani' },
+  { label: 'Broast', photo: broastPhoto, search: 'chicken' },
+  { label: 'Karahi', photo: karahiPhoto, search: 'karahi' },
+  { label: 'BBQ', photo: bbqPhoto, search: 'kebab' },
+  { label: 'Chinese', photo: chinesePhoto, search: 'chow mein' },
+  { label: 'Shawarma', photo: shawarmaPhoto, search: 'shawarma' },
+  { label: 'Chai', photo: chaiPhoto, search: 'chai' },
+  { label: 'Desserts', photo: dessertPhoto, search: 'cake' },
 ]
 
 const sortLabels: Record<SortKey, string> = {
@@ -99,8 +113,8 @@ export function RestaurantList({ onOpen }: Props) {
           {cuisines.map((cuisine) => (
             <button key={cuisine.label} type="button" role="listitem" className={query.search === cuisine.search ? 'fd-cuisine active' : 'fd-cuisine'}
               aria-pressed={query.search === cuisine.search} onClick={() => pickCuisine(cuisine.search)}>
-              <span aria-hidden="true">{cuisine.emoji}</span>
-              <span>{cuisine.label}</span>
+              <span className="fd-cuisine-photo"><img src={cuisine.photo} alt="" loading="lazy" /></span>
+              <span className="fd-cuisine-label">{cuisine.label}</span>
             </button>
           ))}
         </div>
