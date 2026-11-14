@@ -8,7 +8,7 @@ import { Field } from '../../../shared/auth/AuthScreens'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../../shared/forms/validation'
 import type { FieldErrors } from '../../../shared/forms/validation'
 import '../../../shared/auth/auth.css'
-import { dateTime, foodPaths } from '../foodApi'
+import { foodPhone, dateTime, foodPaths } from '../foodApi'
 import type { RestaurantAccount } from '../foodApi'
 import '../food.css'
 import { MenuManager } from './MenuManager'
@@ -104,7 +104,7 @@ function validateApply(values: Record<ApplyFields, string>): FieldErrors<ApplyFi
     name: firstError(rules.required(values.name, 'restaurant name'), rules.minLength(values.name.trim(), 2, 'Restaurant name'),
       rules.maxLength(values.name.trim(), 150, 'Restaurant name')),
     description: rules.maxLength(values.description.trim(), 2000, 'About your restaurant'),
-    phone: firstError(rules.required(values.phone, 'restaurant phone'), rules.phone(values.phone)),
+    phone: firstError(rules.required(values.phone, 'restaurant phone'), rules.phone(foodPhone(values.phone))),
     cuisine: firstError(rules.required(values.cuisine, 'cuisine'), rules.minLength(values.cuisine.trim(), 2, 'Cuisine'),
       rules.maxLength(values.cuisine.trim(), 50, 'Cuisine')),
     addressLine: firstError(rules.required(values.addressLine, 'restaurant address'), rules.minLength(values.addressLine.trim(), 5, 'Address'),
@@ -135,7 +135,7 @@ function ApplyForm({ initial, defaultPhone, onSaved }: { initial?: RestaurantAcc
     setBusy(true)
     try {
       onSaved(await authFetch<RestaurantAccount>(foodPaths.account, 'POST', {
-        name: values.name.trim(), description: values.description.trim() || null, phone: values.phone.trim(),
+        name: values.name.trim(), description: values.description.trim() || null, phone: foodPhone(values.phone),
         cuisine: values.cuisine.trim(), addressLine: values.addressLine.trim(), city: values.city.trim(),
       }))
     } catch (reason) {
@@ -157,7 +157,7 @@ function ApplyForm({ initial, defaultPhone, onSaved }: { initial?: RestaurantAcc
         {errors.description && <span className="auth-field-error">{errors.description}</span>}
       </label>
       <Field label="Restaurant phone" name="phone" type="tel" placeholder="+923001234567" value={values.phone} onChange={set('phone')}
-        error={errors.phone} hint="With country code, for example +923001234567" />
+        error={errors.phone} hint="For example 03001234567 or +923001234567" />
       <Field label="Address" name="addressLine" value={values.addressLine} onChange={set('addressLine')} error={errors.addressLine} />
       <Field label="City" name="city" value={values.city} onChange={set('city')} error={errors.city} />
       {error && <p className="fd-message error" role="alert">{error}</p>}

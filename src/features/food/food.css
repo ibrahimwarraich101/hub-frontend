@@ -207,3 +207,4 @@
 .fd-app *, .fd-app *::before, .fd-app *::after { box-sizing: border-box; }
 .fd-hero-search h2 { overflow-wrap: anywhere; }
 .fd-header h1 { white-space: nowrap; }
+.fd-totals > :nth-child(even) { text-align: right; }

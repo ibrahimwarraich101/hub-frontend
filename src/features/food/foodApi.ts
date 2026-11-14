@@ -215,3 +215,13 @@ export function dateTime(value: string | null): string {
 export function newRequestKey(): string {
   return 'web-' + crypto.randomUUID()
 }
+
+// Pakistani numbers as people type them ("0300 1234567", "923001234567") become "+923001234567", the format the
+// backend accepts. Spaces, dashes and brackets are removed; other numbers are left as typed.
+export function foodPhone(value: string): string {
+  const digits = value.replace(/[\s()-]/g, '')
+  if (/^03\d{9}$/.test(digits)) return '+92' + digits.slice(1)
+  if (/^923\d{9}$/.test(digits)) return '+' + digits
+  if (/^00\d{8,15}$/.test(digits)) return '+' + digits.slice(2)
+  return digits
+}

@@ -5,7 +5,7 @@ import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
 import { collect, firstError, hasErrors, rules } from '../../../shared/forms/validation'
-import { foodPaths } from '../foodApi'
+import { foodPhone, foodPaths } from '../foodApi'
 import type { RestaurantAccount } from '../foodApi'
 
 type Props = { account: RestaurantAccount; onSaved: (account: RestaurantAccount) => void }
@@ -26,7 +26,7 @@ export function RestaurantSettings({ account, onSaved }: Props) {
     return value.trim() !== '' && Number.isFinite(parsed) && parsed >= min && parsed <= max ? null : `${label} must be a number from ${min} to ${max}.`
   }
   const errors = collect({
-    phone: firstError(rules.required(values.phone, 'phone'), rules.phone(values.phone)),
+    phone: firstError(rules.required(values.phone, 'phone'), rules.phone(foodPhone(values.phone))),
     cuisine: firstError(rules.required(values.cuisine, 'cuisine'), rules.minLength(values.cuisine.trim(), 2, 'Cuisine')),
     addressLine: firstError(rules.required(values.addressLine, 'address'), rules.minLength(values.addressLine.trim(), 5, 'Address')),
     city: firstError(rules.required(values.city, 'city'), rules.minLength(values.city.trim(), 2, 'City')),
@@ -42,7 +42,7 @@ export function RestaurantSettings({ account, onSaved }: Props) {
     setBusy(true)
     try {
       const saved = await authFetch<RestaurantAccount>(foodPaths.settings, 'PUT', {
-        description: values.description.trim() || null, phone: values.phone.trim(), cuisine: values.cuisine.trim(),
+        description: values.description.trim() || null, phone: foodPhone(values.phone), cuisine: values.cuisine.trim(),
         addressLine: values.addressLine.trim(), city: values.city.trim(), deliveryFee: Number(values.deliveryFee),
         minimumOrder: Number(values.minimumOrder), deliveryMinutes: Math.round(Number(values.deliveryMinutes)), open, expectedVersion: account.version,
       })

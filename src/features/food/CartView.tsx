@@ -7,7 +7,7 @@ import { Field } from '../../shared/auth/AuthScreens'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../shared/forms/validation'
 import type { FieldErrors } from '../../shared/forms/validation'
 import '../../shared/auth/auth.css'
-import { foodPaths, money, newRequestKey } from './foodApi'
+import { foodPhone, foodPaths, money, newRequestKey } from './foodApi'
 import type { FoodCart, FoodOrder, RestaurantCart } from './foodApi'
 
 type Props = {
@@ -109,7 +109,7 @@ function validate(values: Record<CheckoutFields, string>): FieldErrors<CheckoutF
   return collect({
     deliveryName: firstError(rules.required(values.deliveryName, 'name'), rules.minLength(values.deliveryName.trim(), 2, 'Name'),
       rules.maxLength(values.deliveryName.trim(), 100, 'Name')),
-    deliveryPhone: firstError(rules.required(values.deliveryPhone, 'phone number'), rules.phone(values.deliveryPhone)),
+    deliveryPhone: firstError(rules.required(values.deliveryPhone, 'phone number'), rules.phone(foodPhone(values.deliveryPhone))),
     deliveryAddress: firstError(rules.required(values.deliveryAddress, 'delivery address'), rules.minLength(values.deliveryAddress.trim(), 5, 'Address'),
       rules.maxLength(values.deliveryAddress.trim(), 300, 'Address')),
     deliveryCity: firstError(rules.required(values.deliveryCity, 'city'), rules.minLength(values.deliveryCity.trim(), 2, 'City'),
@@ -140,7 +140,7 @@ function Checkout({ cart, onCancel, onOrdered }: { cart: RestaurantCart; onCance
     try {
       const order = await authFetch<FoodOrder>(foodPaths.orders, 'POST', {
         restaurantId: cart.restaurantId, requestKey: requestKey.current, deliveryName: values.deliveryName.trim(),
-        deliveryPhone: values.deliveryPhone.trim(), deliveryAddress: values.deliveryAddress.trim(), deliveryCity: values.deliveryCity.trim(),
+        deliveryPhone: foodPhone(values.deliveryPhone), deliveryAddress: values.deliveryAddress.trim(), deliveryCity: values.deliveryCity.trim(),
         note: values.note.trim() || null,
       })
       onOrdered(order.id)
