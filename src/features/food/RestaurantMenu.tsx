@@ -1,6 +1,6 @@
 // File purpose: One restaurant's page: details, menu by section, add dishes to the cart, this restaurant's cart and reviews.
 import { useEffect, useState } from 'react'
-import { ApiError, getJson } from '../../shared/api/client'
+import { ApiError, getJson, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { dateTime, foodPaths, money } from './foodApi'
 import type { FoodCart, RestaurantDetails, RestaurantReview } from './foodApi'
@@ -56,6 +56,12 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
     <div className="fd-layout">
       <div>
         <div className="fd-panel">
+          {summary.coverUrl && (
+            <div className="fd-hero">
+              <img src={mediaUrl(summary.coverUrl) ?? ''} alt="" />
+              {summary.logoUrl && <img className="fd-logo" src={mediaUrl(summary.logoUrl) ?? ''} alt="" />}
+            </div>
+          )}
           <h2>{summary.name}</h2>
           <span className={summary.open ? 'fd-tag' : 'fd-tag closed'}>{summary.open ? 'Open now' : 'Closed'}</span>
           <p className="fd-meta">
@@ -78,7 +84,8 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
                 const quantity = quantityOf(item.id)
                 return (
                   <li key={item.id} className="fd-dish">
-                    <div>
+                    {item.imageUrl && <img className="fd-dish-photo" src={mediaUrl(item.imageUrl) ?? ''} alt="" loading="lazy" />}
+                    <div className="fd-dish-text">
                       <strong>{item.name}</strong>
                       {item.description && <p>{item.description}</p>}
                       <span className="fd-price">{money(item.price)}</span>

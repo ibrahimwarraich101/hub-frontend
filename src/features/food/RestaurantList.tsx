@@ -1,7 +1,7 @@
 // File purpose: The HUB Food home: search restaurants by name, cuisine or dish, filter by city and "open now".
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, getJson } from '../../shared/api/client'
+import { ApiError, getJson, mediaUrl } from '../../shared/api/client'
 import { foodPaths, money } from './foodApi'
 import type { RestaurantList as RestaurantPage } from './foodApi'
 
@@ -57,6 +57,11 @@ export function RestaurantList({ onOpen }: Props) {
           {data.items.map((restaurant) => (
             <li key={restaurant.id}>
               <button type="button" className={restaurant.open ? 'fd-card' : 'fd-card closed'} onClick={() => onOpen(restaurant.id)}>
+                <span className="fd-cover">
+                  {restaurant.coverUrl ? <img src={mediaUrl(restaurant.coverUrl) ?? ''} alt="" loading="lazy" /> : <span className="fd-cover-empty" />}
+                  {restaurant.logoUrl && <img className="fd-logo" src={mediaUrl(restaurant.logoUrl) ?? ''} alt="" />}
+                  <span className="fd-time">{restaurant.deliveryMinutes} min</span>
+                </span>
                 <span className="fd-card-top">
                   <strong>{restaurant.name}</strong>
                   <span className="fd-rating">{restaurant.rating === null ? 'New' : `★ ${restaurant.rating} (${restaurant.ratingCount})`}</span>

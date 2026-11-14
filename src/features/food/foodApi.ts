@@ -14,11 +14,16 @@ export type RestaurantSummary = {
   deliveryMinutes: number
   rating: number | null
   ratingCount: number
+  // Photo addresses from the backend ("/media/..."); pass them through mediaUrl() before showing them.
+  logoUrl: string | null
+  coverUrl: string | null
 }
 
 export type RestaurantList = { total: number; page: number; pageSize: number; items: RestaurantSummary[] }
 
-export type PublicMenuItem = { id: string; name: string; description: string; price: number; currency: string; available: boolean }
+export type PublicMenuItem = {
+  id: string; name: string; description: string; price: number; currency: string; available: boolean; imageUrl: string | null
+}
 export type PublicMenuCategory = { id: string; name: string; items: PublicMenuItem[] }
 
 export type RestaurantDetails = {
@@ -133,6 +138,7 @@ export type MenuItem = {
   archived: boolean
   sortOrder: number
   version: number
+  imageUrl: string | null
 }
 
 export type OwnerMenuCategory = { id: string; name: string; sortOrder: number; archived: boolean; items: MenuItem[] }
