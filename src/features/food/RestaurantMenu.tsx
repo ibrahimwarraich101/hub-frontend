@@ -1,4 +1,5 @@
-// File purpose: One restaurant's page: details, menu by section, add dishes to the cart, this restaurant's cart and reviews.
+// File purpose: One restaurant's page (same layout as the app): cover photo and logo, delivery details, menu search and
+// section tabs, dishes with photos and a + button, reviews, and this restaurant's cart beside the menu.
 import { useEffect, useState } from 'react'
 import { ApiError, getJson, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
@@ -19,6 +20,8 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [menuText, setMenuText] = useState('')
+  const [activeSection, setActiveSection] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -51,50 +54,94 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
   if (error) return <div className="fd-message error" role="alert">{error}</div>
   if (!details) return <div className="fd-message">Loading…</div>
   const summary = details.summary
+  // The "Search menu" box narrows every section; empty sections are hidden.
+  const text = menuText.trim().toLowerCase()
+  const sections = details.menu
+    .map((category) => ({ ...category, items: category.items.filter((item) => !text
+      || item.name.toLowerCase().includes(text) || item.description.toLowerCase().includes(text)) }))
+    .filter((category) => category.items.length > 0)
+  const jumpTo = (id: string) => {
+    setActiveSection(id)
+    document.getElementById(`fd-section-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <div className="fd-layout">
       <div>
-        <div className="fd-panel">
-          {summary.coverUrl && (
-            <div className="fd-hero">
-              <img src={mediaUrl(summary.coverUrl) ?? ''} alt="" />
-              {summary.logoUrl && <img className="fd-logo" src={mediaUrl(summary.logoUrl) ?? ''} alt="" />}
-            </div>
-          )}
-          <h2>{summary.name}</h2>
-          <span className={summary.open ? 'fd-tag' : 'fd-tag closed'}>{summary.open ? 'Open now' : 'Closed'}</span>
-          <p className="fd-meta">
-            {summary.cuisine} · {details.addressLine}, {summary.city} · {summary.rating === null ? 'No ratings yet' : `★ ${summary.rating} (${summary.ratingCount})`}
-          </p>
-          <p className="fd-meta">
-            About {summary.deliveryMinutes} min · Delivery {summary.deliveryFee === 0 ? 'free' : money(summary.deliveryFee)}
-            {summary.minimumOrder > 0 && ` · Minimum order ${money(summary.minimumOrder)}`}
-          </p>
-          {details.description && <p>{details.description}</p>}
-          {!summary.open && <p className="fd-reason">This restaurant is closed right now. You can look at the menu, but ordering opens when it does.</p>}
+        <div className="fd-hero">
+          {summary.coverUrl ? <img src={mediaUrl(summary.coverUrl) ?? ''} alt="" /> : <div className="fd-cover-empty" />}
+          {summary.logoUrl && <img className="fd-logo" src={mediaUrl(summary.logoUrl) ?? ''} alt="" />}
         </div>
+        <div className="fd-intro">
+          <h2>{summary.name}</h2>
+          <span className="fd-rating-line">
+            <span className="fd-rating">★ {summary.rating === null ? 'New' : summary.rating}</span>
+            {' '}{summary.rating === null ? '· no ratings yet' : `(${summary.ratingCount} ratings)`} · {summary.cuisine}
+          </span>
+          <span className={summary.open ? 'fd-tag' : 'fd-tag closed'}>{summary.open ? '● Open now' : '● Closed'}</span>
+          <div className="fd-deliverybox">
+            <strong>Delivery {summary.deliveryMinutes}–{summary.deliveryMinutes + 15} min</strong>
+            <span className="fd-meta">
+              {summary.deliveryFee === 0 ? 'Free delivery' : `${money(summary.deliveryFee)} delivery`}
+              {summary.minimumOrder > 0 ? ` · Min. order ${money(summary.minimumOrder)}` : ' · No minimum order'}
+            </span>
+            <span className="fd-meta">📍 {details.addressLine}, {summary.city}</span>
+            {details.description && <span className="fd-meta">{details.description}</span>}
+          </div>
+          <div className="fd-perks">
+            <div className="fd-perk mint">
+              <strong>🛵 {summary.deliveryFee === 0 ? 'Free delivery' : `${money(summary.deliveryFee)} delivery`}</strong>
+              <span>{summary.deliveryFee === 0 ? 'On every order.' : 'Flat fee, shown before you pay.'}</span>
+            </div>
+            <div className="fd-perk food">
+              <strong>🧾 {summary.minimumOrder > 0 ? `Min. ${money(summary.minimumOrder)}` : 'No minimum'}</strong>
+              <span>{summary.minimumOrder > 0 ? 'Add a little more to reach it.' : 'Order as little as you like.'}</span>
+            </div>
+            <div className="fd-perk info">
+              <strong>⏱ About {summary.deliveryMinutes} min</strong>
+              <span>Delivered by the restaurant's own riders.</span>
+            </div>
+          </div>
+        </div>
+        {!summary.open && <div className="fd-message error">This restaurant is closed right now. You can look at the menu, but ordering opens when it does.</div>}
         {notice && <div className="fd-message error" role="alert">{notice}</div>}
         {details.menu.length === 0 && <div className="fd-message">This restaurant has not added its menu yet.</div>}
-        {details.menu.map((category) => (
-          <section key={category.id} className="fd-section" aria-label={category.name}>
+
+        {details.menu.length > 0 && (
+          <div className="fd-menubar">
+            <input type="search" aria-label="Search this menu" placeholder="🔍  Search menu" value={menuText} maxLength={60}
+              onChange={(e) => setMenuText(e.target.value)} />
+            <nav className="fd-section-tabs" aria-label="Menu sections">
+              {sections.map((category, index) => (
+                <button key={category.id} type="button"
+                  className={activeSection === category.id || (activeSection === null && index === 0) ? 'active' : ''}
+                  onClick={() => jumpTo(category.id)}>{category.name}</button>
+              ))}
+            </nav>
+          </div>
+        )}
+        {details.menu.length > 0 && sections.length === 0 && <div className="fd-message">No dishes match “{menuText}”.</div>}
+
+        {sections.map((category) => (
+          <section key={category.id} id={`fd-section-${category.id}`} className="fd-section" aria-label={category.name}>
             <h2>{category.name}</h2>
             <ul className="fd-dishes">
               {category.items.map((item) => {
                 const quantity = quantityOf(item.id)
                 return (
-                  <li key={item.id} className="fd-dish">
-                    {item.imageUrl && <img className="fd-dish-photo" src={mediaUrl(item.imageUrl) ?? ''} alt="" loading="lazy" />}
+                  <li key={item.id} className={item.available ? 'fd-dish' : 'fd-dish soldout'}>
                     <div className="fd-dish-text">
                       <strong>{item.name}</strong>
-                      {item.description && <p>{item.description}</p>}
                       <span className="fd-price">{money(item.price)}</span>
+                      {item.description && <p>{item.description}</p>}
                     </div>
-                    <div className="fd-dish-actions">
+                    <div className="fd-dish-media">
+                      {item.imageUrl ? <img className="fd-dish-photo" src={mediaUrl(item.imageUrl) ?? ''} alt="" loading="lazy" />
+                        : <div className="fd-dish-photo" />}
                       {!item.available ? <span className="fd-soldout">Sold out</span>
                         : quantity === 0 ? (
-                          <button type="button" className="fd-primary" disabled={busy === item.id || !summary.open}
-                            onClick={() => void setQuantity(item.id, 1)}>Add</button>
+                          <button type="button" className="fd-add" aria-label={`Add ${item.name}`} disabled={busy === item.id || !summary.open}
+                            onClick={() => void setQuantity(item.id, 1)}>+</button>
                         ) : (
                           <span className="fd-qty">
                             <button type="button" aria-label={`One less ${item.name}`} disabled={busy === item.id}
@@ -117,8 +164,8 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
             <ul className="fd-dishes">
               {reviews.map((review, index) => (
                 <li key={index} className="fd-dish">
-                  <div>
-                    <strong>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</strong> · {review.authorName}
+                  <div className="fd-dish-text">
+                    <strong><span className="fd-rating">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span> · {review.authorName}</strong>
                     {review.comment && <p>{review.comment}</p>}
                   </div>
                   <span className="fd-meta">{dateTime(review.createdAt)}</span>

@@ -47,7 +47,7 @@ export function FoodApp({ onExit }: Props) {
         <h1>HUB Food</h1>
         <button type="button" className="fd-link" onClick={() => setView({ kind: 'orders' })}>My orders</button>
         <button type="button" className="fd-cart-button" onClick={() => setView({ kind: 'cart' })} aria-label={`Cart, ${count} items`}>
-          Cart · {count}
+          🛒 Cart <span className="fd-cart-count">{count}</span>
         </button>
       </header>
       {cartError && <div className="fd-message error" role="alert">{cartError}</div>}
