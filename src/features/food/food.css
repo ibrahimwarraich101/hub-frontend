@@ -247,7 +247,9 @@
 .fd-menu-text { flex: 1; min-width: 0; }
 .fd-photo-actions { margin-top: 4px; gap: 14px; }
 .fd-noimage { font-size: 0.75rem; color: var(--hub-secondary); text-align: center; padding: 4px; }
-.fd-draft { scroll-margin: 80px; box-shadow: 0 0 0 2px var(--hub-bright); }
+.fd-draft { scroll-margin: 80px; margin: 6px 0 10px; padding: 16px; border-radius: var(--hub-radius-card); background: var(--hub-mint);
+  box-shadow: 0 0 0 2px var(--hub-bright); }
+.fd-draft h3 { margin: 0; }
 .fd-settings { display: grid; gap: 16px; grid-template-columns: 360px 1fr; align-items: start; }
 @media (max-width: 860px) { .fd-settings { grid-template-columns: 1fr; } }
 .fd-photo-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -339,3 +341,13 @@
   .fd-mobilecart strong { color: var(--hub-heading); }
   .fd-app:has(.fd-mobilecart) { padding-bottom: 96px; }
 }
+
+/* ---------- Restaurant Center header without a cover photo ---------- */
+.fd-owner-cover.empty { height: 84px; background: linear-gradient(120deg, var(--hub-mint), var(--hub-surface-muted)); }
+.fd-cover-hint { position: absolute; right: 16px; top: 14px; border: none; background: var(--hub-surface); color: var(--hub-primary);
+  font-weight: 700; padding: 6px 14px; border-radius: var(--hub-radius-pill); box-shadow: var(--hub-shadow); }
+
+.fd-cat-panel { flex: 1 0 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 4px;
+  padding: 12px 14px; border-radius: var(--hub-radius-input); background: var(--hub-mint); }
+.fd-cat-photo-actions { display: flex; align-items: center; gap: 12px; }
+.fd-cat-photo-actions .fd-secondary { min-height: 38px; }

@@ -117,8 +117,9 @@ export function RestaurantCenter({ onExit: leave, initialTab = 'orders' }: Props
       {account?.status === 'Approved' && !editing && (
         <>
           <div className="fd-owner-head">
-            <div className="fd-owner-cover">
-              {account.coverUrl ? <img src={mediaUrl(account.coverUrl) ?? ''} alt="" /> : <span className="fd-cover-empty" />}
+            <div className={account.coverUrl ? 'fd-owner-cover' : 'fd-owner-cover empty'}>
+              {account.coverUrl ? <img src={mediaUrl(account.coverUrl) ?? ''} alt="" />
+                : <button type="button" className="fd-cover-hint" onClick={() => setTab('settings')}>+ Add a cover photo in Settings</button>}
               {account.logoUrl ? <img className="fd-logo" src={mediaUrl(account.logoUrl) ?? ''} alt="" />
                 : <span className="fd-logo fd-logo-empty" aria-hidden="true">{account.name.slice(0, 1).toUpperCase()}</span>}
             </div>

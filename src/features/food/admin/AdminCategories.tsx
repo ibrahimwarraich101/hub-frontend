@@ -1,5 +1,5 @@
 // File purpose: Admin portal (HUB Food part): the food categories customers browse by (Pizza, Biryani...). Add a category,
-// rename it, change its order, give it a photo, or hide it. Categories are never deleted, only hidden.
+// change its order, hide it, or open "Edit" to rename it and change its photo. Categories are never deleted, only hidden.
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
@@ -142,18 +142,8 @@ function CategoryRow({ item, up, down, onSaved, onError }: RowProps) {
         {item.imageUrl ? <img src={mediaUrl(item.imageUrl) ?? ''} alt="" /> : <span className="fd-pick-empty">{item.name.slice(0, 1)}</span>}
       </span>
       <div className="fd-cat-main">
-        {editing ? (
-          <form className="fd-cat-edit" onSubmit={(e) => { e.preventDefault(); void update({ name: name.trim() }, `Renamed to "${name.trim()}".`) }}>
-            <input aria-label="Category name" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} autoFocus />
-            <button type="submit" className="fd-primary" disabled={busy || name.trim().length < 2}>Save</button>
-            <button type="button" className="fd-link" onClick={() => { setEditing(false); setName(item.name) }}>Cancel</button>
-          </form>
-        ) : (
-          <>
-            <strong>{item.name}</strong>
-            <span className="fd-meta">{item.restaurantCount} {item.restaurantCount === 1 ? 'restaurant' : 'restaurants'}{!item.imageUrl && ' · no photo yet'}</span>
-          </>
-        )}
+        <strong>{item.name}</strong>
+        <span className="fd-meta">{item.restaurantCount} {item.restaurantCount === 1 ? 'restaurant' : 'restaurants'}{!item.imageUrl && ' · no photo yet'}</span>
       </div>
       <div className="fd-cat-actions">
         {item.active && (
@@ -162,15 +152,28 @@ function CategoryRow({ item, up, down, onSaved, onError }: RowProps) {
             <button type="button" className="fd-icon-button" aria-label={`Move ${item.name} down`} disabled={busy || !down} onClick={() => down && void move(down)}>↓</button>
           </>
         )}
-        {!editing && <button type="button" className="fd-link" onClick={() => setEditing(true)}>Rename</button>}
-        <PhotoButton<AdminCategory> path={foodPaths.adminCategoryPhoto(item.id)} label={item.imageUrl ? 'Change photo' : 'Add photo'} className="fd-link"
-          onUploaded={(result) => onSaved(result, `New photo for "${result.name}".`)} onError={onError} />
-        {item.imageUrl && <button type="button" className="fd-link" disabled={busy} onClick={() => void removePhoto()}>Remove photo</button>}
+        <button type="button" className="fd-link" aria-expanded={editing} onClick={() => { setEditing(!editing); setName(item.name) }}>
+          {editing ? 'Close' : 'Edit'}
+        </button>
         <button type="button" className={item.active ? 'fd-danger' : 'fd-secondary'} disabled={busy}
           onClick={() => void update({ active: !item.active }, item.active ? `"${item.name}" is hidden from customers.` : `"${item.name}" is shown again.`)}>
           {item.active ? 'Hide' : 'Show again'}
         </button>
       </div>
+      {editing && (
+        <div className="fd-cat-panel">
+          <form className="fd-cat-edit" onSubmit={(e) => { e.preventDefault(); void update({ name: name.trim() }, `Renamed to "${name.trim()}".`) }}>
+            <label className="fd-meta" htmlFor={`cat-${item.id}`}>Name</label>
+            <input id={`cat-${item.id}`} value={name} maxLength={40} onChange={(e) => setName(e.target.value)} autoFocus />
+            <button type="submit" className="fd-primary" disabled={busy || name.trim().length < 2 || name.trim() === item.name}>Save name</button>
+          </form>
+          <span className="fd-cat-photo-actions">
+            <PhotoButton<AdminCategory> path={foodPaths.adminCategoryPhoto(item.id)} label={item.imageUrl ? 'Change photo' : 'Add photo'} className="fd-secondary"
+              onUploaded={(result) => onSaved(result, `New photo for "${result.name}".`)} onError={onError} />
+            {item.imageUrl && <button type="button" className="fd-link" disabled={busy} onClick={() => void removePhoto()}>Remove photo</button>}
+          </span>
+        </div>
+      )}
     </li>
   )
 }
