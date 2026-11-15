@@ -132,9 +132,9 @@ export function RestaurantList({ onOpen }: Props) {
         <h2>Hungry? Order from restaurants near you</h2>
         <p>Search by restaurant, cuisine or dish, and choose your city.</p>
         <form className="fd-search" onSubmit={submit} role="search">
-          <input aria-label="Search restaurants, cuisines or dishes" placeholder="🔍  Search HUB Food" value={search}
+          <input aria-label="Search restaurants, cuisines or dishes" placeholder="Search restaurants or dishes" value={search}
             maxLength={100} onChange={(e) => setSearch(e.target.value)} />
-          <input className="fd-city" aria-label="City" placeholder="📍  City" value={city} maxLength={60} onChange={(e) => setCity(e.target.value)} />
+          <input className="fd-city" aria-label="City" placeholder="City, e.g. Lahore" value={city} maxLength={60} onChange={(e) => setCity(e.target.value)} />
           <button type="submit" className="fd-primary">Search</button>
         </form>
       </div>

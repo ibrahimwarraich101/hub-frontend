@@ -351,3 +351,8 @@
   padding: 12px 14px; border-radius: var(--hub-radius-input); background: var(--hub-mint); }
 .fd-cat-photo-actions { display: flex; align-items: center; gap: 12px; }
 .fd-cat-photo-actions .fd-secondary { min-height: 38px; }
+
+/* ---------- States and feedback ---------- */
+.fd-empty { align-items: flex-start; }
+.fd-empty .fd-primary { margin-top: 4px; }
+.fd-dish-error { margin: 6px 0 0; padding: 8px 12px; font-size: 0.86rem; }

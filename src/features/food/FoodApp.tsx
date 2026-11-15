@@ -111,7 +111,7 @@ export function FoodApp({ onExit }: Props) {
           onCheckout={(id) => go({ kind: 'checkout', id })} onCancelCheckout={back}
           onOrdered={(id) => { refreshCart(); go({ kind: 'order', id }, true) }} onBrowse={() => go({ kind: 'home' })} />
       )}
-      {view.kind === 'orders' && <OrdersView onOpen={(id) => go({ kind: 'order', id })} />}
+      {view.kind === 'orders' && <OrdersView onOpen={(id) => go({ kind: 'order', id })} onBrowse={() => go({ kind: 'home' })} />}
       {view.kind === 'order' && <OrderDetails orderId={view.id} />}
     </section>
   )

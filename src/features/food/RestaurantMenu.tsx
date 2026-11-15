@@ -20,7 +20,8 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
   const [reviews, setReviews] = useState<RestaurantReview[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  // A cart problem is shown under the dish that was tapped.
+  const [dishError, setDishError] = useState<{ id: string; text: string } | null>(null)
   const [menuText, setMenuText] = useState('')
   const [activeSection, setActiveSection] = useState<string | null>(null)
 
@@ -43,11 +44,11 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
 
   async function setQuantity(menuItemId: string, quantity: number) {
     setBusy(menuItemId)
-    setNotice(null)
+    setDishError(null)
     try {
       onCartChange(await authFetch<FoodCart>(foodPaths.cartItems, 'PUT', { menuItemId, quantity: Math.max(0, Math.min(50, quantity)) }))
     } catch (reason) {
-      setNotice(reason instanceof ApiError ? reason.message : 'Could not update your cart.')
+      setDishError({ id: menuItemId, text: reason instanceof ApiError ? reason.message : 'Could not update your cart. Please try again.' })
     } finally {
       setBusy(null)
     }
@@ -93,12 +94,11 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
           </div>
         </div>
         {!summary.open && <div className="fd-message warn" role="status">This restaurant is closed right now. You can look at the menu, but ordering opens when it does.</div>}
-        {notice && <div className="fd-message error" role="alert">{notice}</div>}
         {details.menu.length === 0 && <div className="fd-message">This restaurant has not added its menu yet.</div>}
 
         {details.menu.length > 0 && (
           <div className="fd-menubar">
-            <input type="search" aria-label="Search this menu" placeholder="🔍  Search menu" value={menuText} maxLength={60}
+            <input type="search" aria-label="Search this menu" placeholder="Search this menu" value={menuText} maxLength={60}
               onChange={(e) => setMenuText(e.target.value)} />
             <nav className="fd-section-tabs" aria-label="Menu sections">
               {sections.map((category, index) => (
@@ -123,6 +123,7 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
                       <strong>{item.name}</strong>
                       <span className="fd-price">{money(item.price)}</span>
                       {item.description && <p>{item.description}</p>}
+                      {dishError?.id === item.id && <p className="fd-message error fd-dish-error" role="alert">{dishError.text}</p>}
                     </div>
                     <div className="fd-dish-media">
                       {item.imageUrl ? <img className="fd-dish-photo" src={mediaUrl(item.imageUrl) ?? ''} alt="" loading="lazy" />

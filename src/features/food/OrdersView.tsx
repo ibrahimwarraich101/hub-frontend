@@ -5,9 +5,9 @@ import { useAuth } from '../../shared/auth/AuthContext'
 import { dateTime, foodPaths, money, statusLabel } from './foodApi'
 import type { FoodOrderPage } from './foodApi'
 
-type Props = { onOpen: (orderId: string) => void }
+type Props = { onOpen: (orderId: string) => void; onBrowse: () => void }
 
-export function OrdersView({ onOpen }: Props) {
+export function OrdersView({ onOpen, onBrowse }: Props) {
   const { authFetch } = useAuth()
   const [page, setPage] = useState(1)
   const [data, setData] = useState<FoodOrderPage | null>(null)
@@ -27,7 +27,13 @@ export function OrdersView({ onOpen }: Props) {
       <h2>My food orders</h2>
       {error && <div className="fd-message error" role="alert">{error}</div>}
       {!error && !data && <div className="fd-message">Loading…</div>}
-      {data && data.items.length === 0 && <div className="fd-message">You have not ordered food yet.</div>}
+      {data && data.items.length === 0 && (
+        <div className="fd-panel fd-empty">
+          <h3>No food orders yet</h3>
+          <p className="fd-meta">When you order, you can follow it here from the kitchen to your door.</p>
+          <button type="button" className="fd-primary" onClick={onBrowse}>Browse restaurants</button>
+        </div>
+      )}
       {data && data.items.length > 0 && (
         <ul className="fd-orders">
           {data.items.map((order) => (
@@ -36,7 +42,7 @@ export function OrdersView({ onOpen }: Props) {
                 <span>
                   <strong>{order.restaurantName}</strong>
                   <br />
-                  <span className="fd-meta">{order.number} · {order.itemCount} items · {dateTime(order.createdAt)}</span>
+                  <span className="fd-meta">{order.number} · {order.itemCount} {order.itemCount === 1 ? 'item' : 'items'} · {dateTime(order.createdAt)}</span>
                 </span>
                 <span className="fd-actions">
                   <span className={`fd-status fd-status-${order.status.toLowerCase()}`}>{statusLabel[order.status]}</span>
