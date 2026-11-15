@@ -1,5 +1,6 @@
-// File purpose: One restaurant's page (same layout as the app): cover photo and logo, delivery details, menu search and
-// section tabs, dishes with photos and a + button, reviews, and this restaurant's cart beside the menu.
+// File purpose: One restaurant's page (same layout as the app): cover photo and logo, delivery details (shown once), menu
+// search and section tabs, dishes with photos and a + button, reviews, and this restaurant's cart beside the menu (on a
+// narrow screen, a bar fixed to the bottom with the total and "Go to checkout").
 import { useEffect, useState } from 'react'
 import { ApiError, getJson, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
@@ -37,6 +38,7 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
   }, [restaurantId])
 
   const mine = cart?.carts.find((item) => item.restaurantId === restaurantId)
+  const itemCount = mine?.items.reduce((sum, line) => sum + line.quantity, 0) ?? 0
   const quantityOf = (menuItemId: string) => mine?.items.find((line) => line.menuItemId === menuItemId)?.quantity ?? 0
 
   async function setQuantity(menuItemId: string, quantity: number) {
@@ -84,26 +86,13 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
             <span className="fd-meta">
               {summary.deliveryFee === 0 ? 'Free delivery' : `${money(summary.deliveryFee)} delivery`}
               {summary.minimumOrder > 0 ? ` · Min. order ${money(summary.minimumOrder)}` : ' · No minimum order'}
+              {' · Delivered by the restaurant\'s own riders'}
             </span>
             <span className="fd-meta">📍 {details.addressLine}, {summary.city}</span>
             {details.description && <span className="fd-meta">{details.description}</span>}
           </div>
-          <div className="fd-perks">
-            <div className="fd-perk mint">
-              <strong>🛵 {summary.deliveryFee === 0 ? 'Free delivery' : `${money(summary.deliveryFee)} delivery`}</strong>
-              <span>{summary.deliveryFee === 0 ? 'On every order.' : 'Flat fee, shown before you pay.'}</span>
-            </div>
-            <div className="fd-perk food">
-              <strong>🧾 {summary.minimumOrder > 0 ? `Min. ${money(summary.minimumOrder)}` : 'No minimum'}</strong>
-              <span>{summary.minimumOrder > 0 ? 'Add a little more to reach it.' : 'Order as little as you like.'}</span>
-            </div>
-            <div className="fd-perk info">
-              <strong>⏱ About {summary.deliveryMinutes} min</strong>
-              <span>Delivered by the restaurant's own riders.</span>
-            </div>
-          </div>
         </div>
-        {!summary.open && <div className="fd-message error">This restaurant is closed right now. You can look at the menu, but ordering opens when it does.</div>}
+        {!summary.open && <div className="fd-message warn" role="status">This restaurant is closed right now. You can look at the menu, but ordering opens when it does.</div>}
         {notice && <div className="fd-message error" role="alert">{notice}</div>}
         {details.menu.length === 0 && <div className="fd-message">This restaurant has not added its menu yet.</div>}
 
@@ -199,6 +188,15 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
           </>
         )}
       </aside>
+      {mine && (
+        <div className="fd-mobilecart" role="region" aria-label="Your order">
+          <span>
+            <strong>{itemCount} {itemCount === 1 ? 'item' : 'items'} · {money(mine.total)}</strong>
+            {mine.problem && <span className="fd-meta">{mine.problem}</span>}
+          </span>
+          <button type="button" className="fd-primary" disabled={!mine.canCheckout} onClick={onCheckout}>Go to checkout</button>
+        </div>
+      )}
     </div>
   )
 }
