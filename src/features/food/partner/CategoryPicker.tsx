@@ -48,7 +48,8 @@ export function CategoryPicker() {
   return (
     <section className="fd-panel" aria-label="Food categories">
       <h2>Food categories</h2>
-      <p className="fd-meta">Choose up to {data?.maxSelected ?? 3}. Customers browsing these categories will see your restaurant.</p>
+      <p className="fd-meta">Where customers find you: choose up to {data?.maxSelected ?? 3}. When a customer taps one of these on the Food
+        home, your restaurant is shown.</p>
       {!data && !error && <p className="fd-meta">Loading…</p>}
       {data && data.available.length === 0 && <p className="fd-meta">HUB has not added any categories yet.</p>}
       {data && data.available.length > 0 && (

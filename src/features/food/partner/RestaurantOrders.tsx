@@ -1,7 +1,7 @@
 // File purpose: The restaurant's incoming paid orders: Accept -> On the way -> Delivered, or cancel with a reason.
 // New orders are highlighted, each row shows how long ago it came in, and the next step is one click on the row.
 // The list refreshes every 20 seconds so new orders appear without reloading.
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { ComplaintThread } from '../ComplaintThread'
@@ -30,6 +30,10 @@ export function RestaurantOrders() {
   const [busy, setBusy] = useState(false)
   const [reason, setReason] = useState('')
   const [rowBusy, setRowBusy] = useState<string | null>(null)
+  const panel = useRef<HTMLElement>(null)
+  const openId = open?.id
+  // On a narrow screen the order opens below the list, so bring it into view.
+  useEffect(() => { if (openId && window.innerWidth <= 860) panel.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [openId])
 
   const load = useCallback(() => {
     authFetch<FoodOrderPage>(foodPaths.restaurantOrders(filter, 1))
@@ -98,7 +102,12 @@ export function RestaurantOrders() {
           ))}
         </div>
         {error && <div className="fd-message error" role="alert">{error}</div>}
-        {page && page.items.length === 0 && <div className="fd-message">No orders here yet.</div>}
+        {!page && !error && <div className="fd-message">Loading orders…</div>}
+        {page && page.items.length === 0 && (
+          <div className="fd-message">{filter === 'active'
+            ? 'No orders to work on right now. New paid orders appear here while your restaurant is open.'
+            : 'No orders here yet.'}</div>
+        )}
         {page && (
           <ul className="fd-orders">
             {page.items.map((order) => {
@@ -131,7 +140,7 @@ export function RestaurantOrders() {
       </div>
 
       {open && (
-        <aside className="fd-panel" aria-label={`Order ${open.number}`}>
+        <aside ref={panel} className="fd-panel" aria-label={`Order ${open.number}`}>
           <h3>Order {open.number}</h3>
           <span className={`fd-status fd-status-${open.status.toLowerCase()}`}>{statusLabel[open.status]}</span>
           <ul className="fd-lines">

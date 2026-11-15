@@ -68,15 +68,18 @@ function ComplaintCard({ complaint, onSaved }: { complaint: FoodComplaint; onSav
   const [reply, setReply] = useState(complaint.restaurantReply ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
   const showForm = complaint.canReply && (editing || !complaint.restaurantReply)
 
   async function send() {
     if (reply.trim().length < 2) return setError('Write your answer first. The customer and HUB will read it.')
     setBusy(true)
     setError(null)
+    setSent(false)
     try {
       onSaved(await authFetch<FoodComplaint>(foodPaths.complaintReply(complaint.id), 'POST', { reply: reply.trim(), expectedVersion: complaint.version }))
       setEditing(false)
+      setSent(true)
     } catch (reason) {
       setError(reason instanceof ApiError ? reason.message : 'Could not send your answer. Please try again.')
     } finally {
@@ -102,6 +105,7 @@ function ComplaintCard({ complaint, onSaved }: { complaint: FoodComplaint; onSav
           </div>
         </div>
       )}
+      {sent && <p className="fd-message" role="status">Answer sent. The customer and HUB can read it now.</p>}
       {complaint.canReply && complaint.restaurantReply && !editing && (
         <button type="button" className="fd-link" onClick={() => setEditing(true)}>Change my answer</button>
       )}

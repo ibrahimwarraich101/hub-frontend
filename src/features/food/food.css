@@ -105,13 +105,6 @@
 .fd-deliverybox { width: 100%; display: flex; flex-direction: column; gap: 4px; text-align: left; margin-top: 10px; padding: 14px 18px;
   border: 1px solid var(--hub-border); border-radius: var(--hub-radius-card); }
 .fd-deliverybox strong { color: var(--hub-heading); font-size: 1.05rem; }
-.fd-perks { width: 100%; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-top: 4px; }
-.fd-perk { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 12px 14px; border-radius: var(--hub-radius-card); }
-.fd-perk strong { font-size: 0.98rem; }
-.fd-perk span { font-size: 0.82rem; color: var(--hub-secondary); }
-.fd-perk.mint { background: var(--hub-mint); color: var(--hub-primary); }
-.fd-perk.food { background: var(--hub-food-bg); color: var(--hub-food); }
-.fd-perk.info { background: var(--hub-info-surface); color: var(--hub-info); }
 .fd-menubar { position: sticky; top: 0; z-index: 2; display: flex; flex-direction: column; gap: 6px; margin: 20px 0 0; padding: 14px 0 0;
   background: var(--hub-surface); border-bottom: 1px solid var(--hub-border); }
 .fd-menubar input { min-height: 46px; padding: 0 18px; border: none; border-radius: var(--hub-radius-pill); background: var(--hub-surface-muted);
@@ -254,7 +247,9 @@
 .fd-menu-text { flex: 1; min-width: 0; }
 .fd-photo-actions { margin-top: 4px; gap: 14px; }
 .fd-noimage { font-size: 0.75rem; color: var(--hub-secondary); text-align: center; padding: 4px; }
-.fd-draft { scroll-margin: 80px; box-shadow: 0 0 0 2px var(--hub-bright); }
+.fd-draft { scroll-margin: 80px; margin: 6px 0 10px; padding: 16px; border-radius: var(--hub-radius-card); background: var(--hub-mint);
+  box-shadow: 0 0 0 2px var(--hub-bright); }
+.fd-draft h3 { margin: 0; }
 .fd-settings { display: grid; gap: 16px; grid-template-columns: 360px 1fr; align-items: start; }
 @media (max-width: 860px) { .fd-settings { grid-template-columns: 1fr; } }
 .fd-photo-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -335,3 +330,29 @@
 .fd-cat-edit .fd-primary { min-height: 38px; }
 .fd-icon-button { width: 34px; height: 34px; border: 1px solid var(--hub-border); border-radius: 50%; background: var(--hub-surface);
   color: var(--hub-primary); font-weight: 800; }
+
+/* ---------- Restaurant page on a narrow screen: the order box becomes a bar fixed to the bottom ---------- */
+.fd-mobilecart { display: none; }
+@media (max-width: 860px) {
+  .fd-layout > .fd-sticky { display: none; }
+  .fd-mobilecart { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 12px 16px; background: var(--hub-surface); border-top: 1px solid var(--hub-border); box-shadow: 0 -4px 16px rgba(16, 24, 32, 0.08); }
+  .fd-mobilecart > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .fd-mobilecart strong { color: var(--hub-heading); }
+  .fd-app:has(.fd-mobilecart) { padding-bottom: 96px; }
+}
+
+/* ---------- Restaurant Center header without a cover photo ---------- */
+.fd-owner-cover.empty { height: 84px; background: linear-gradient(120deg, var(--hub-mint), var(--hub-surface-muted)); }
+.fd-cover-hint { position: absolute; right: 16px; top: 14px; border: none; background: var(--hub-surface); color: var(--hub-primary);
+  font-weight: 700; padding: 6px 14px; border-radius: var(--hub-radius-pill); box-shadow: var(--hub-shadow); }
+
+.fd-cat-panel { flex: 1 0 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 4px;
+  padding: 12px 14px; border-radius: var(--hub-radius-input); background: var(--hub-mint); }
+.fd-cat-photo-actions { display: flex; align-items: center; gap: 12px; }
+.fd-cat-photo-actions .fd-secondary { min-height: 38px; }
+
+/* ---------- States and feedback ---------- */
+.fd-empty { align-items: flex-start; }
+.fd-empty .fd-primary { margin-top: 4px; }
+.fd-dish-error { margin: 6px 0 0; padding: 8px 12px; font-size: 0.86rem; }

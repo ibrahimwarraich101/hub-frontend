@@ -1,5 +1,6 @@
-// File purpose: The customer's food carts (one per restaurant) and checkout with delivery details.
-import { useRef, useState } from 'react'
+// File purpose: The customer's food carts (one per restaurant) and checkout with delivery details. The delivery details
+// start from the customer's last food order, so a repeat customer usually only presses "Place order".
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
@@ -8,18 +9,21 @@ import { collect, firstError, focusFirstError, hasErrors, rules } from '../../sh
 import type { FieldErrors } from '../../shared/forms/validation'
 import '../../shared/auth/auth.css'
 import { foodPhone, foodPaths, money, newRequestKey } from './foodApi'
-import type { FoodCart, FoodOrder, RestaurantCart } from './foodApi'
+import type { FoodCart, FoodOrder, FoodOrderPage, RestaurantCart } from './foodApi'
 
 type Props = {
   cart: FoodCart | null
+  // The restaurant whose checkout form is open (null = the cart list).
+  checkoutFor: string | null
   onCartChange: (cart: FoodCart) => void
+  onCheckout: (restaurantId: string) => void
+  onCancelCheckout: () => void
   onOrdered: (orderId: string) => void
   onBrowse: () => void
 }
 
-export function CartView({ cart, onCartChange, onOrdered, onBrowse }: Props) {
+export function CartView({ cart, checkoutFor, onCartChange, onCheckout, onCancelCheckout, onOrdered, onBrowse }: Props) {
   const { authFetch } = useAuth()
-  const [checkoutFor, setCheckoutFor] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function change(menuItemId: string, quantity: number) {
@@ -56,7 +60,7 @@ export function CartView({ cart, onCartChange, onOrdered, onBrowse }: Props) {
     <>
       {error && <div className="fd-message error" role="alert">{error}</div>}
       {selected ? (
-        <Checkout cart={selected} onCancel={() => setCheckoutFor(null)} onOrdered={onOrdered} />
+        <Checkout cart={selected} onCancel={onCancelCheckout} onOrdered={onOrdered} />
       ) : (
         cart.carts.map((restaurant) => (
           <section key={restaurant.restaurantId} className="fd-panel" aria-label={`Cart for ${restaurant.restaurantName}`}>
@@ -80,7 +84,7 @@ export function CartView({ cart, onCartChange, onOrdered, onBrowse }: Props) {
             <Totals cart={restaurant} />
             {restaurant.problem && <p className="fd-reason">{restaurant.problem}</p>}
             <div className="fd-actions">
-              <button type="button" className="fd-primary" disabled={!restaurant.canCheckout} onClick={() => setCheckoutFor(restaurant.restaurantId)}>
+              <button type="button" className="fd-primary" disabled={!restaurant.canCheckout} onClick={() => onCheckout(restaurant.restaurantId)}>
                 Checkout
               </button>
               <button type="button" className="fd-secondary" onClick={() => void clear(restaurant.restaurantId)}>Empty cart</button>
@@ -127,8 +131,31 @@ function Checkout({ cart, onCancel, onOrdered }: { cart: RestaurantCart; onCance
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fromLastOrder, setFromLastOrder] = useState(false)
   const errors = tried ? validate(values) : {}
-  const set = (field: CheckoutFields) => (value: string) => setValues({ ...values, [field]: value })
+  const set = (field: CheckoutFields) => (value: string) => setValues((current) => ({ ...current, [field]: value }))
+
+  // Start from the delivery details of the last food order (only fields the customer has not typed in yet).
+  useEffect(() => {
+    let cancelled = false
+    authFetch<FoodOrderPage>(foodPaths.myOrders(1))
+      .then((page) => page.items[0] ? authFetch<FoodOrder>(foodPaths.order(page.items[0].id)) : null)
+      .then((last) => {
+        if (cancelled || !last) return
+        const saved = { deliveryName: last.delivery.name, deliveryPhone: last.delivery.phone, deliveryAddress: last.delivery.address,
+          deliveryCity: last.delivery.city }
+        setValues((current) => ({
+          ...current,
+          deliveryName: current.deliveryName.trim() && current.deliveryName !== (user?.fullName ?? '') ? current.deliveryName : saved.deliveryName,
+          deliveryPhone: current.deliveryPhone.trim() && current.deliveryPhone !== (user?.phone ?? '') ? current.deliveryPhone : saved.deliveryPhone,
+          deliveryAddress: current.deliveryAddress.trim() ? current.deliveryAddress : saved.deliveryAddress,
+          deliveryCity: current.deliveryCity.trim() ? current.deliveryCity : saved.deliveryCity,
+        }))
+        setFromLastOrder(true)
+      })
+      .catch(() => undefined)
+    return () => { cancelled = true }
+  }, [authFetch, user])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -160,6 +187,7 @@ function Checkout({ cart, onCancel, onOrdered }: { cart: RestaurantCart; onCance
       </ul>
       <Totals cart={cart} />
       <h3>Delivery details</h3>
+      {fromLastOrder && <p className="fd-meta">Filled in from your last order. Change anything that is different this time.</p>}
       <Field label="Name" name="deliveryName" value={values.deliveryName} onChange={set('deliveryName')} error={errors.deliveryName} autoComplete="name" />
       <Field label="Phone" name="deliveryPhone" type="tel" value={values.deliveryPhone} onChange={set('deliveryPhone')} error={errors.deliveryPhone}
         placeholder="+923001234567" hint="The restaurant calls this number when delivering." />
@@ -175,7 +203,7 @@ function Checkout({ cart, onCancel, onOrdered }: { cart: RestaurantCart; onCance
       {error && <p className="fd-message error" role="alert">{error}</p>}
       <div className="fd-actions">
         <button type="submit" className="fd-primary" disabled={busy}>{busy ? 'Placing order…' : `Place order · ${money(cart.total)}`}</button>
-        <button type="button" className="fd-secondary" onClick={onCancel} disabled={busy}>Back to cart</button>
+        <button type="button" className="fd-secondary" onClick={onCancel} disabled={busy}>Back</button>
       </div>
     </form>
   )

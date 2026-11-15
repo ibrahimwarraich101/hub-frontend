@@ -12,7 +12,7 @@ export function ComplaintThread({ complaint, viewer }: Props) {
     <div className="fd-complaint">
       <div className="fd-card-top">
         <strong>{complaintTopicLabel[complaint.topic]}</strong>
-        <span className={`fd-status fd-status-${complaint.status.toLowerCase()}`}>{complaintStatusLabel[complaint.status]}</span>
+        <span className={`fd-status fd-status-${complaint.status.toLowerCase()}`}>{viewer === 'admin' ? complaint.status : complaintStatusLabel[complaint.status]}</span>
       </div>
       <ol className="fd-thread">
         <li className="fd-bubble customer">

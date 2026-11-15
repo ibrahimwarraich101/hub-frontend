@@ -1,5 +1,6 @@
-// File purpose: The approved owner edits restaurant details, delivery fee, minimum order, delivery time and opens/closes it,
-// uploads the logo and cover photo, and sees a live preview of the card customers see.
+// File purpose: The approved owner edits restaurant details, delivery fee, minimum order and delivery time, uploads the
+// logo and cover photo, chooses food categories, and sees a live preview of the card customers see. Opening and closing
+// is done only with the button at the top of the Restaurant Center.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
@@ -19,7 +20,7 @@ export function RestaurantSettings({ account, onSaved }: Props) {
     description: account.description ?? '', phone: account.phone, cuisine: account.cuisine, addressLine: account.addressLine, city: account.city,
     deliveryFee: String(account.deliveryFee), minimumOrder: String(account.minimumOrder), deliveryMinutes: String(account.deliveryMinutes),
   })
-  const [open, setOpen] = useState(account.open)
+  const open = account.open
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
@@ -32,7 +33,7 @@ export function RestaurantSettings({ account, onSaved }: Props) {
   }
   const errors = collect({
     phone: firstError(rules.required(values.phone, 'phone'), rules.phone(foodPhone(values.phone))),
-    cuisine: firstError(rules.required(values.cuisine, 'cuisine'), rules.minLength(values.cuisine.trim(), 2, 'Cuisine')),
+    cuisine: firstError(rules.required(values.cuisine, 'cuisine label'), rules.minLength(values.cuisine.trim(), 2, 'Cuisine label')),
     addressLine: firstError(rules.required(values.addressLine, 'address'), rules.minLength(values.addressLine.trim(), 5, 'Address')),
     city: firstError(rules.required(values.city, 'city'), rules.minLength(values.city.trim(), 2, 'City')),
     deliveryFee: number(values.deliveryFee, 0, 5000, 'Delivery fee'),
@@ -127,11 +128,9 @@ export function RestaurantSettings({ account, onSaved }: Props) {
 
     <form className="fd-panel fd-form" onSubmit={submit} noValidate>
       <h2>Restaurant settings</h2>
-      <label className="fd-check">
-        <input type="checkbox" checked={open} onChange={(e) => setOpen(e.target.checked)} />
-        Open - customers can order now
-      </label>
-      <Field label="Cuisine" name="cuisine" value={values.cuisine} onChange={set('cuisine')} error={errors.cuisine} />
+      <p className="fd-meta">To open or close for orders, use the button at the top of the Restaurant Center.</p>
+      <Field label="Cuisine label on your card" name="cuisine" value={values.cuisine} onChange={set('cuisine')} error={errors.cuisine}
+        placeholder="For example: Biryani & Desi" hint="A few words shown under your name. Where customers find you is set in Food categories." />
       <label className="auth-field">
         About your restaurant
         <textarea rows={3} maxLength={2000} value={values.description} onChange={(e) => set('description')(e.target.value)} />

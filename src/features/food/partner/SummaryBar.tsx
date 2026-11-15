@@ -28,7 +28,6 @@ export function SummaryBar({ onStats }: Props) {
     { label: 'Sales today', value: money(stats.todaySales), tone: '' },
     { label: 'New, waiting for you', value: String(stats.waitingOrders), tone: stats.waitingOrders > 0 ? 'alert' : '' },
     { label: 'Active orders', value: String(stats.activeOrders), tone: '' },
-    { label: 'Delivered', value: String(stats.deliveredOrders), tone: '' },
     { label: 'Open complaints', value: String(stats.openComplaints), tone: stats.openComplaints > 0 ? 'alert' : '' },
     { label: 'Rating', value: stats.rating === null ? 'New' : `★ ${stats.rating} (${stats.ratingCount})`, tone: '' },
   ]

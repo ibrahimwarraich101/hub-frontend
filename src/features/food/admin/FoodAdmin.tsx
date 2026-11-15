@@ -1,10 +1,11 @@
 // File purpose: Admin portal (HUB Food part): one page with four areas - restaurant approvals, all food orders, customer
 // complaints and the food categories customers browse by. Only shown to Administrators; the backend checks the role
-// again on every request.
+// again on every request. The open area is kept in the address (#food-admin/<area>), so Refresh stays on it.
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { foodPaths } from '../foodApi'
 import type { AdminOrderTotals } from '../foodApi'
+import { enterSection, goTo, leaveSection, sectionPath, useSectionHistory } from '../foodRoute'
 import { AdminCategories } from './AdminCategories'
 import { AdminComplaints } from './AdminComplaints'
 import { AdminOrders } from './AdminOrders'
@@ -14,10 +15,21 @@ import '../../../shared/auth/auth.css'
 
 type Props = { onExit: () => void }
 type Area = 'restaurants' | 'orders' | 'complaints' | 'categories'
+const AREAS: Area[] = ['restaurants', 'orders', 'complaints', 'categories']
+const SECTION = 'food-admin'
+const readArea = (path: string | null): Area => (AREAS as string[]).includes(path ?? '') ? path as Area : 'restaurants'
 
-export function FoodAdmin({ onExit }: Props) {
+export function FoodAdmin({ onExit: leave }: Props) {
   const { authFetch } = useAuth()
-  const [area, setArea] = useState<Area>('restaurants')
+  const [area, setAreaState] = useState<Area>(() => readArea(sectionPath(SECTION)))
+  useEffect(() => { enterSection(SECTION, readArea(sectionPath(SECTION))) }, [])
+  const onExit = useCallback(() => { leaveSection(); leave() }, [leave])
+  useSectionHistory(SECTION, useCallback((path: string | null) => {
+    if (path === null) leave()
+    else setAreaState(readArea(path))
+  }, [leave]))
+  // Switching areas replaces the address, so Back still leaves the admin area in one step.
+  const setArea = (next: Area) => { goTo(SECTION, next, true); setAreaState(next) }
   // An order opened from a complaint ("Open the full order").
   const [orderId, setOrderId] = useState<string | null>(null)
   const [openComplaints, setOpenComplaints] = useState(0)

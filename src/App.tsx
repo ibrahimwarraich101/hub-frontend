@@ -21,6 +21,10 @@ function App() {
   const { restoring, user, logout, hasRole, businessIntent, setBusinessIntent } = useAuth()
   // An admin address (#admin/...) reopens the admin portal after a refresh.
   const [service, setService] = useState<Service>(() => (window.location.hash.startsWith('#admin') ? 'admin'
+    // HUB Food addresses (#food-admin..., #food..., #restaurant...) reopen that screen after a refresh.
+    : /^#food-admin(\/|$)/.test(window.location.hash) ? 'food-admin'
+    : /^#food(\/|$)/.test(window.location.hash) ? 'food'
+    : /^#restaurant(\/|$)/.test(window.location.hash) ? 'restaurant'
     // Coming back from JazzCash (?order=...&payment=...) opens the store on that order.
     : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'))
 
