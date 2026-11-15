@@ -1,11 +1,12 @@
-// File purpose: The HUB Food home: green search banner, cuisine shortcuts, filter and sort chips, and restaurant photo cards
-// (same layout as the app's Food home). Searching matches restaurant name, cuisine or dish; the city filter and
-// "open now" run on the server, the other filters and sorting on the loaded page.
+// File purpose: The HUB Food home: green search banner, food categories, filter and sort chips, and restaurant photo cards
+// (same layout as the app's Food home). Categories come from HUB's list (managed by administrators); a category shows the
+// restaurants that chose it. Searching matches restaurant name, cuisine or dish; the city filter, category and "open now"
+// run on the server, the other filters and sorting on the loaded page.
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, getJson, mediaUrl } from '../../shared/api/client'
 import { foodPaths, money } from './foodApi'
-import type { RestaurantList as RestaurantPage } from './foodApi'
+import type { FoodCategory, RestaurantList as RestaurantPage } from './foodApi'
 import bbqPhoto from './cuisines/chicken-tikka.jpg'
 import biryaniPhoto from './cuisines/pulao.jpg'
 import broastPhoto from './cuisines/fried-chicken.jpg'
@@ -19,11 +20,14 @@ import pizzaPhoto from './cuisines/pepperoni.jpg'
 import shawarmaPhoto from './cuisines/wrap.jpg'
 
 type Props = { onOpen: (restaurantId: string) => void }
-type Query = { search: string; city: string; openOnly: boolean; page: number }
+type Query = { search: string; city: string; openOnly: boolean; page: number; categoryId: string }
+// One round shortcut: a HUB category (filters by category) or, if the server has none yet, a built-in search shortcut.
+type Shortcut = { key: string; label: string; photo: string | null; categoryId: string; search: string }
 type SortKey = 'recommended' | 'fastest' | 'rating' | 'fee'
 
-// Each shortcut runs a search that matches a cuisine or dish name. Photos are generic food photos (Wikimedia Commons,
-// credits in ./cuisines/CREDITS.json) bundled with the website so the row shows instantly.
+// Built-in shortcuts, used only while HUB has no categories (each runs a search). Photos are generic food photos
+// (Wikimedia Commons, credits in ./cuisines/CREDITS.json) bundled with the website; they also stand in for a category
+// of the same name that has no photo yet.
 const cuisines = [
   { label: 'Fast Food', photo: friesPhoto, search: 'fries' },
   { label: 'Pizza', photo: pizzaPhoto, search: 'pizza' },
@@ -38,6 +42,11 @@ const cuisines = [
   { label: 'Desserts', photo: dessertPhoto, search: 'cake' },
 ]
 
+const bundledPhoto = (name: string) => {
+  const key = name.toLowerCase()
+  return cuisines.find((cuisine) => cuisine.label.toLowerCase() === key || key.startsWith(cuisine.label.toLowerCase() + ' '))?.photo ?? null
+}
+
 const sortLabels: Record<SortKey, string> = {
   recommended: 'Recommended', fastest: 'Fastest delivery', rating: 'Top rated', fee: 'Lowest delivery fee',
 }
@@ -45,7 +54,8 @@ const sortLabels: Record<SortKey, string> = {
 export function RestaurantList({ onOpen }: Props) {
   const [search, setSearch] = useState('')
   const [city, setCity] = useState('')
-  const [query, setQuery] = useState<Query>({ search: '', city: '', openOnly: false, page: 1 })
+  const [query, setQuery] = useState<Query>({ search: '', city: '', openOnly: false, page: 1, categoryId: '' })
+  const [categories, setCategories] = useState<FoodCategory[] | null>(null)
   const [freeDelivery, setFreeDelivery] = useState(false)
   const [noMinimum, setNoMinimum] = useState(false)
   const [sort, setSort] = useState<SortKey>('recommended')
@@ -54,7 +64,15 @@ export function RestaurantList({ onOpen }: Props) {
 
   useEffect(() => {
     const controller = new AbortController()
-    getJson<RestaurantPage>(foodPaths.restaurants(query.search, query.city, query.openOnly, query.page), controller.signal)
+    getJson<FoodCategory[]>(foodPaths.foodCategories, controller.signal)
+      .then(setCategories)
+      .catch((reason: unknown) => { if (!(reason instanceof DOMException && reason.name === 'AbortError')) setCategories([]) })
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    getJson<RestaurantPage>(foodPaths.restaurants(query.search, query.city, query.openOnly, query.page, query.categoryId), controller.signal)
       .then((result) => { setData(result); setError(null) })
       .catch((reason: unknown) => {
         if (reason instanceof DOMException && reason.name === 'AbortError') return
@@ -68,8 +86,12 @@ export function RestaurantList({ onOpen }: Props) {
     setQuery({ ...query, search, city, page: 1 })
   }
 
-  function pickCuisine(term: string) {
-    const next = query.search === term ? '' : term
+  function pick(shortcut: Shortcut) {
+    if (shortcut.categoryId) {
+      setQuery({ ...query, categoryId: query.categoryId === shortcut.categoryId ? '' : shortcut.categoryId, page: 1 })
+      return
+    }
+    const next = query.search === shortcut.search ? '' : shortcut.search
     setSearch(next)
     setQuery({ ...query, search: next, page: 1 })
   }
@@ -80,7 +102,7 @@ export function RestaurantList({ onOpen }: Props) {
     setFreeDelivery(false)
     setNoMinimum(false)
     setSort('recommended')
-    setQuery({ search: '', city: '', openOnly: false, page: 1 })
+    setQuery({ search: '', city: '', openOnly: false, page: 1, categoryId: '' })
   }
 
   const items = useMemo(() => {
@@ -92,7 +114,16 @@ export function RestaurantList({ onOpen }: Props) {
     return list
   }, [data, freeDelivery, noMinimum, sort])
 
-  const filtered = query.search !== '' || query.city !== '' || query.openOnly || freeDelivery || noMinimum || sort !== 'recommended'
+  const filtered = query.search !== '' || query.city !== '' || query.categoryId !== '' || query.openOnly || freeDelivery || noMinimum
+    || sort !== 'recommended'
+  // HUB's categories once loaded; the built-in shortcuts only when the server has none.
+  const shortcuts: Shortcut[] = categories === null ? []
+    : categories.length > 0
+      ? categories.map((category) => ({ key: category.id, label: category.name, photo: mediaUrl(category.imageUrl) ?? bundledPhoto(category.name),
+        categoryId: category.id, search: '' }))
+      : cuisines.map((cuisine) => ({ key: cuisine.label, label: cuisine.label, photo: cuisine.photo, categoryId: '', search: cuisine.search }))
+  const activeCategory = categories?.find((category) => category.id === query.categoryId)
+  const isOn = (shortcut: Shortcut) => shortcut.categoryId ? query.categoryId === shortcut.categoryId : query.search === shortcut.search
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1
 
   return (
@@ -110,11 +141,13 @@ export function RestaurantList({ onOpen }: Props) {
 
       <div className="fd-sheet">
         <div className="fd-cuisines" role="list" aria-label="Cuisines">
-          {cuisines.map((cuisine) => (
-            <button key={cuisine.label} type="button" role="listitem" className={query.search === cuisine.search ? 'fd-cuisine active' : 'fd-cuisine'}
-              aria-pressed={query.search === cuisine.search} onClick={() => pickCuisine(cuisine.search)}>
-              <span className="fd-cuisine-photo"><img src={cuisine.photo} alt="" loading="lazy" /></span>
-              <span className="fd-cuisine-label">{cuisine.label}</span>
+          {shortcuts.map((shortcut) => (
+            <button key={shortcut.key} type="button" role="listitem" className={isOn(shortcut) ? 'fd-cuisine active' : 'fd-cuisine'}
+              aria-pressed={isOn(shortcut)} onClick={() => pick(shortcut)}>
+              <span className="fd-cuisine-photo">
+                {shortcut.photo ? <img src={shortcut.photo} alt="" loading="lazy" /> : <span className="fd-pick-empty">{shortcut.label.slice(0, 1)}</span>}
+              </span>
+              <span className="fd-cuisine-label">{shortcut.label}</span>
             </button>
           ))}
         </div>
@@ -143,6 +176,7 @@ export function RestaurantList({ onOpen }: Props) {
         <h2 className="fd-results">
           {query.search ? `${items.length} ${items.length === 1 ? 'result' : 'results'} for “${query.search}”`
             : `${items.length} ${items.length === 1 ? 'restaurant' : 'restaurants'}`}
+          {activeCategory && ` · ${activeCategory.name}`}
           {query.city && ` in ${query.city}`}
         </h2>
       )}

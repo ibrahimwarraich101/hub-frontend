@@ -1,9 +1,11 @@
-// File purpose: Admin portal (HUB Food part): one page with three areas - restaurant approvals, all food orders and
-// customer complaints. Only shown to Administrators; the backend checks the role again on every request.
+// File purpose: Admin portal (HUB Food part): one page with four areas - restaurant approvals, all food orders, customer
+// complaints and the food categories customers browse by. Only shown to Administrators; the backend checks the role
+// again on every request.
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { foodPaths } from '../foodApi'
 import type { AdminOrderTotals } from '../foodApi'
+import { AdminCategories } from './AdminCategories'
 import { AdminComplaints } from './AdminComplaints'
 import { AdminOrders } from './AdminOrders'
 import { RestaurantApprovals } from './RestaurantApprovals'
@@ -11,7 +13,7 @@ import '../food.css'
 import '../../../shared/auth/auth.css'
 
 type Props = { onExit: () => void }
-type Area = 'restaurants' | 'orders' | 'complaints'
+type Area = 'restaurants' | 'orders' | 'complaints' | 'categories'
 
 export function FoodAdmin({ onExit }: Props) {
   const { authFetch } = useAuth()
@@ -34,6 +36,7 @@ export function FoodAdmin({ onExit }: Props) {
     { value: 'restaurants', label: 'Restaurants' },
     { value: 'orders', label: 'All orders' },
     { value: 'complaints', label: 'Complaints' },
+    { value: 'categories', label: 'Categories' },
   ]
 
   return (
@@ -53,6 +56,7 @@ export function FoodAdmin({ onExit }: Props) {
       </div>
       {area === 'restaurants' && <RestaurantApprovals />}
       {area === 'orders' && <AdminOrders key={orderId ?? 'list'} initialOrderId={orderId} />}
+      {area === 'categories' && <AdminCategories />}
       {area === 'complaints' && (
         <AdminComplaints onChanged={count} onOpenOrder={(id) => { setOrderId(id); setArea('orders') }} />
       )}

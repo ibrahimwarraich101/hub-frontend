@@ -8,6 +8,7 @@ import { Field } from '../../../shared/auth/AuthScreens'
 import { collect, firstError, hasErrors, rules } from '../../../shared/forms/validation'
 import { foodPhone, foodPaths, money } from '../foodApi'
 import type { RestaurantAccount } from '../foodApi'
+import { CategoryPicker } from './CategoryPicker'
 import { PhotoButton } from './PhotoButton'
 
 type Props = { account: RestaurantAccount; onSaved: (account: RestaurantAccount) => void }
@@ -102,6 +103,8 @@ export function RestaurantSettings({ account, onSaved }: Props) {
         </div>
         {photoError && <p className="fd-message error" role="alert">{photoError}</p>}
       </section>
+
+      <CategoryPicker />
 
       <section className="fd-panel" aria-label="Customer preview">
         <h2>What customers see</h2>

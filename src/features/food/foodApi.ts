@@ -87,6 +87,11 @@ export type FoodOrder = {
   canComplain: boolean
 }
 
+// HUB Food categories (cuisines) kept by administrators; each restaurant picks up to 3.
+export type FoodCategory = { id: string; name: string; imageUrl: string | null; restaurantCount: number }
+export type AdminCategory = { id: string; name: string; sortOrder: number; active: boolean; imageUrl: string | null; restaurantCount: number; version: number }
+export type MyRestaurantCategories = { available: FoodCategory[]; selected: string[]; maxSelected: number }
+
 export type ComplaintTopic = 'WrongItem' | 'MissingItem' | 'FoodQuality' | 'LateDelivery' | 'NotDelivered' | 'Payment' | 'Other'
 export type ComplaintStatus = 'Open' | 'Resolved' | 'Dismissed'
 
@@ -263,9 +268,10 @@ export const decisionsFor: Record<RestaurantStatus, RestaurantDecision[]> = {
 const id = (value: string) => encodeURIComponent(value)
 
 export const foodPaths = {
-  restaurants: (search: string, city: string, openOnly: boolean, page: number) => {
+  restaurants: (search: string, city: string, openOnly: boolean, page: number, categoryId = '') => {
     const query = new URLSearchParams({ page: String(page), pageSize: '20' })
     if (search.trim()) query.set('search', search.trim())
+    if (categoryId) query.set('categoryId', categoryId)
     if (city.trim()) query.set('city', city.trim())
     if (openOnly) query.set('openOnly', 'true')
     return `/api/food/restaurants?${query.toString()}`
@@ -307,6 +313,11 @@ export const foodPaths = {
   },
   adminOrder: (orderId: string) => `/api/admin/food/orders/${id(orderId)}`,
   adminOrderTotals: '/api/admin/food/orders/totals',
+  foodCategories: '/api/food/categories',
+  myCategories: '/api/food/my-restaurant/categories',
+  adminCategories: '/api/admin/food/categories',
+  adminCategory: (categoryId: string) => `/api/admin/food/categories/${id(categoryId)}`,
+  adminCategoryPhoto: (categoryId: string) => `/api/admin/food/categories/${id(categoryId)}/photo`,
   complain: (orderId: string) => `/api/food/orders/${id(orderId)}/complaint`,
   restaurantComplaints: (status: 'open' | 'closed', page: number) => `/api/food/my-restaurant/complaints?status=${status}&page=${page}&pageSize=20`,
   complaintReply: (complaintId: string) => `/api/food/my-restaurant/complaints/${id(complaintId)}/reply`,
