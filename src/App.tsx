@@ -6,7 +6,7 @@ import { MarketplaceApp } from './features/marketplace/MarketplaceApp'
 import { SellerCenter } from './features/marketplace/seller/SellerCenter'
 import { FoodApp } from './features/food/FoodApp'
 import { RestaurantCenter } from './features/food/partner/RestaurantCenter'
-import { RestaurantApprovals } from './features/food/admin/RestaurantApprovals'
+import { FoodAdmin } from './features/food/admin/FoodAdmin'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
 import { businessOptions } from './shared/auth/businessOptions'
@@ -36,7 +36,7 @@ function App() {
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
   if (view === 'food') return <FoodApp onExit={home} />
   if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} />
-  if (view === 'food-admin' && hasRole('Administrator')) return <RestaurantApprovals onExit={home} />
+  if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
 
   const intent = businessOptions.find((option) => option.id === businessIntent)
   const firstName = user.fullName.split(' ')[0]
@@ -99,8 +99,8 @@ function App() {
         )}
         {hasRole('Administrator') && (
           <button type="button" className="hub-tile admin" onClick={() => setService('food-admin')}>
-            <strong>Restaurant approvals</strong>
-            <span>Approve, reject or suspend restaurants</span>
+            <strong>HUB Food admin</strong>
+            <span>Restaurant approvals and all food orders</span>
           </button>
         )}
       </div>

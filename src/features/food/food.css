@@ -172,6 +172,7 @@
 /* ---------- Messages ---------- */
 .fd-message { padding: 12px 16px; border-radius: var(--hub-radius-input); background: var(--hub-info-surface); color: var(--hub-info); margin: 12px 0; }
 .fd-message.error { background: var(--hub-error-surface); color: var(--hub-error); }
+.fd-message.warn { background: var(--hub-warning-surface); color: var(--hub-warning); }
 .fd-test { padding: 14px; border-radius: var(--hub-radius-input); border: 1px dashed var(--hub-warning); background: var(--hub-warning-surface);
   color: var(--hub-warning); display: flex; flex-direction: column; gap: 8px; }
 .fd-reason { padding: 10px 12px; border-radius: var(--hub-radius-small); background: var(--hub-error-surface); color: var(--hub-error); }
@@ -263,3 +264,32 @@
 .fd-photo-slot.cover { width: 160px; height: 96px; border-radius: var(--hub-radius-input); }
 .fd-photo-slot.logo { width: 72px; height: 72px; border-radius: 18px; }
 .fd-settings .fd-card:hover { transform: none; box-shadow: none; }
+
+/* ---------- Admin: area switch and the all-orders page ---------- */
+.fd-admin-areas { display: flex; gap: 4px; margin: 0 0 18px; padding: 4px; border-radius: var(--hub-radius-pill); background: var(--hub-surface-muted);
+  width: fit-content; max-width: 100%; }
+.fd-admin-areas button { min-height: 40px; padding: 0 22px; border: none; border-radius: var(--hub-radius-pill); background: none;
+  color: var(--hub-secondary); font-weight: 700; }
+.fd-admin-areas button.active { background: var(--hub-primary); color: var(--hub-on-primary); }
+.fd-admin-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; }
+.fd-admin-filters input { min-height: 42px; padding: 0 14px; border: 1px solid var(--hub-border); border-radius: var(--hub-radius-input);
+  background: var(--hub-surface); color: var(--hub-text); font: inherit; box-sizing: border-box; }
+.fd-admin-filters > input { flex: 1 1 260px; min-width: 0; }
+.fd-admin-filters label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--hub-secondary); }
+.fd-admin-only { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 8px 14px;
+  border-radius: var(--hub-radius-input); background: var(--hub-mint); color: var(--hub-heading); }
+.fd-admin-only .fd-link { align-self: center; padding: 0; }
+.fd-admin-filters .fd-link { align-self: center; }
+.fd-admin-row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.9fr) minmax(0, 1.2fr) 230px; }
+.fd-admin-row > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fd-admin-row strong { color: var(--hub-heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-admin-badges { display: flex; flex-direction: row; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+.fd-admin-row .fd-admin-badges { flex-direction: row; }
+.fd-admin-badges .fd-status { align-self: center; }
+.fd-admin-column { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.fd-admin-history { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 3px solid var(--hub-mint); display: flex; flex-direction: column; gap: 8px; }
+.fd-admin-history li { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 720px) {
+  .fd-admin-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .fd-admin-row .fd-admin-badges { justify-content: flex-start; }
+}

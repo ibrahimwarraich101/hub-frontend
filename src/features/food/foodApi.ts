@@ -147,6 +147,53 @@ export type MenuItem = {
 export type OwnerMenuCategory = { id: string; name: string; sortOrder: number; archived: boolean; items: MenuItem[] }
 export type OwnerMenu = { restaurantId: string; categories: OwnerMenuCategory[] }
 
+// The administrator's view of all food orders. Filter: '' = all, one status, 'active' (being worked on) or
+// 'refund' (paid, then cancelled, money not returned yet).
+export type AdminOrderFilter = '' | OrderStatus | 'active' | 'refund'
+
+export type AdminOrderSummary = {
+  id: string
+  number: string
+  status: OrderStatus
+  restaurantId: string
+  restaurantName: string
+  customerName: string
+  deliveryCity: string
+  total: number
+  currency: string
+  itemCount: number
+  paid: boolean
+  refundDue: boolean
+  createdAt: string
+}
+
+export type AdminOrderPage = { total: number; page: number; pageSize: number; items: AdminOrderSummary[] }
+
+export type AdminOrderPerson = { id: string; fullName: string; email: string; phone: string }
+
+export type AdminOrder = {
+  order: FoodOrder
+  customer: AdminOrderPerson
+  restaurantOwner: AdminOrderPerson
+  restaurantPhone: string
+  paymentStatus: 'Pending' | 'Successful' | 'Failed'
+  refundDue: boolean
+  payments: { provider: string; methodType: string; status: string; amount: number; reference: string; createdAt: string; refundDue: boolean }[]
+}
+
+// "Today" is the Pakistan calendar day; sales are totals of paid, not-cancelled orders.
+export type AdminOrderTotals = {
+  allOrders: number
+  todayOrders: number
+  todaySales: number
+  awaitingPayment: number
+  active: number
+  delivered: number
+  cancelled: number
+  refundsDue: number
+  currency: string
+}
+
 export type RestaurantDecision = 'Approve' | 'Reject' | 'Suspend' | 'Reinstate'
 
 // Which decisions an administrator may take for each status.
@@ -193,6 +240,17 @@ export const foodPaths = {
   restaurantOrderStatus: (orderId: string) => `/api/food/my-restaurant/orders/${id(orderId)}/status`,
   adminQueue: (status: RestaurantStatus, page: number) => `/api/admin/food/restaurants?status=${status}&page=${page}&pageSize=20`,
   adminReview: (restaurantId: string) => `/api/admin/food/restaurants/${id(restaurantId)}/review`,
+  adminOrders: (status: AdminOrderFilter, search: string, from: string, to: string, restaurantId: string, page: number) => {
+    const query = new URLSearchParams({ page: String(page), pageSize: '20' })
+    if (status) query.set('status', status)
+    if (search.trim()) query.set('search', search.trim())
+    if (from) query.set('from', from)
+    if (to) query.set('to', to)
+    if (restaurantId) query.set('restaurantId', restaurantId)
+    return `/api/admin/food/orders?${query.toString()}`
+  },
+  adminOrder: (orderId: string) => `/api/admin/food/orders/${id(orderId)}`,
+  adminOrderTotals: '/api/admin/food/orders/totals',
 }
 
 // "Rs 1,250" (prices are whole or two-decimal rupees).

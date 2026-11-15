@@ -1,18 +1,14 @@
 // File purpose: Admin portal (HUB Food part): review restaurants - approve, reject, suspend or reinstate with a reason.
-// Only shown to Administrators; the backend checks the role again on every request.
+// Shown inside FoodAdmin; the backend checks the Administrator role on every request.
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { dateTime, decisionsFor, foodPaths } from '../foodApi'
 import type { AdminRestaurant, AdminRestaurantPage, RestaurantDecision, RestaurantStatus } from '../foodApi'
-import '../food.css'
-import '../../../shared/auth/auth.css'
-
-type Props = { onExit: () => void }
 
 const STATUSES: RestaurantStatus[] = ['Pending', 'Approved', 'Suspended', 'Rejected']
 
-export function RestaurantApprovals({ onExit }: Props) {
+export function RestaurantApprovals() {
   const { authFetch } = useAuth()
   const [status, setStatus] = useState<RestaurantStatus>('Pending')
   const [page, setPage] = useState(1)
@@ -36,11 +32,7 @@ export function RestaurantApprovals({ onExit }: Props) {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1
 
   return (
-    <section className="fd-app" aria-label="Restaurant approvals">
-      <header className="fd-header">
-        <button type="button" className="fd-back" onClick={onExit}>← HUB</button>
-        <h1>Admin portal · Restaurants</h1>
-      </header>
+    <>
       <div className="fd-tabs" role="tablist" aria-label="Restaurant status">
         {STATUSES.map((value) => (
           <button key={value} type="button" role="tab" aria-selected={status === value} className={status === value ? 'fd-tab active' : 'fd-tab'}
@@ -63,7 +55,7 @@ export function RestaurantApprovals({ onExit }: Props) {
           <button type="button" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</button>
         </nav>
       )}
-    </section>
+    </>
   )
 }
 
