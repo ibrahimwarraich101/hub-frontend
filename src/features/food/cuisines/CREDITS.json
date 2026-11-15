@@ -1,0 +1,71 @@
+{
+  "note": "Cuisine shortcut photos: square crops of generic food photos from Wikimedia Commons (free licences). Keep this credit list with the photos.",
+  "photos": {
+    "fries": {
+      "file": "fries.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:French_Fries.JPG",
+      "license": "CC0",
+      "author": "StockSnap"
+    },
+    "pepperoni": {
+      "file": "pepperoni.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Pepperoni_Pizza_(29204589095).jpg",
+      "license": "CC BY 2.0",
+      "author": "Jonathan Cutrer from San Angelo, United States"
+    },
+    "cheeseburger": {
+      "file": "cheeseburger.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Cheeseburger.jpg",
+      "license": "Public domain",
+      "author": "Renee Comet (photographer)"
+    },
+    "pulao": {
+      "file": "pulao.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Afghan_Palo.jpg",
+      "license": "CC BY-SA 1.0",
+      "author": "Jost Wagner"
+    },
+    "fried-chicken": {
+      "file": "fried-chicken.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Fried-Chicken-Set.jpg",
+      "license": "CC0",
+      "author": "Evan-Amos"
+    },
+    "karahi": {
+      "file": "karahi.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Punjabi_Chicken_Karahi.JPG",
+      "license": "Public domain",
+      "author": "Miansari66"
+    },
+    "chicken-tikka": {
+      "file": "chicken-tikka.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Tandoorimumbai.jpg",
+      "license": "CC BY-SA 2.0",
+      "author": "kspoddar"
+    },
+    "chow-mein": {
+      "file": "chow-mein.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Homemade_Chow_mein_with_shrimps_and_meat_with_a_choy_and_Choung.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "Peachyeung316"
+    },
+    "wrap": {
+      "file": "wrap.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Smoked_chicken_and_avocado_wrap.jpg",
+      "license": "CC BY-SA 3.0",
+      "author": "Takeaway"
+    },
+    "chai": {
+      "file": "chai.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Chai_In_Sakora.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "Dadhichbittu007"
+    },
+    "cheesecake": {
+      "file": "cheesecake.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Baked_cheesecake_with_raspberries_and_blueberries.jpg",
+      "license": "CC BY 2.0",
+      "author": "zingyyellow"
+    }
+  }
+}
