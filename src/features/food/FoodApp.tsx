@@ -1,6 +1,6 @@
 // File purpose: HUB Food for customers: browse restaurants, open a menu, cart and checkout, and track orders.
 // Screens switch inside this component, and the current one is kept in the address (#food, #food/restaurant/<id>,
-// #food/cart, #food/orders, #food/order/<id>), so Refresh and the browser's Back button work. The header's Back button
+// #food/cart, #food/checkout/<restaurant id>, #food/orders, #food/order/<id>), so Refresh and the browser's Back button work. The header's Back button
 // goes back one step, or up to the parent screen when the page was opened directly.
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../shared/api/client'
@@ -19,6 +19,7 @@ type View =
   | { kind: 'home' }
   | { kind: 'restaurant'; id: string }
   | { kind: 'cart' }
+  | { kind: 'checkout'; id: string }
   | { kind: 'orders' }
   | { kind: 'order'; id: string }
 
@@ -31,23 +32,25 @@ function readView(path: string | null): View {
   const [kind, id] = (path ?? '').split('/')
   if (kind === 'restaurant' && id) return { kind: 'restaurant', id: decodeURIComponent(id) }
   if (kind === 'order' && id) return { kind: 'order', id: decodeURIComponent(id) }
+  if (kind === 'checkout' && id) return { kind: 'checkout', id: decodeURIComponent(id) }
   if (kind === 'cart') return { kind: 'cart' }
   if (kind === 'orders') return { kind: 'orders' }
   return { kind: 'home' }
 }
 
 function pathOf(view: View): string {
-  if (view.kind === 'restaurant' || view.kind === 'order') return `${view.kind}/${encodeURIComponent(view.id)}`
+  if (view.kind === 'restaurant' || view.kind === 'order' || view.kind === 'checkout') return `${view.kind}/${encodeURIComponent(view.id)}`
   return view.kind === 'home' ? '' : view.kind
 }
 
 // Where the header's Back button goes when there is no earlier Food screen to return to.
 function parentOf(view: View): View {
-  return view.kind === 'order' ? { kind: 'orders' } : { kind: 'home' }
+  if (view.kind === 'order') return { kind: 'orders' }
+  return view.kind === 'checkout' ? { kind: 'restaurant', id: view.id } : { kind: 'home' }
 }
 
 const backLabel: Record<View['kind'], string> = {
-  home: '← HUB', restaurant: '← Back', cart: '← Back', orders: '← Back', order: '← Back',
+  home: '← HUB', restaurant: '← Back', cart: '← Back', checkout: '← Back', orders: '← Back', order: '← Back',
 }
 
 export function FoodApp({ onExit }: Props) {
@@ -101,11 +104,12 @@ export function FoodApp({ onExit }: Props) {
 
       {view.kind === 'home' && <RestaurantList onOpen={(id) => go({ kind: 'restaurant', id })} />}
       {view.kind === 'restaurant' && (
-        <RestaurantMenu restaurantId={view.id} cart={cart} onCartChange={setCart} onCheckout={() => go({ kind: 'cart' })} />
+        <RestaurantMenu restaurantId={view.id} cart={cart} onCartChange={setCart} onCheckout={() => go({ kind: 'checkout', id: view.id })} />
       )}
-      {view.kind === 'cart' && (
-        <CartView cart={cart} onCartChange={setCart} onOrdered={(id) => { refreshCart(); go({ kind: 'order', id }, true) }}
-          onBrowse={() => go({ kind: 'home' })} />
+      {(view.kind === 'cart' || view.kind === 'checkout') && (
+        <CartView cart={cart} checkoutFor={view.kind === 'checkout' ? view.id : null} onCartChange={setCart}
+          onCheckout={(id) => go({ kind: 'checkout', id })} onCancelCheckout={back}
+          onOrdered={(id) => { refreshCart(); go({ kind: 'order', id }, true) }} onBrowse={() => go({ kind: 'home' })} />
       )}
       {view.kind === 'orders' && <OrdersView onOpen={(id) => go({ kind: 'order', id })} />}
       {view.kind === 'order' && <OrderDetails orderId={view.id} />}
