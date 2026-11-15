@@ -1,5 +1,6 @@
 // File purpose: Restaurant Center: apply to open a restaurant on HUB Food, see the application status, re-apply after
-// a rejection, and (once approved) manage incoming orders, the menu and restaurant settings.
+// a rejection, and (once approved) manage incoming orders, the menu and restaurant settings. The open tab is kept in the
+// address (#restaurant/<tab>), so Refresh stays on it and the browser's Back button returns to the HUB home.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
@@ -9,6 +10,7 @@ import { collect, firstError, focusFirstError, hasErrors, rules } from '../../..
 import type { FieldErrors } from '../../../shared/forms/validation'
 import '../../../shared/auth/auth.css'
 import { foodPhone, dateTime, foodPaths } from '../foodApi'
+import { enterSection, goTo, leaveSection, sectionPath, useSectionHistory } from '../foodRoute'
 import type { RestaurantAccount, RestaurantSummaryStats } from '../foodApi'
 import '../food.css'
 import { MenuManager } from './MenuManager'
@@ -19,20 +21,31 @@ import { SummaryBar } from './SummaryBar'
 
 export type CenterTab = 'orders' | 'menu' | 'complaints' | 'settings'
 type Tab = CenterTab
+const TABS: Tab[] = ['orders', 'menu', 'complaints', 'settings']
+const SECTION = 'restaurant'
+const readTab = (path: string | null): Tab | null => (TABS as string[]).includes(path ?? '') ? path as Tab : null
 // initialTab: which tool opens first (orders by default).
 type Props = { onExit: () => void; initialTab?: CenterTab }
 
-export function RestaurantCenter({ onExit, initialTab = 'orders' }: Props) {
+export function RestaurantCenter({ onExit: leave, initialTab = 'orders' }: Props) {
   const { authFetch, user } = useAuth()
   // undefined = loading, null = has not applied yet.
   const [account, setAccount] = useState<RestaurantAccount | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
-  const [tab, setTab] = useState<Tab>(initialTab)
+  const [tab, setTabState] = useState<Tab>(() => readTab(sectionPath(SECTION)) ?? initialTab)
   const [waiting, setWaiting] = useState(0)
   const [complaints, setComplaints] = useState(0)
   const [switching, setSwitching] = useState(false)
   const [switchError, setSwitchError] = useState<string | null>(null)
+  useEffect(() => { enterSection(SECTION, readTab(sectionPath(SECTION)) ?? initialTab) }, [initialTab])
+  const onExit = useCallback(() => { leaveSection(); leave() }, [leave])
+  useSectionHistory(SECTION, useCallback((path: string | null) => {
+    if (path === null) leave()
+    else setTabState(readTab(path) ?? 'orders')
+  }, [leave]))
+  // Switching tabs replaces the address, so Back still leaves the Restaurant Center in one step.
+  const setTab = (next: Tab) => { goTo(SECTION, next, true); setTabState(next) }
   const onStats = useCallback((stats: RestaurantSummaryStats) => { setWaiting(stats.waitingOrders); setComplaints(stats.openComplaints) }, [])
 
   const load = useCallback(() => {
@@ -126,7 +139,7 @@ export function RestaurantCenter({ onExit, initialTab = 'orders' }: Props) {
           {switchError && <div className="fd-message error" role="alert">{switchError}</div>}
           <SummaryBar onStats={onStats} />
           <div className="fd-tabs" role="tablist" aria-label="Restaurant tools">
-            {(['orders', 'menu', 'complaints', 'settings'] as Tab[]).map((value) => (
+            {TABS.map((value) => (
               <button key={value} type="button" role="tab" aria-selected={tab === value} className={tab === value ? 'fd-tab active' : 'fd-tab'}
                 onClick={() => setTab(value)}>
                 {value === 'orders' ? 'Orders' : value === 'menu' ? 'Menu' : value === 'complaints' ? 'Complaints' : 'Settings & photos'}

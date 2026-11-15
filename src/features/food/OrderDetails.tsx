@@ -7,9 +7,9 @@ import { ComplaintThread } from './ComplaintThread'
 import { complaintTopicLabel, dateTime, foodPaths, money, statusLabel, trackerSteps } from './foodApi'
 import type { ComplaintTopic, FoodOrder } from './foodApi'
 
-type Props = { orderId: string; onBack: () => void }
+type Props = { orderId: string }
 
-export function OrderDetails({ orderId, onBack }: Props) {
+export function OrderDetails({ orderId }: Props) {
   const { authFetch } = useAuth()
   const [order, setOrder] = useState<FoodOrder | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -56,7 +56,6 @@ export function OrderDetails({ orderId, onBack }: Props) {
   return (
     <div className="fd-layout">
       <div>
-        <button type="button" className="fd-link" onClick={onBack}>← My orders</button>
         <div className="fd-panel">
           <h2>{order.restaurantName}</h2>
           <p className="fd-meta">Order {order.number} · placed {dateTime(order.createdAt)}</p>
