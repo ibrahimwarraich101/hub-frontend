@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
-import { dateTime, foodPaths, money, statusLabel, trackerSteps } from './foodApi'
-import type { FoodOrder } from './foodApi'
+import { ComplaintThread } from './ComplaintThread'
+import { complaintTopicLabel, dateTime, foodPaths, money, statusLabel, trackerSteps } from './foodApi'
+import type { ComplaintTopic, FoodOrder } from './foodApi'
 
 type Props = { orderId: string; onBack: () => void }
 
@@ -17,6 +18,9 @@ export function OrderDetails({ orderId, onBack }: Props) {
   const [reason, setReason] = useState('')
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
+  const [reporting, setReporting] = useState(false)
+  const [topic, setTopic] = useState<ComplaintTopic>('FoodQuality')
+  const [details, setDetails] = useState('')
 
   const load = useCallback(() => {
     authFetch<FoodOrder>(foodPaths.order(orderId))
@@ -38,6 +42,7 @@ export function OrderDetails({ orderId, onBack }: Props) {
     try {
       setOrder(await authFetch<FoodOrder>(path, 'POST', body))
       setCancelling(false)
+      setReporting(false)
     } catch (problem) {
       setError(problem instanceof ApiError ? problem.message : 'Something went wrong. Please try again.')
     } finally {
@@ -124,6 +129,38 @@ export function OrderDetails({ orderId, onBack }: Props) {
           )}
           {order.review && (
             <p>Your rating: {'★'.repeat(order.review.rating)}{'☆'.repeat(5 - order.review.rating)} {order.review.comment}</p>
+          )}
+
+          {order.complaint && (
+            <>
+              <h3>Your problem report</h3>
+              <ComplaintThread complaint={order.complaint} viewer="customer" />
+            </>
+          )}
+          {order.canComplain && !reporting && (
+            <button type="button" className="fd-link" onClick={() => setReporting(true)}>Report a problem with this order</button>
+          )}
+          {reporting && (
+            <div className="fd-form">
+              <h3>Report a problem</h3>
+              <label className="auth-field">
+                What went wrong?
+                <select value={topic} onChange={(e) => setTopic(e.target.value as ComplaintTopic)}>
+                  {(Object.keys(complaintTopicLabel) as ComplaintTopic[]).map((key) => <option key={key} value={key}>{complaintTopicLabel[key]}</option>)}
+                </select>
+              </label>
+              <label className="auth-field">
+                Tell us what happened
+                <textarea rows={3} maxLength={1000} value={details} onChange={(e) => setDetails(e.target.value)}
+                  placeholder="For example: the raita was missing from my bag." />
+              </label>
+              <p className="fd-meta">The restaurant can answer, and HUB will decide what happens. {details.trim().length < 10 && 'Write at least 10 characters.'}</p>
+              <div className="fd-actions">
+                <button type="button" className="fd-primary" disabled={busy || details.trim().length < 10}
+                  onClick={() => void act(foodPaths.complain(order.id), { topic, details: details.trim() })}>Send report</button>
+                <button type="button" className="fd-secondary" onClick={() => setReporting(false)}>Never mind</button>
+              </div>
+            </div>
           )}
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import { ComplaintThread } from '../ComplaintThread'
 import { dateTime, foodPaths, money, statusLabel } from '../foodApi'
 import type { AdminOrder, AdminOrderFilter, AdminOrderPage, AdminOrderTotals } from '../foodApi'
 
@@ -20,14 +21,15 @@ const FILTER_TABS: { value: AdminOrderFilter; label: string }[] = [
   { value: 'refund', label: 'Refund due' },
 ]
 
-export function AdminOrders() {
+// initialOrderId: open this order straight away (for example from a complaint).
+export function AdminOrders({ initialOrderId = null }: { initialOrderId?: string | null }) {
   const { authFetch } = useAuth()
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [search, setSearch] = useState('')
   const [data, setData] = useState<AdminOrderPage | null>(null)
   const [totals, setTotals] = useState<AdminOrderTotals | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [openId, setOpenId] = useState<string | null>(null)
+  const [openId, setOpenId] = useState<string | null>(initialOrderId)
 
   const load = useCallback((signal: { cancelled: boolean }) => {
     authFetch<AdminOrderPage>(foodPaths.adminOrders(filters.status, filters.search, filters.from, filters.to, filters.restaurant?.id ?? '', filters.page))
@@ -207,6 +209,13 @@ function OrderView({ orderId, onBack, onRestaurant }: ViewProps) {
             <p>Customer rating: {'★'.repeat(order.review.rating)}{'☆'.repeat(5 - order.review.rating)} {order.review.comment}</p>
           )}
         </div>
+
+        {order.complaint && (
+          <div className="fd-panel">
+            <h3>Complaint</h3>
+            <ComplaintThread complaint={order.complaint} viewer="admin" />
+          </div>
+        )}
 
         <div className="fd-panel">
           <h3>Customer</h3>

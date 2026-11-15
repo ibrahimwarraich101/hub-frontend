@@ -82,6 +82,52 @@ export type FoodOrder = {
   canReview: boolean
   testPaymentAvailable: boolean
   version: number
+  // The customer's complaint about this order (if any) and whether the customer can still report a problem.
+  complaint: FoodComplaint | null
+  canComplain: boolean
+}
+
+export type ComplaintTopic = 'WrongItem' | 'MissingItem' | 'FoodQuality' | 'LateDelivery' | 'NotDelivered' | 'Payment' | 'Other'
+export type ComplaintStatus = 'Open' | 'Resolved' | 'Dismissed'
+
+// A customer's report about one paid order; the restaurant answers, HUB decides.
+export type FoodComplaint = {
+  id: string
+  orderId: string
+  orderNumber: string
+  orderTotal: number
+  restaurantId: string
+  restaurantName: string
+  customerName: string | null
+  topic: ComplaintTopic
+  details: string
+  status: ComplaintStatus
+  createdAt: string
+  restaurantReply: string | null
+  repliedAt: string | null
+  adminNote: string | null
+  closedAt: string | null
+  canReply: boolean
+  canClose: boolean
+  version: number
+}
+
+export type FoodComplaintPage = { total: number; page: number; pageSize: number; items: FoodComplaint[] }
+
+export const complaintTopicLabel: Record<ComplaintTopic, string> = {
+  WrongItem: 'Wrong item',
+  MissingItem: 'Something was missing',
+  FoodQuality: 'Food quality',
+  LateDelivery: 'Late delivery',
+  NotDelivered: 'Never arrived',
+  Payment: 'Payment problem',
+  Other: 'Something else',
+}
+
+export const complaintStatusLabel: Record<ComplaintStatus, string> = {
+  Open: 'Waiting for HUB',
+  Resolved: 'Resolved',
+  Dismissed: 'Dismissed',
 }
 
 export type FoodOrderSummary = {
@@ -192,6 +238,16 @@ export type AdminOrderTotals = {
   cancelled: number
   refundsDue: number
   currency: string
+  openComplaints: number
+}
+
+export type AdminComplaint = {
+  complaint: FoodComplaint
+  customer: AdminOrderPerson
+  restaurantOwner: AdminOrderPerson
+  restaurantPhone: string
+  orderStatus: OrderStatus
+  refundDue: boolean
 }
 
 export type RestaurantDecision = 'Approve' | 'Reject' | 'Suspend' | 'Reinstate'
@@ -251,6 +307,17 @@ export const foodPaths = {
   },
   adminOrder: (orderId: string) => `/api/admin/food/orders/${id(orderId)}`,
   adminOrderTotals: '/api/admin/food/orders/totals',
+  complain: (orderId: string) => `/api/food/orders/${id(orderId)}/complaint`,
+  restaurantComplaints: (status: 'open' | 'closed', page: number) => `/api/food/my-restaurant/complaints?status=${status}&page=${page}&pageSize=20`,
+  complaintReply: (complaintId: string) => `/api/food/my-restaurant/complaints/${id(complaintId)}/reply`,
+  adminComplaints: (status: ComplaintStatus | '', search: string, page: number) => {
+    const query = new URLSearchParams({ page: String(page), pageSize: '20' })
+    if (status) query.set('status', status)
+    if (search.trim()) query.set('search', search.trim())
+    return `/api/admin/food/complaints?${query.toString()}`
+  },
+  adminComplaint: (complaintId: string) => `/api/admin/food/complaints/${id(complaintId)}`,
+  adminCloseComplaint: (complaintId: string) => `/api/admin/food/complaints/${id(complaintId)}/close`,
 }
 
 // "Rs 1,250" (prices are whole or two-decimal rupees).
@@ -300,6 +367,7 @@ export type RestaurantSummaryStats = {
   rating: number | null
   ratingCount: number
   currency: string
+  openComplaints: number
 }
 
 // "just now", "5 min ago", "2 h ago", or the date for older times.

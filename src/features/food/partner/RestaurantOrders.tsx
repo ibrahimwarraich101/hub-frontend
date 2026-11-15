@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import { ComplaintThread } from '../ComplaintThread'
 import { foodPaths, money, statusLabel, timeAgo } from '../foodApi'
 import type { FoodOrder, FoodOrderPage, OrderStatus } from '../foodApi'
 
@@ -149,6 +150,12 @@ export function RestaurantOrders() {
             {open.note && (<><dt>Note</dt><dd>{open.note}</dd></>)}
           </dl>
           {open.status === 'Cancelled' && <p className="fd-reason">Cancelled: {open.cancelReason}</p>}
+          {open.complaint && (
+            <>
+              <ComplaintThread complaint={open.complaint} viewer="restaurant" />
+              {open.complaint.canReply && <p className="fd-meta">Answer it in the Complaints tab.</p>}
+            </>
+          )}
           {next && <button type="button" className="fd-primary" disabled={busy} onClick={() => void update(next.status)}>{next.label}</button>}
           {(open.status === 'Placed' || open.status === 'Accepted') && (
             <div className="fd-form">

@@ -12,11 +12,12 @@ import { foodPhone, dateTime, foodPaths } from '../foodApi'
 import type { RestaurantAccount, RestaurantSummaryStats } from '../foodApi'
 import '../food.css'
 import { MenuManager } from './MenuManager'
+import { RestaurantComplaints } from './RestaurantComplaints'
 import { RestaurantOrders } from './RestaurantOrders'
 import { RestaurantSettings } from './RestaurantSettings'
 import { SummaryBar } from './SummaryBar'
 
-export type CenterTab = 'orders' | 'menu' | 'settings'
+export type CenterTab = 'orders' | 'menu' | 'complaints' | 'settings'
 type Tab = CenterTab
 // initialTab: which tool opens first (orders by default).
 type Props = { onExit: () => void; initialTab?: CenterTab }
@@ -29,9 +30,10 @@ export function RestaurantCenter({ onExit, initialTab = 'orders' }: Props) {
   const [editing, setEditing] = useState(false)
   const [tab, setTab] = useState<Tab>(initialTab)
   const [waiting, setWaiting] = useState(0)
+  const [complaints, setComplaints] = useState(0)
   const [switching, setSwitching] = useState(false)
   const [switchError, setSwitchError] = useState<string | null>(null)
-  const onStats = useCallback((stats: RestaurantSummaryStats) => setWaiting(stats.waitingOrders), [])
+  const onStats = useCallback((stats: RestaurantSummaryStats) => { setWaiting(stats.waitingOrders); setComplaints(stats.openComplaints) }, [])
 
   const load = useCallback(() => {
     authFetch<RestaurantAccount>(foodPaths.account)
@@ -124,16 +126,18 @@ export function RestaurantCenter({ onExit, initialTab = 'orders' }: Props) {
           {switchError && <div className="fd-message error" role="alert">{switchError}</div>}
           <SummaryBar onStats={onStats} />
           <div className="fd-tabs" role="tablist" aria-label="Restaurant tools">
-            {(['orders', 'menu', 'settings'] as Tab[]).map((value) => (
+            {(['orders', 'menu', 'complaints', 'settings'] as Tab[]).map((value) => (
               <button key={value} type="button" role="tab" aria-selected={tab === value} className={tab === value ? 'fd-tab active' : 'fd-tab'}
                 onClick={() => setTab(value)}>
-                {value === 'orders' ? 'Orders' : value === 'menu' ? 'Menu' : 'Settings & photos'}
+                {value === 'orders' ? 'Orders' : value === 'menu' ? 'Menu' : value === 'complaints' ? 'Complaints' : 'Settings & photos'}
                 {value === 'orders' && waiting > 0 && <span className="fd-tab-badge">{waiting}</span>}
+                {value === 'complaints' && complaints > 0 && <span className="fd-tab-badge">{complaints}</span>}
               </button>
             ))}
           </div>
           {tab === 'orders' && <RestaurantOrders />}
           {tab === 'menu' && <MenuManager />}
+          {tab === 'complaints' && <RestaurantComplaints />}
           {tab === 'settings' && <RestaurantSettings account={account} onSaved={setAccount} />}
         </>
       )}

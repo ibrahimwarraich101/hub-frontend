@@ -1,16 +1,41 @@
-// File purpose: Admin portal (HUB Food part): one page with two areas - restaurant approvals and all food orders.
-// Only shown to Administrators; the backend checks the role again on every request.
-import { useState } from 'react'
+// File purpose: Admin portal (HUB Food part): one page with three areas - restaurant approvals, all food orders and
+// customer complaints. Only shown to Administrators; the backend checks the role again on every request.
+import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from '../../../shared/auth/AuthContext'
+import { foodPaths } from '../foodApi'
+import type { AdminOrderTotals } from '../foodApi'
+import { AdminComplaints } from './AdminComplaints'
 import { AdminOrders } from './AdminOrders'
 import { RestaurantApprovals } from './RestaurantApprovals'
 import '../food.css'
 import '../../../shared/auth/auth.css'
 
 type Props = { onExit: () => void }
-type Area = 'restaurants' | 'orders'
+type Area = 'restaurants' | 'orders' | 'complaints'
 
 export function FoodAdmin({ onExit }: Props) {
+  const { authFetch } = useAuth()
   const [area, setArea] = useState<Area>('restaurants')
+  // An order opened from a complaint ("Open the full order").
+  const [orderId, setOrderId] = useState<string | null>(null)
+  const [openComplaints, setOpenComplaints] = useState(0)
+
+  const count = useCallback(() => {
+    authFetch<AdminOrderTotals>(foodPaths.adminOrderTotals).then((totals) => setOpenComplaints(totals.openComplaints)).catch(() => undefined)
+  }, [authFetch])
+
+  useEffect(() => {
+    count()
+    const timer = window.setInterval(count, 30000)
+    return () => window.clearInterval(timer)
+  }, [count])
+
+  const areas: { value: Area; label: string }[] = [
+    { value: 'restaurants', label: 'Restaurants' },
+    { value: 'orders', label: 'All orders' },
+    { value: 'complaints', label: 'Complaints' },
+  ]
+
   return (
     <section className="fd-app" aria-label="HUB Food admin">
       <header className="fd-header">
@@ -18,12 +43,19 @@ export function FoodAdmin({ onExit }: Props) {
         <h1>Admin portal · HUB Food</h1>
       </header>
       <div className="fd-admin-areas" role="tablist" aria-label="Admin area">
-        <button type="button" role="tab" aria-selected={area === 'restaurants'} className={area === 'restaurants' ? 'active' : undefined}
-          onClick={() => setArea('restaurants')}>Restaurants</button>
-        <button type="button" role="tab" aria-selected={area === 'orders'} className={area === 'orders' ? 'active' : undefined}
-          onClick={() => setArea('orders')}>All orders</button>
+        {areas.map((item) => (
+          <button key={item.value} type="button" role="tab" aria-selected={area === item.value} className={area === item.value ? 'active' : undefined}
+            onClick={() => { setArea(item.value); setOrderId(null) }}>
+            {item.label}
+            {item.value === 'complaints' && openComplaints > 0 && <span className="fd-tab-badge">{openComplaints}</span>}
+          </button>
+        ))}
       </div>
-      {area === 'restaurants' ? <RestaurantApprovals /> : <AdminOrders />}
+      {area === 'restaurants' && <RestaurantApprovals />}
+      {area === 'orders' && <AdminOrders key={orderId ?? 'list'} initialOrderId={orderId} />}
+      {area === 'complaints' && (
+        <AdminComplaints onChanged={count} onOpenOrder={(id) => { setOrderId(id); setArea('orders') }} />
+      )}
     </section>
   )
 }
