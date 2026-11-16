@@ -9,6 +9,10 @@ import type { ComplaintTopic, FoodOrder } from './foodApi'
 
 type Props = { orderId: string }
 
+// "3:45 pm", optionally a few minutes later (the estimate is shown as a 15-minute window).
+const clock = (value: string, plusMinutes = 0) =>
+  new Date(new Date(value).getTime() + plusMinutes * 60000).toLocaleTimeString('en-PK', { hour: 'numeric', minute: '2-digit' })
+
 export function OrderDetails({ orderId }: Props) {
   const { authFetch } = useAuth()
   const [order, setOrder] = useState<FoodOrder | null>(null)
@@ -60,6 +64,9 @@ export function OrderDetails({ orderId }: Props) {
           <h2>{order.restaurantName}</h2>
           <p className="fd-meta">Order {order.number} · placed {dateTime(order.createdAt)}</p>
           <span className={`fd-status fd-status-${order.status.toLowerCase()}`}>{statusLabel[order.status]}</span>
+          {order.estimatedDeliveryAt && (
+            <p className="fd-eta"><span aria-hidden="true">🕒</span> Estimated delivery <strong>{clock(order.estimatedDeliveryAt)}–{clock(order.estimatedDeliveryAt, 15)}</strong></p>
+          )}
           {order.status !== 'Cancelled' && order.status !== 'AwaitingPayment' && (
             <ol className="fd-tracker" aria-label="Order progress">
               {trackerSteps.map((step) => (
