@@ -37,3 +37,9 @@
 .auth-field.invalid input, .auth-field.invalid textarea, .auth-field.invalid select { border-color: var(--hub-error); }
 .auth-field-error { color: var(--hub-error); font-size: 0.8rem; font-weight: 500; }
 .auth-hint { color: var(--hub-secondary); font-size: 0.8rem; font-weight: 400; }
+/* "Check your email": big code box, "Send a new code" and the sent message. */
+.auth-code { font-size: 1.5rem; letter-spacing: 0.4em; text-align: center; font-weight: 700; }
+.auth-secondary { min-height: var(--hub-button-height); border: none; border-radius: 12px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; }
+.auth-secondary:not(:disabled):hover { background: #c9efd8; }
+.auth-secondary:disabled { opacity: 0.6; cursor: default; }
+.auth-success { color: var(--hub-primary); background: var(--hub-mint); padding: 10px 12px; border-radius: 12px; }
