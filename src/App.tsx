@@ -4,20 +4,27 @@ import { useState } from 'react'
 import { AdminPortal } from './features/admin/AdminPortal'
 import { MarketplaceApp } from './features/marketplace/MarketplaceApp'
 import { SellerCenter } from './features/marketplace/seller/SellerCenter'
+import { FoodApp } from './features/food/FoodApp'
+import { RestaurantCenter } from './features/food/partner/RestaurantCenter'
+import { FoodAdmin } from './features/food/admin/FoodAdmin'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
 import { businessOptions } from './shared/auth/businessOptions'
 import './App.css'
 
-type Service = 'home' | 'ecommerce' | 'sell' | 'admin'
+type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' | 'food-admin'
 
-// Business types whose application form this website already provides (E-Commerce connects "seller").
-const AVAILABLE_BUSINESS = ['seller']
+// Business types whose application form this website already provides (E-Commerce connects "seller", HUB Food "restaurant").
+const AVAILABLE_BUSINESS = ['seller', 'restaurant']
 
 function App() {
   const { restoring, user, logout, hasRole, businessIntent, setBusinessIntent } = useAuth()
   // An admin address (#admin/...) reopens the admin portal after a refresh.
   const [service, setService] = useState<Service>(() => (window.location.hash.startsWith('#admin') ? 'admin'
+    // HUB Food addresses (#food-admin..., #food..., #restaurant...) reopen that screen after a refresh.
+    : /^#food-admin(\/|$)/.test(window.location.hash) ? 'food-admin'
+    : /^#food(\/|$)/.test(window.location.hash) ? 'food'
+    : /^#restaurant(\/|$)/.test(window.location.hash) ? 'restaurant'
     // Coming back from JazzCash (?order=...&payment=...) opens the store on that order.
     : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'))
 
@@ -25,11 +32,15 @@ function App() {
   if (!user) return <AuthScreens availableBusiness={AVAILABLE_BUSINESS} />
 
   // Someone who chose "E-Commerce store seller" at sign-up goes straight to the seller application.
-  const view: Service = service === 'home' && businessIntent === 'seller' ? 'sell' : service
+  const view: Service = service === 'home' && businessIntent === 'seller' ? 'sell'
+    : service === 'home' && businessIntent === 'restaurant' ? 'restaurant' : service
   const home = () => setService('home')
   if (view === 'ecommerce') return <MarketplaceApp onExit={home} />
   if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} />
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
+  if (view === 'food') return <FoodApp onExit={home} />
+  if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} />
+  if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
 
   const intent = businessOptions.find((option) => option.id === businessIntent)
   const firstName = user.fullName.split(' ')[0]
@@ -51,7 +62,7 @@ function App() {
         <p className="hub-roles">Your roles: {user.roles.join(', ')}</p>
       </section>
 
-      {intent && intent.id !== 'seller' && (
+      {intent && !AVAILABLE_BUSINESS.includes(intent.id) && (
         <div className="hub-intent" role="status">
           <span>You chose <strong>{intent.label}</strong> at sign-up. The application form is provided by the {intent.module} module.</span>
           <button type="button" className="hub-button secondary small" onClick={() => setBusinessIntent(null)}>Dismiss</button>
@@ -68,9 +79,9 @@ function App() {
           <strong>HUB Drive</strong>
           <span>Coming soon</span>
         </button>
-        <button type="button" className="hub-tile food" disabled title="Built by the HUB Food module">
+        <button type="button" className="hub-tile food" onClick={() => setService('food')}>
           <strong>HUB Food</strong>
-          <span>Coming soon</span>
+          <span>Order from restaurants near you</span>
         </button>
       </div>
 
@@ -80,10 +91,20 @@ function App() {
           <strong>Sell on HUB Store</strong>
           <span>Open your store and add products</span>
         </button>
+        <button type="button" className="hub-tile business" onClick={() => setService('restaurant')}>
+          <strong>Restaurant on HUB Food</strong>
+          <span>Open your restaurant and add your menu</span>
+        </button>
         {hasRole('Administrator') && (
           <button type="button" className="hub-tile admin" onClick={() => setService('admin')}>
             <strong>Admin portal</strong>
             <span>Users, sellers, categories and products</span>
+          </button>
+        )}
+        {hasRole('Administrator') && (
+          <button type="button" className="hub-tile admin" onClick={() => setService('food-admin')}>
+            <strong>HUB Food admin</strong>
+            <span>Restaurant approvals and all food orders</span>
           </button>
         )}
       </div>
