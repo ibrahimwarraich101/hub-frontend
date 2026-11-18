@@ -1,14 +1,17 @@
-/* File purpose: The phone field: a fixed "+92" box joined to the number input. */
-.phone-input { display: flex; align-items: stretch; width: 100%; }
-.phone-prefix {
-  display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid var(--hub-border); border-right: none;
+/* File purpose: The phone field: a fixed "+92" and the number in one box, with no line between them.
+   Selectors use .auth-field .phone-input ... so module form styles (e.g. .mp-form input) cannot redraw the inner border. */
+.phone-input { display: flex; align-items: stretch; width: 100%; border-radius: var(--hub-radius-input); }
+.auth-field .phone-input .phone-prefix {
+  display: inline-flex; align-items: center; padding: 0 2px 0 14px; border: 1px solid var(--hub-border); border-right: none;
   border-radius: var(--hub-radius-input) 0 0 var(--hub-radius-input); background: var(--hub-surface); color: var(--hub-text);
   user-select: none;
 }
-.phone-input input { flex: 1; min-width: 0; padding-left: 4px; border-left: none; border-radius: 0 var(--hub-radius-input) var(--hub-radius-input) 0; letter-spacing: 0.5px; }
-/* "+92" and the number look like one box, including the green edge while typing. */
-.phone-input input:focus-visible { outline: none; }
-.phone-input { border-radius: var(--hub-radius-input); }
+.auth-field .phone-input .phone-number {
+  flex: 1; min-width: 0; margin: 0; padding-left: 6px; border: 1px solid var(--hub-border); border-left: none;
+  border-radius: 0 var(--hub-radius-input) var(--hub-radius-input) 0; background: var(--hub-surface); letter-spacing: 0.5px;
+}
+/* One green edge around the whole box while typing. */
+.auth-field .phone-input .phone-number:focus-visible { outline: none; }
 .phone-input:focus-within { outline: 2px solid var(--hub-bright); }
-.phone-input:focus-within .phone-prefix, .phone-input:focus-within input { border-color: var(--hub-bright); }
-.auth-field.invalid .phone-prefix { border-color: var(--hub-error); }
+.auth-field .phone-input:focus-within .phone-prefix, .auth-field .phone-input:focus-within .phone-number { border-color: var(--hub-bright); }
+.auth-field.invalid .phone-input .phone-prefix, .auth-field.invalid .phone-input .phone-number { border-color: var(--hub-error); }

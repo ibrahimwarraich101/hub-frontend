@@ -22,6 +22,7 @@ export function PhoneField(props: {
       <span className="phone-input">
         <span className="phone-prefix" aria-hidden="true">+92</span>
         <input
+          className="phone-number"
           name={props.name}
           type="tel"
           inputMode="numeric"
