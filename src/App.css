@@ -2,7 +2,13 @@
 .hub-home { width: 100%; max-width: var(--hub-max-width); margin: 0 auto; padding: 20px 20px 48px; text-align: left; color: var(--hub-text); }
 .hub-loading { color: var(--hub-secondary); padding: 40px 0; text-align: center; }
 .hub-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-.hub-user { display: flex; align-items: center; gap: 10px; }
+.hub-user { position: relative; display: flex; align-items: center; gap: 10px; }
+/* The name opens a small menu with "Log out". */
+.hub-user-button { display: flex; align-items: center; gap: 10px; padding: 4px 10px 4px 4px; border: none; border-radius: var(--hub-radius-pill); background: none; color: var(--hub-text); }
+.hub-user-button:hover, .hub-user-button[aria-expanded='true'] { background: var(--hub-surface-muted); }
+.hub-user-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; min-width: 160px; padding: 8px; display: flex; flex-direction: column;
+  background: var(--hub-surface); border: 1px solid var(--hub-card-border); border-radius: 14px; box-shadow: var(--hub-shadow); }
+.hub-user-menu .hub-button { width: 100%; }
 .hub-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--hub-primary); color: var(--hub-on-primary); display: grid; place-items: center; font-weight: 800; font-size: 0.9rem; }
 .hub-user-name { font-weight: 600; }
 

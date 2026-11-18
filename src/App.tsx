@@ -1,6 +1,6 @@
 // File purpose: TEMPORARY HUB home with login, until the shared app shell (navigation) is merged.
 // Logged out: login / sign-up. Logged in: greeting, the service tiles and business tools. Modules plug their entry screens in here.
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AdminPortal } from './features/admin/AdminPortal'
 import { MarketplaceApp } from './features/marketplace/MarketplaceApp'
 import { SellerCenter } from './features/marketplace/seller/SellerCenter'
@@ -46,11 +46,7 @@ function App() {
     <main className="hub-home">
       <header className="hub-top">
         <p className="hub-logo">HUB</p>
-        <div className="hub-user">
-          <span className="hub-avatar" aria-hidden="true">{initials(user.fullName)}</span>
-          <span className="hub-user-name">{user.fullName}</span>
-          <button type="button" className="hub-button secondary small" onClick={() => void logout()}>Log out</button>
-        </div>
+        <UserMenu fullName={user.fullName} onLogout={() => void logout()} />
       </header>
 
       <section className="hub-hero">
@@ -151,6 +147,39 @@ function initialService(): Service {
     : /^#restaurant(\/|$)/.test(window.location.hash) ? 'restaurant'
     // Coming back from JazzCash (?order=...&payment=...) opens the store on that order.
     : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'
+}
+
+// The person's name in the top corner. "Log out" is not shown on the page; it is inside the menu that opens from the name.
+function UserMenu({ fullName, onLogout }: { fullName: string; onLogout: () => void }) {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Close the menu on a click outside it or with the Escape key.
+  useEffect(() => {
+    if (!open) return
+    const close = (event: MouseEvent) => { if (!menuRef.current?.contains(event.target as Node)) setOpen(false) }
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('keydown', escape)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', escape)
+    }
+  }, [open])
+
+  return (
+    <div className="hub-user" ref={menuRef}>
+      <button type="button" className="hub-user-button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        <span className="hub-avatar" aria-hidden="true">{initials(fullName)}</span>
+        <span className="hub-user-name">{fullName}</span>
+      </button>
+      {open && (
+        <div className="hub-user-menu" role="menu">
+          <button type="button" role="menuitem" className="hub-button secondary small" onClick={onLogout}>Log out</button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function initials(name: string): string {
