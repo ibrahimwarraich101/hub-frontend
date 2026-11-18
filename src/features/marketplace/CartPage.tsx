@@ -55,6 +55,7 @@ export function CartPage({ onBack, onOpenProduct, onCount, onCheckout }: Props) 
 
   return (
     <div className="mp-cart">
+      <button type="button" className="mp-back" onClick={onBack}>Back</button>
       <h2 className="mp-cart-title">Your cart</h2>
       {error && <p className="mp-message error" role="alert">{error}</p>}
       {!cart && !error && <p className="mp-message">Loading your cart…</p>}

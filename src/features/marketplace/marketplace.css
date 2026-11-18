@@ -310,6 +310,9 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
 .mp-topbar .mp-back { margin: 0; align-self: center; }
 .mp-brand { flex: 1; margin: 0; font-size: 22px; font-weight: 900; color: var(--hub-primary); letter-spacing: -0.5px; line-height: 1; white-space: nowrap; }
 .mp-topbar-actions { display: flex; align-items: center; gap: 8px; }
+/* "HUB Store" in the top bar returns to the HUB home page; it keeps the look of the store name. */
+.mp-app .mp-brand-button { padding: 4px 0; border: none; background: none; font: inherit; color: inherit; letter-spacing: inherit; cursor: pointer; }
+.mp-app .mp-brand-button:hover { color: var(--hub-bright); }
 .mp-app .mp-back.active, .mp-app .mp-back.active:hover { background: var(--hub-primary); color: var(--hub-on-primary); }
 .mp-store-body { max-width: var(--hub-max-width); margin: 0 auto; padding: 20px 20px 48px; }
 
@@ -420,10 +423,9 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
   .mp-shop-card { width: 136px; }
   .mp-products { scroll-margin-top: 64px; }
 }
-/* Small phones: the top bar keeps its three buttons; the store name is hidden from view (the page is already the store). */
+/* Small phones: smaller top bar buttons so the store name, "My orders" and "Cart" fit on one line. */
 @media (max-width: 480px) {
-  .mp-brand { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .mp-topbar-actions { margin-left: auto; }
+  .mp-brand { font-size: 18px; }
   .mp-app .mp-topbar .mp-back, .mp-app .mp-topbar .mp-cart-button { min-height: 40px; padding: 0 12px; font-size: 0.9rem; }
   .mp-hero .mp-search button { padding: 0 16px; }
   .mp-products .mp-toolbar { align-items: center; }

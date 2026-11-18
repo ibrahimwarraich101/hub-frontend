@@ -10,7 +10,7 @@ import { Stars } from './Reviews'
 
 const PAGE_SIZE = 12
 
-export function ShopPage({ merchantId, onOpenProduct }: { merchantId: string; onOpenProduct: (id: string) => void }) {
+export function ShopPage({ merchantId, onBack, onOpenProduct }: { merchantId: string; onBack: () => void; onOpenProduct: (id: string) => void }) {
   const [shop, setShop] = useState<Shop | null>(null)
   const [shopError, setShopError] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
@@ -53,6 +53,7 @@ export function ShopPage({ merchantId, onOpenProduct }: { merchantId: string; on
   const since = shop ? sinceText(shop.sellingSince) : null
   return (
     <div className="mp-shop-page">
+      <button type="button" className="mp-back" onClick={onBack}>Back</button>
       {shopError && (
         <div className="mp-message error" role="alert">
           {shopError} <button type="button" onClick={() => { setShopError(null); setReload((count) => count + 1) }}>Try again</button>

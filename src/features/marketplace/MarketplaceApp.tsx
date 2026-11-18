@@ -62,31 +62,15 @@ export function MarketplaceApp({ onExit }: Props) {
 
   // The shop page stays mounted while a product opened from it is shown, so "Back" keeps its search and page.
   const shopView = [...history].reverse().find((page): page is { page: 'shop'; merchantId: string } => page.page === 'shop')
-  const previous = history[history.length - 2]
-
-  // The one "Back" button, in the top bar: on the store home it leaves the store, anywhere else it returns to the
-  // previous page. An order that was just placed or paid goes back to "My orders" rather than to the checkout.
-  function goBack() {
-    if (view.page === 'store') {
-      onExit?.()
-      return
-    }
-    if (view.page === 'order' && (!previous || previous.page === 'checkout')) {
-      setHistory([{ page: 'store' }, { page: 'orders' }])
-      window.scrollTo({ top: 0 })
-      return
-    }
-    back()
-  }
-  const showBack = view.page !== 'store' || onExit !== undefined
-
   return (
     <section className="mp-app mp-store" aria-label="HUB Store">
       {/* Full-width bar that stays at the top while scrolling; its contents line up with the page below. */}
       <header className="mp-topbar">
         <div className="mp-topbar-inner">
-          {showBack && <button type="button" className="mp-back" onClick={goBack}>Back</button>}
-          <h1 className="mp-brand">HUB Store</h1>
+          {/* The store name takes the customer back to the HUB home page. */}
+          <h1 className="mp-brand">
+            {onExit ? <button type="button" className="mp-brand-button" onClick={onExit}>HUB Store</button> : 'HUB Store'}
+          </h1>
           <div className="mp-topbar-actions">
             <button type="button" className={view.page === 'orders' || view.page === 'order' ? 'mp-back active' : 'mp-back'} onClick={() => open({ page: 'orders' })}>My orders</button>
             <button type="button" className={view.page === 'cart' ? 'mp-cart-button active' : 'mp-cart-button'} onClick={() => open({ page: 'cart' })}
@@ -98,7 +82,7 @@ export function MarketplaceApp({ onExit }: Props) {
       </header>
       <div className="mp-store-body">
       {view.page === 'product' && (
-        <ProductPage key={view.productId} productId={view.productId}
+        <ProductPage key={view.productId} productId={view.productId} onBack={back}
           onCount={setCartCount} onOpenCart={() => open({ page: 'cart' })} onOpenShop={(merchantId) => open({ page: 'shop', merchantId })} />
       )}
       {view.page === 'cart' && (
@@ -106,16 +90,16 @@ export function MarketplaceApp({ onExit }: Props) {
           onCheckout={(merchantId) => open({ page: 'checkout', merchantId })} />
       )}
       {view.page === 'checkout' && (
-        <CheckoutPage merchantId={view.merchantId}
+        <CheckoutPage merchantId={view.merchantId} onBack={() => open({ page: 'cart' })}
           onOrder={(orderId, message) => { setCountVersion((value) => value + 1); open({ page: 'order', orderId, paymentResult: null, message }) }} />
       )}
-      {view.page === 'orders' && <OrdersList onOpen={(id) => open({ page: 'order', orderId: id, paymentResult: null, message: null })} />}
+      {view.page === 'orders' && <OrdersList onBack={() => open({ page: 'store' })} onOpen={(id) => open({ page: 'order', orderId: id, paymentResult: null, message: null })} />}
       {view.page === 'order' && (
-        <OrderDetails key={view.orderId} orderId={view.orderId} paymentResult={view.paymentResult} startMessage={view.message} />
+        <OrderDetails key={view.orderId} orderId={view.orderId} paymentResult={view.paymentResult} startMessage={view.message} onBack={() => open({ page: 'orders' })} />
       )}
       {shopView && (
         <div hidden={view.page !== 'shop'}>
-          <ShopPage key={shopView.merchantId} merchantId={shopView.merchantId}
+          <ShopPage key={shopView.merchantId} merchantId={shopView.merchantId} onBack={back}
             onOpenProduct={(id) => open({ page: 'product', productId: id })} />
         </div>
       )}
