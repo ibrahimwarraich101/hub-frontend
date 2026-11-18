@@ -6,6 +6,7 @@ import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
+import { PhoneField } from '../../../shared/forms/PhoneField'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../../shared/forms/validation'
 import type { FieldErrors } from '../../../shared/forms/validation'
 import '../../../shared/auth/auth.css'
@@ -219,8 +220,7 @@ function ApplyForm({ initial, defaultPhone, onSaved }: { initial?: RestaurantAcc
           aria-invalid={errors.description ? true : undefined} />
         {errors.description && <span className="auth-field-error">{errors.description}</span>}
       </label>
-      <Field label="Restaurant phone" name="phone" type="tel" placeholder="+923001234567" value={values.phone} onChange={set('phone')}
-        error={errors.phone} hint="For example 03001234567 or +923001234567" />
+      <PhoneField label="Restaurant phone" name="phone" value={values.phone} onChange={set('phone')} error={errors.phone} />
       <Field label="Address" name="addressLine" value={values.addressLine} onChange={set('addressLine')} error={errors.addressLine} />
       <Field label="City" name="city" value={values.city} onChange={set('city')} error={errors.city} />
       {error && <p className="fd-message error" role="alert">{error}</p>}

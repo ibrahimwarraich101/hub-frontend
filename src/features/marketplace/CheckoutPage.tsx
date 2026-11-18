@@ -5,6 +5,7 @@ import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { Field } from '../../shared/auth/AuthScreens'
+import { PhoneField } from '../../shared/forms/PhoneField'
 import { formatPrice } from './api'
 import { cartPaths } from './cartApi'
 import type { Cart, CartStore } from './cartApi'
@@ -84,8 +85,7 @@ export function CheckoutPage({ merchantId, onBack, onOrder }: Props) {
               <h3>Delivery details</h3>
               <p className="mp-hint">{store.merchantName} delivers this order to you.</p>
               <Field label="Full name" name="name" value={values.name} onChange={set('name')} error={errors.name} autoComplete="name" />
-              <Field label="Phone" name="phone" type="tel" value={values.phone} onChange={set('phone')} error={errors.phone}
-                hint="With country code, for example +923001234567" autoComplete="tel" />
+              <PhoneField label="Phone" name="phone" value={values.phone} onChange={set('phone')} error={errors.phone} />
               <Field label="Address" name="address" value={values.address} onChange={set('address')} error={errors.address}
                 placeholder="House, street, area" autoComplete="street-address" />
               <Field label="City" name="city" value={values.city} onChange={set('city')} error={errors.city} autoComplete="address-level2" />
