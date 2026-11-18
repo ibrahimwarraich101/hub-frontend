@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { ApiError } from '../api/client'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../forms/validation'
 import type { FieldErrors } from '../forms/validation'
+import { PhoneField } from '../forms/PhoneField'
 import { useAuth } from './AuthContext'
 import { businessOptions } from './businessOptions'
 import './auth.css'
@@ -199,8 +200,7 @@ function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; avail
       {chosen && <p className="auth-note">After creating your account you will fill in your {chosen.label.toLowerCase()} application.</p>}
       <Field label="Full name" name="fullName" autoComplete="name" value={values.fullName} onChange={set('fullName')} error={errors.fullName} />
       <Field label="Email" name="email" type="email" autoComplete="email" value={values.email} onChange={set('email')} error={errors.email} />
-      <Field label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+923001234567" value={values.phone} onChange={set('phone')}
-        error={errors.phone} hint="With country code, for example +923001234567" />
+      <PhoneField label="Phone" name="phone" value={values.phone} onChange={set('phone')} error={errors.phone} />
       <Field label="Password" name="password" type="password" autoComplete="new-password" value={values.password} onChange={set('password')}
         error={errors.password} hint={`At least 12 characters (${values.password.length} typed)`} />
       <Field label="Confirm password" name="confirm" type="password" autoComplete="new-password" value={values.confirm} onChange={set('confirm')} error={errors.confirm} />

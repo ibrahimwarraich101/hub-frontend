@@ -1,0 +1,9 @@
+/* File purpose: The phone field: a fixed "+92" box joined to the number input. */
+.phone-input { display: flex; align-items: stretch; width: 100%; }
+.phone-prefix {
+  display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid var(--hub-border); border-right: none;
+  border-radius: var(--hub-radius-input) 0 0 var(--hub-radius-input); background: var(--hub-mint); color: var(--hub-primary);
+  font-weight: 700; user-select: none;
+}
+.phone-input input { flex: 1; min-width: 0; border-radius: 0 var(--hub-radius-input) var(--hub-radius-input) 0; letter-spacing: 0.5px; }
+.auth-field.invalid .phone-prefix { border-color: var(--hub-error); }

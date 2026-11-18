@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
+import { PhoneField } from '../../../shared/forms/PhoneField'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../../shared/forms/validation'
 import type { FieldErrors } from '../../../shared/forms/validation'
 import '../../../shared/auth/auth.css'
@@ -142,8 +143,7 @@ function ApplyForm({ initial, defaultPhone, onSaved }: { initial?: SellerAccount
           ? <span className="auth-field-error">{errors.description}</span>
           : <span className="auth-hint">{values.description.length} / 2000 characters</span>}
       </label>
-      <Field label="Store phone" name="phone" type="tel" placeholder="+923001234567" value={values.phone} onChange={set('phone')}
-        error={errors.phone} hint="With country code, for example +923001234567" />
+      <PhoneField label="Store phone" name="phone" value={values.phone} onChange={set('phone')} error={errors.phone} />
       {error && <p className="mp-message error" role="alert">{error}</p>}
       <button type="submit" className="mp-primary" disabled={busy}>{busy ? 'Sending…' : 'Send application'}</button>
     </form>
