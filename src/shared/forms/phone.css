@@ -2,8 +2,13 @@
 .phone-input { display: flex; align-items: stretch; width: 100%; }
 .phone-prefix {
   display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid var(--hub-border); border-right: none;
-  border-radius: var(--hub-radius-input) 0 0 var(--hub-radius-input); background: var(--hub-mint); color: var(--hub-primary);
-  font-weight: 700; user-select: none;
+  border-radius: var(--hub-radius-input) 0 0 var(--hub-radius-input); background: var(--hub-surface); color: var(--hub-text);
+  user-select: none;
 }
-.phone-input input { flex: 1; min-width: 0; border-radius: 0 var(--hub-radius-input) var(--hub-radius-input) 0; letter-spacing: 0.5px; }
+.phone-input input { flex: 1; min-width: 0; padding-left: 4px; border-left: none; border-radius: 0 var(--hub-radius-input) var(--hub-radius-input) 0; letter-spacing: 0.5px; }
+/* "+92" and the number look like one box, including the green edge while typing. */
+.phone-input input:focus-visible { outline: none; }
+.phone-input { border-radius: var(--hub-radius-input); }
+.phone-input:focus-within { outline: 2px solid var(--hub-bright); }
+.phone-input:focus-within .phone-prefix, .phone-input:focus-within input { border-color: var(--hub-bright); }
 .auth-field.invalid .phone-prefix { border-color: var(--hub-error); }
