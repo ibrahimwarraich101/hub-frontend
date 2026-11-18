@@ -1,0 +1,110 @@
+/* File purpose: Bills styles (desktop first, phone rules at the end), using the HUB theme variables from index.css.
+   Buttons are text only in theme-coloured boxes, like every HUB button. */
+.bl-app { width: 100%; text-align: left; color: var(--hub-text); }
+.bl-app button { font-family: inherit; cursor: pointer; }
+.bl-topbar { position: sticky; top: 0; z-index: 50; background: var(--hub-surface); border-bottom: 1px solid var(--hub-border); box-shadow: 0 2px 10px rgba(16, 24, 32, 0.05); }
+.bl-topbar-inner { max-width: 880px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
+.bl-brand { flex: 1; margin: 0; font-size: 22px; font-weight: 900; color: var(--hub-primary); letter-spacing: -0.5px; line-height: 1; white-space: nowrap; }
+.bl-app .bl-brand-button { padding: 4px 0; border: none; background: none; font: inherit; color: inherit; letter-spacing: inherit; }
+.bl-app .bl-brand-button:hover { color: var(--hub-bright); }
+.bl-topbar-actions { display: flex; gap: 8px; }
+.bl-app .bl-nav { min-height: 40px; padding: 0 14px; border: none; border-radius: 10px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; }
+.bl-app .bl-nav:hover { background: #c9efd8; }
+.bl-app .bl-nav.active { background: var(--hub-primary); color: var(--hub-on-primary); }
+.bl-body { max-width: 880px; margin: 0 auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 16px; }
+.bl-back { align-self: flex-start; }
+
+.bl-hero { background: var(--hub-hero); border-radius: var(--hub-radius-banner); padding: 28px; }
+.bl-hero h2 { font-size: 28px; margin: 0 0 6px; }
+.bl-hero p { color: var(--hub-secondary); max-width: 560px; }
+
+.bl-section { display: flex; flex-direction: column; gap: 12px; }
+.bl-section > h2 { margin: 0; font-size: 21px; }
+.bl-muted { color: var(--hub-secondary); font-size: 0.9rem; }
+.bl-card { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: var(--hub-surface); border: 1px solid var(--hub-card-border);
+  border-radius: var(--hub-radius-card); box-shadow: var(--hub-shadow); }
+
+/* Bill types and companies. */
+.bl-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.bl-app .bl-tile { width: 100%; min-height: 104px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 4px;
+  padding: 16px 18px; border: none; border-radius: var(--hub-radius-card); text-align: left; transition: transform 0.15s, box-shadow 0.15s; }
+.bl-app .bl-tile:hover { transform: translateY(-2px); box-shadow: var(--hub-shadow); }
+.bl-tile strong { font-size: 1.05rem; }
+.bl-tile span { font-size: 0.85rem; opacity: 0.85; }
+.bl-tile.shop { background: var(--hub-shop-bg); color: var(--hub-shop); }
+.bl-tile.food { background: var(--hub-food-bg); color: var(--hub-food); }
+.bl-tile.bills { background: var(--hub-bills-bg); color: var(--hub-bills); }
+.bl-tile.fitness { background: var(--hub-fitness-bg); color: var(--hub-fitness); }
+.bl-tile.drive { background: var(--hub-drive-bg); color: var(--hub-drive); }
+.bl-tile.mint { background: var(--hub-mint); color: var(--hub-primary); }
+.bl-billers { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.bl-app .bl-biller { width: 100%; display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; text-align: left; border: 1px solid var(--hub-card-border);
+  border-radius: 14px; background: var(--hub-surface); color: var(--hub-text); box-shadow: var(--hub-shadow); }
+.bl-app .bl-biller:hover { border-color: var(--hub-bright); }
+.bl-biller strong { color: var(--hub-heading); }
+.bl-biller span { color: var(--hub-secondary); font-size: 0.85rem; }
+
+/* Reference form and the bill. */
+.bl-form .auth-field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+.bl-form input { font-size: 1.1rem; letter-spacing: 1px; }
+.bl-form > .hub-button { align-self: flex-start; }
+.bl-bill-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.bl-bill-head > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bl-bill-name { font-size: 1.2rem; color: var(--hub-heading); }
+.bl-bill-head > .hub-pill { flex: none; white-space: nowrap; }
+.bl-total-note { display: block; font-size: 0.8rem; color: var(--hub-secondary); font-weight: 400; }
+.bl-facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+.bl-facts dt { color: var(--hub-secondary); }
+.bl-facts dd { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bl-inline { font-weight: 700; }
+.bl-total { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--hub-mint); }
+.bl-total strong { font-size: 1.6rem; color: var(--hub-primary); }
+.bl-receipt.paid { border-color: var(--hub-bright); }
+.bl-receipt-number { font-family: var(--mono); letter-spacing: 0.5px; }
+
+/* Choosing how to pay. */
+.bl-pay { display: flex; flex-direction: column; gap: 10px; }
+.bl-pay-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.bl-pay-head h3 { margin: 0; }
+.bl-options { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.bl-app .bl-option { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; text-align: left; border: 2px solid var(--hub-border); border-radius: 14px;
+  background: var(--hub-surface); color: var(--hub-text); }
+.bl-app .bl-option:hover { border-color: var(--hub-bright); }
+.bl-app .bl-option.active { border-color: var(--hub-primary); background: var(--hub-mint); }
+.bl-option strong { color: var(--hub-heading); }
+.bl-option span { color: var(--hub-secondary); font-size: 0.85rem; }
+.bl-app .bl-pay-button { align-self: stretch; min-height: 50px; font-size: 1.05rem; }
+
+/* Messages, history and paging. */
+.bl-message { padding: 12px 14px; border-radius: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bl-message.error { background: var(--hub-error-surface); color: var(--hub-error); }
+.bl-message.success { background: var(--hub-success-surface); color: var(--hub-success); }
+.bl-message.info { background: var(--hub-info-surface); color: var(--hub-info); }
+.bl-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 20px; text-align: center; border: 1px dashed var(--hub-border);
+  border-radius: var(--hub-radius-card); background: var(--hub-surface); }
+.bl-empty h3 { margin: 0; }
+.bl-history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bl-app .bl-history-row { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; text-align: left;
+  border: 1px solid var(--hub-card-border); border-radius: 14px; background: var(--hub-surface); color: var(--hub-text); box-shadow: var(--hub-shadow); }
+.bl-app .bl-history-row:hover { border-color: var(--hub-bright); }
+.bl-history-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bl-history-main strong { color: var(--hub-heading); }
+.bl-history-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap; }
+.bl-pager { display: flex; justify-content: center; align-items: center; gap: 12px; }
+
+/* Phones. */
+@media (max-width: 600px) {
+  .bl-topbar-inner { padding: 8px 16px; gap: 8px; }
+  .bl-brand { font-size: 18px; }
+  .bl-app .bl-nav { min-height: 38px; padding: 0 10px; font-size: 0.9rem; }
+  .bl-body { padding: 16px 16px 40px; }
+  .bl-hero { padding: 20px 18px; border-radius: var(--hub-radius-card); }
+  .bl-hero h2 { font-size: 23px; }
+  .bl-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .bl-app .bl-tile { min-height: 92px; padding: 14px; }
+  .bl-card { padding: 16px; }
+  .bl-facts { grid-template-columns: 1fr; gap: 2px; }
+  .bl-facts dd { margin-bottom: 6px; }
+  .bl-options { grid-template-columns: 1fr; }
+  .bl-total strong { font-size: 1.35rem; }
+}

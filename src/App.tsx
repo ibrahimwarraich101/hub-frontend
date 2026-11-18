@@ -7,6 +7,8 @@ import { SellerCenter } from './features/marketplace/seller/SellerCenter'
 import { FoodApp } from './features/food/FoodApp'
 import { RestaurantCenter } from './features/food/partner/RestaurantCenter'
 import { FoodAdmin } from './features/food/admin/FoodAdmin'
+import { BillsApp } from './features/bills/BillsApp'
+import { PaymentMethodsPage } from './shared/payments/PaymentMethods'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
 import { businessOptions } from './shared/auth/businessOptions'
@@ -14,7 +16,7 @@ import { useBusinessAccounts } from './shared/business/useBusinessAccounts'
 import type { BusinessStatus } from './shared/business/useBusinessAccounts'
 import './App.css'
 
-type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' | 'food-admin'
+type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' | 'food-admin' | 'bills' | 'payment-methods'
 
 // Business types whose application form this website already provides (E-Commerce connects "seller", HUB Food "restaurant").
 const AVAILABLE_BUSINESS = ['seller', 'restaurant']
@@ -38,6 +40,8 @@ function App() {
   if (view === 'food') return <FoodApp onExit={home} />
   if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} />
   if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
+  if (view === 'bills') return <BillsApp onExit={home} />
+  if (view === 'payment-methods') return <PaymentMethodsPage onExit={home} />
 
   const intent = businessOptions.find((option) => option.id === businessIntent)
   const isAdmin = hasRole('Administrator')
@@ -46,7 +50,7 @@ function App() {
     <main className="hub-home">
       <header className="hub-top">
         <p className="hub-logo">HUB</p>
-        <UserMenu fullName={user.fullName} onLogout={() => void logout()} />
+        <UserMenu fullName={user.fullName} onPaymentMethods={() => setService('payment-methods')} onLogout={() => void logout()} />
       </header>
 
       <section className="hub-hero">
@@ -76,6 +80,10 @@ function App() {
         <button type="button" className="hub-tile food" onClick={() => setService('food')}>
           <strong>HUB Food</strong>
           <span>Order from restaurants near you</span>
+        </button>
+        <button type="button" className="hub-tile bills" onClick={() => setService('bills')}>
+          <strong>Pay bills</strong>
+          <span>Electricity, gas, internet and fees</span>
         </button>
       </div>
 
@@ -145,12 +153,13 @@ function initialService(): Service {
     : /^#food-admin(\/|$)/.test(window.location.hash) ? 'food-admin'
     : /^#food(\/|$)/.test(window.location.hash) ? 'food'
     : /^#restaurant(\/|$)/.test(window.location.hash) ? 'restaurant'
-    // Coming back from JazzCash (?order=...&payment=...) opens the store on that order.
+    // Coming back from JazzCash: ?bill=...&payment=... opens that bill; ?order=...&payment=... opens the store on that order.
+    : new URLSearchParams(window.location.search).has('bill') ? 'bills'
     : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'
 }
 
-// The person's name in the top corner. "Log out" is not shown on the page; it is inside the menu that opens from the name.
-function UserMenu({ fullName, onLogout }: { fullName: string; onLogout: () => void }) {
+// The person's name in the top corner. "Payment methods" and "Log out" are not shown on the page; they are inside the menu that opens from the name.
+function UserMenu({ fullName, onPaymentMethods, onLogout }: { fullName: string; onPaymentMethods: () => void; onLogout: () => void }) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -175,6 +184,7 @@ function UserMenu({ fullName, onLogout }: { fullName: string; onLogout: () => vo
       </button>
       {open && (
         <div className="hub-user-menu" role="menu">
+          <button type="button" role="menuitem" className="hub-button secondary small" onClick={onPaymentMethods}>Payment methods</button>
           <button type="button" role="menuitem" className="hub-button secondary small" onClick={onLogout}>Log out</button>
         </div>
       )}

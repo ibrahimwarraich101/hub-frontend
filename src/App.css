@@ -6,7 +6,7 @@
 /* The name opens a small menu with "Log out". */
 .hub-user-button { display: flex; align-items: center; gap: 10px; padding: 4px 10px 4px 4px; border: none; border-radius: var(--hub-radius-pill); background: none; color: var(--hub-text); }
 .hub-user-button:hover, .hub-user-button[aria-expanded='true'] { background: var(--hub-surface-muted); }
-.hub-user-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; min-width: 160px; padding: 8px; display: flex; flex-direction: column;
+.hub-user-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; min-width: 180px; padding: 8px; display: flex; flex-direction: column; gap: 6px;
   background: var(--hub-surface); border: 1px solid var(--hub-card-border); border-radius: 14px; box-shadow: var(--hub-shadow); }
 .hub-user-menu .hub-button { width: 100%; }
 .hub-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--hub-primary); color: var(--hub-on-primary); display: grid; place-items: center; font-weight: 800; font-size: 0.9rem; }
@@ -32,6 +32,7 @@
 .hub-tile.shop { background: var(--hub-shop-bg); color: var(--hub-shop); }
 .hub-tile.drive { background: var(--hub-drive-bg); color: var(--hub-drive); }
 .hub-tile.food { background: var(--hub-food-bg); color: var(--hub-food); }
+.hub-tile.bills { background: var(--hub-bills-bg); color: var(--hub-bills); }
 .hub-tile.business { background: var(--hub-mint); color: var(--hub-primary); }
 .hub-tile.admin { background: var(--hub-primary); color: var(--hub-on-primary); }
 
