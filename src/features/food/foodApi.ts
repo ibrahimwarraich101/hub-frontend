@@ -81,6 +81,8 @@ export type FoodOrder = {
   canCancel: boolean
   canReview: boolean
   testPaymentAvailable: boolean
+  // About when the food arrives, while the order is on its way (null otherwise).
+  estimatedDeliveryAt: string | null
   version: number
   // The customer's complaint about this order (if any) and whether the customer can still report a problem.
   complaint: FoodComplaint | null
@@ -282,7 +284,8 @@ export const foodPaths = {
   cartItems: '/api/food/cart/items',
   clearCart: (restaurantId: string) => `/api/food/cart/${id(restaurantId)}`,
   orders: '/api/food/orders',
-  myOrders: (page: number) => `/api/food/orders?page=${page}&pageSize=20`,
+  // status: '' = all, 'active' = still on its way, 'past' = delivered or cancelled.
+  myOrders: (page: number, status: '' | 'active' | 'past' = '') => `/api/food/orders?page=${page}&pageSize=20${status ? `&status=${status}` : ''}`,
   order: (orderId: string) => `/api/food/orders/${id(orderId)}`,
   cancel: (orderId: string) => `/api/food/orders/${id(orderId)}/cancel`,
   review: (orderId: string) => `/api/food/orders/${id(orderId)}/review`,

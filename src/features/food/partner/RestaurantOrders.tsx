@@ -8,11 +8,19 @@ import { ComplaintThread } from '../ComplaintThread'
 import { foodPaths, money, statusLabel, timeAgo } from '../foodApi'
 import type { FoodOrder, FoodOrderPage, OrderStatus } from '../foodApi'
 
-const FILTERS = [
-  { value: 'active', label: 'Active' },
+const FILTERS: { value: OrderStatus; label: string }[] = [
+  { value: 'Placed', label: 'New' },
+  { value: 'Accepted', label: 'Preparing' },
+  { value: 'Ready', label: 'On the way' },
   { value: 'Completed', label: 'Delivered' },
   { value: 'Cancelled', label: 'Cancelled' },
 ]
+
+const EMPTY: Partial<Record<OrderStatus, string>> = {
+  Placed: 'No new orders right now. New paid orders appear here while your restaurant is open.',
+  Accepted: 'Nothing being prepared right now.',
+  Ready: 'Nothing on the way right now.',
+}
 
 // The next step the restaurant can take for each status.
 const NEXT: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>> = {
@@ -23,13 +31,15 @@ const NEXT: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>>
 
 export function RestaurantOrders() {
   const { authFetch } = useAuth()
-  const [filter, setFilter] = useState('active')
+  const [filter, setFilter] = useState<OrderStatus>('Placed')
   const [page, setPage] = useState<FoodOrderPage | null>(null)
   const [open, setOpen] = useState<FoodOrder | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [reason, setReason] = useState('')
   const [rowBusy, setRowBusy] = useState<string | null>(null)
+  // The new order being rejected from the list, and the reason typed for the customer.
+  const [rejecting, setRejecting] = useState<{ id: string; reason: string } | null>(null)
   const panel = useRef<HTMLElement>(null)
   const openId = open?.id
   // On a narrow screen the order opens below the list, so bring it into view.
@@ -73,14 +83,15 @@ export function RestaurantOrders() {
     }
   }
 
-  // The next step straight from the list (reads the latest version first, so it never overwrites a newer change).
-  async function quickStep(id: string, status: OrderStatus) {
+  // The next step (or rejecting) straight from the list. Reads the latest version first, so it never overwrites a newer change.
+  async function quickStep(id: string, status: OrderStatus, why: string | null = null) {
     setRowBusy(id)
     setError(null)
     try {
       const current = await authFetch<FoodOrder>(foodPaths.restaurantOrder(id))
-      const updated = await authFetch<FoodOrder>(foodPaths.restaurantOrderStatus(id), 'POST', { status, reason: null, expectedVersion: current.version })
+      const updated = await authFetch<FoodOrder>(foodPaths.restaurantOrderStatus(id), 'POST', { status, reason: why, expectedVersion: current.version })
       if (open?.id === id) setOpen(updated)
+      if (status === 'Cancelled') setRejecting(null)
       load()
     } catch (problem) {
       setError(problem instanceof ApiError ? problem.message : 'Could not update the order.')
@@ -104,9 +115,7 @@ export function RestaurantOrders() {
         {error && <div className="fd-message error" role="alert">{error}</div>}
         {!page && !error && <div className="fd-message">Loading orders…</div>}
         {page && page.items.length === 0 && (
-          <div className="fd-message">{filter === 'active'
-            ? 'No orders to work on right now. New paid orders appear here while your restaurant is open.'
-            : 'No orders here yet.'}</div>
+          <div className="fd-message">{EMPTY[filter] ?? 'No orders here yet.'}</div>
         )}
         {page && (
           <ul className="fd-orders">
@@ -126,11 +135,25 @@ export function RestaurantOrders() {
                       <strong>{money(order.total)}</strong>
                     </span>
                   </button>
-                  {step && (
-                    <button type="button" className="fd-primary fd-row-step" disabled={rowBusy === order.id}
-                      onClick={() => void quickStep(order.id, step.status)}>
-                      {rowBusy === order.id ? 'Saving…' : step.label}
-                    </button>
+                  {step && rejecting?.id !== order.id && (
+                    <span className="fd-actions fd-row-step">
+                      <button type="button" className="fd-primary" disabled={rowBusy === order.id}
+                        onClick={() => void quickStep(order.id, step.status)}>
+                        {rowBusy === order.id ? 'Saving…' : order.status === 'Placed' ? 'Accept' : step.label}
+                      </button>
+                      {order.status === 'Placed' && (
+                        <button type="button" className="fd-danger" disabled={rowBusy === order.id}
+                          onClick={() => setRejecting({ id: order.id, reason: '' })}>Reject</button>
+                      )}
+                    </span>
+                  )}
+                  {rejecting?.id === order.id && (
+                    <form className="fd-reject" onSubmit={(e) => { e.preventDefault(); if (rejecting.reason.trim()) void quickStep(order.id, 'Cancelled', rejecting.reason.trim()) }}>
+                      <input aria-label="Why are you rejecting this order?" placeholder="Why? The customer sees this, e.g. Out of chicken today"
+                        value={rejecting.reason} maxLength={500} autoFocus onChange={(e) => setRejecting({ id: order.id, reason: e.target.value })} />
+                      <button type="submit" className="fd-danger" disabled={rowBusy === order.id || !rejecting.reason.trim()}>Reject order</button>
+                      <button type="button" className="fd-link" onClick={() => setRejecting(null)}>Keep it</button>
+                    </form>
                   )}
                 </li>
               )
