@@ -1,6 +1,7 @@
 // File purpose: Login and sign-up screens. Sign-up first asks "Personal or Business?"; a business user then picks a business type.
+// New accounts then confirm their email with the 6-digit code that was emailed to them ("Check your email").
 // All mistakes are checked here and shown under the field (browser popups are turned off with noValidate).
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { ApiError } from '../api/client'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../forms/validation'
@@ -16,13 +17,16 @@ type Props = {
 }
 
 export function AuthScreens({ availableBusiness = [] }: Props) {
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [mode, setMode] = useState<'login' | 'signup' | 'verify'>('login')
+  // The address waiting for its code, and whether a code was just sent (sign-up) or may have been sent (login).
+  const [verifyEmail, setVerifyEmail] = useState('')
+  const showVerify = (email: string) => { setVerifyEmail(email); setMode('verify') }
   return (
     <main className="auth-page">
       <h1 className="auth-brand">HUB</h1>
-      {mode === 'login'
-        ? <LoginForm onSignup={() => setMode('signup')} />
-        : <SignupForm onLogin={() => setMode('login')} availableBusiness={availableBusiness} />}
+      {mode === 'login' && <LoginForm onSignup={() => setMode('signup')} onVerify={showVerify} />}
+      {mode === 'signup' && <SignupForm onLogin={() => setMode('login')} availableBusiness={availableBusiness} onVerify={showVerify} />}
+      {mode === 'verify' && <VerifyEmailForm email={verifyEmail} onLogin={() => setMode('login')} />}
     </main>
   )
 }
@@ -68,7 +72,7 @@ function validateLogin(values: Record<LoginFields, string>): FieldErrors<LoginFi
   })
 }
 
-function LoginForm({ onSignup }: { onSignup: () => void }) {
+function LoginForm({ onSignup, onVerify }: { onSignup: () => void; onVerify: (email: string) => void }) {
   const { login } = useAuth()
   const formRef = useRef<HTMLFormElement>(null)
   const [values, setValues] = useState({ email: '', password: '' })
@@ -87,7 +91,7 @@ function LoginForm({ onSignup }: { onSignup: () => void }) {
     if (hasErrors(found)) return focusFirstError(formRef.current, found)
     setBusy(true)
     try {
-      await login(values.email.trim(), values.password)
+      if (await login(values.email.trim(), values.password) === 'verify') onVerify(values.email.trim())
     } catch (reason) {
       setError(reason instanceof ApiError && reason.status === 401 ? 'Email or password is incorrect.'
         : reason instanceof ApiError && reason.status === 0 ? reason.message
@@ -123,7 +127,7 @@ function validateSignup(values: Record<SignupFields, string>): FieldErrors<Signu
   })
 }
 
-function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; availableBusiness: string[] }) {
+function SignupForm({ onLogin, availableBusiness, onVerify }: { onLogin: () => void; availableBusiness: string[]; onVerify: (email: string) => void }) {
   const { register, setBusinessIntent } = useAuth()
   const formRef = useRef<HTMLFormElement>(null)
   const [step, setStep] = useState<'type' | 'business' | 'details'>('type')
@@ -144,7 +148,8 @@ function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; avail
     setBusy(true)
     try {
       setBusinessIntent(business)
-      await register({ fullName: values.fullName.trim(), email: values.email.trim(), phone: values.phone.trim(), password: values.password })
+      const next = await register({ fullName: values.fullName.trim(), email: values.email.trim(), phone: values.phone.trim(), password: values.password })
+      if (next === 'verify') onVerify(values.email.trim())
     } catch (reason) {
       setBusinessIntent(null)
       // Only things the frontend cannot know (already used, server down) come back from the backend.
@@ -207,6 +212,83 @@ function SignupForm({ onLogin, availableBusiness }: { onLogin: () => void; avail
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button type="submit" className="auth-primary" disabled={busy}>{busy ? 'Creating account…' : 'Create account'}</button>
       <p className="auth-switch">Already have an account? <button type="button" onClick={onLogin}>Log in</button></p>
+    </form>
+  )
+}
+
+// How long to wait before "Send a new code" works again (the server allows one code a minute).
+const RESEND_SECONDS = 60
+
+// "Check your email": the 6-digit code confirms the address and logs the user in.
+function VerifyEmailForm({ email, onLogin }: { email: string; onLogin: () => void }) {
+  const { verifyEmail, resendCode } = useAuth()
+  const formRef = useRef<HTMLFormElement>(null)
+  const [code, setCode] = useState('')
+  const [tried, setTried] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [wait, setWait] = useState(RESEND_SECONDS)
+  const typed = code.replace(/\s/g, '')
+  const codeError = !tried ? undefined : typed === '' ? 'Please enter the code from the email.'
+    : !/^[0-9]{6}$/.test(typed) ? 'The code has 6 digits.' : undefined
+
+  // Count down to the next allowed "Send a new code".
+  useEffect(() => {
+    if (wait <= 0) return
+    const timer = setTimeout(() => setWait(wait - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [wait])
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    setTried(true)
+    setError(null)
+    setNotice(null)
+    if (!/^[0-9]{6}$/.test(typed)) return formRef.current?.querySelector<HTMLInputElement>('input[name="code"]')?.focus()
+    setBusy(true)
+    try {
+      // On success the user is logged in and the app opens by itself.
+      await verifyEmail(email, typed)
+    } catch (reason) {
+      setError(reason instanceof ApiError && (reason.status === 400 || reason.status === 0) ? reason.message
+        : reason instanceof ApiError && reason.status === 429 ? 'Too many attempts. Please wait a minute and try again.'
+          : 'Could not check the code. Please try again.')
+      setBusy(false)
+    }
+  }
+
+  async function resend() {
+    setError(null)
+    setNotice(null)
+    setWait(RESEND_SECONDS)
+    try {
+      await resendCode(email)
+      setNotice('A new code is on its way. It can take a minute; check your spam folder too.')
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.message : 'Could not send a new code. Please try again.')
+    }
+  }
+
+  return (
+    <form ref={formRef} className="auth-card" onSubmit={submit} noValidate>
+      <h2>Check your email</h2>
+      <p className="auth-note">We sent a 6-digit code to <strong>{email}</strong>. Enter it below to confirm your email address.
+        The code works for 10 minutes.</p>
+      <label className={codeError ? 'auth-field invalid' : 'auth-field'}>
+        Code
+        <input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={7} placeholder="123456" value={code}
+          onChange={(event) => setCode(event.target.value.replace(/[^0-9 ]/g, ''))} aria-invalid={codeError ? true : undefined}
+          aria-describedby={codeError ? 'code-error' : undefined} className="auth-code" />
+        {codeError && <span id="code-error" className="auth-field-error">{codeError}</span>}
+      </label>
+      {error && <p className="auth-error" role="alert">{error}</p>}
+      {notice && <p className="auth-success" role="status">{notice}</p>}
+      <button type="submit" className="auth-primary" disabled={busy}>{busy ? 'Checking…' : 'Confirm email'}</button>
+      <button type="button" className="auth-secondary" disabled={wait > 0} onClick={() => void resend()}>
+        {wait > 0 ? `Send a new code (${wait}s)` : 'Send a new code'}
+      </button>
+      <p className="auth-switch">Wrong email address? <button type="button" onClick={onLogin}>Back to log in</button></p>
     </form>
   )
 }
