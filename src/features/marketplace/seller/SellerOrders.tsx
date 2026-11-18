@@ -127,7 +127,7 @@ function SellerOrderDetails({ orderId, onBack }: { orderId: string; onBack: () =
   const canCancel = order?.status === 'Placed' || order?.status === 'Confirmed'
   return (
     <div className="mp-orders">
-      <button type="button" className="mp-back" onClick={onBack}>Back to orders</button>
+      <button type="button" className="mp-back" onClick={onBack}>Back</button>
       {error && <p className="mp-message error" role="alert">{error}</p>}
       {!order && !error && <p className="mp-message">Loading…</p>}
       {order && (

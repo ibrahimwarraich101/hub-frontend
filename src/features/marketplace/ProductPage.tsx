@@ -11,19 +11,16 @@ import { ProductReviews, RatingLine } from './Reviews'
 
 type Props = {
   productId: string
-  onBack: () => void
   // New number of items in the cart after adding.
   onCount: (count: number) => void
   onOpenCart: () => void
   onOpenShop: (merchantId: string) => void
-  // Text of the back button, e.g. "Back to store" or "Back to Lahore Loom".
-  backLabel?: string
 }
 
 // Most units one order line can ask for when stock is not tracked.
 const MaxQuantity = 99
 
-export function ProductPage({ productId, onBack, onCount, onOpenCart, onOpenShop, backLabel = 'Back to store' }: Props) {
+export function ProductPage({ productId, onCount, onOpenCart, onOpenShop }: Props) {
   const [product, setProduct] = useState<ProductDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,9 +40,6 @@ export function ProductPage({ productId, onBack, onCount, onOpenCart, onOpenShop
 
   return (
     <div className="mp-product">
-      <button type="button" className="mp-back" onClick={onBack}>
-        {backLabel}
-      </button>
 
       {error && <div className="mp-message error" role="alert">{error}</div>}
       {!error && !product && <div className="mp-message">Loading product…</div>}

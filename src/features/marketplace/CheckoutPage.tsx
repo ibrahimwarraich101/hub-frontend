@@ -12,9 +12,9 @@ import { newRequestKey, orderPaths, paymentMethods, validateDelivery } from './o
 import type { DeliveryFields, Order, PaymentMethod } from './ordersApi'
 import { startPayment } from './payment'
 
-type Props = { merchantId: string; onBack: () => void; onOrder: (orderId: string, message: string | null) => void }
+type Props = { merchantId: string; onOrder: (orderId: string, message: string | null) => void }
 
-export function CheckoutPage({ merchantId, onBack, onOrder }: Props) {
+export function CheckoutPage({ merchantId, onOrder }: Props) {
   const { authFetch, user } = useAuth()
   const formRef = useRef<HTMLFormElement>(null)
   const [store, setStore] = useState<CartStore | null | undefined>(undefined)
@@ -72,7 +72,6 @@ export function CheckoutPage({ merchantId, onBack, onOrder }: Props) {
 
   return (
     <div className="mp-checkout">
-      <button type="button" className="mp-back" onClick={onBack}>Back to cart</button>
       <h2 className="mp-cart-title">Checkout</h2>
       {error && <p className="mp-message error" role="alert">{error}</p>}
       {store === undefined && !error && <p className="mp-message">Loading…</p>}

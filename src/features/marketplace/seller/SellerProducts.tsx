@@ -169,7 +169,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
   if (!form) {
     return (
       <div className="mp-panel">
-        <button type="button" className="mp-back" onClick={onClose}>Back to my products</button>
+        <button type="button" className="mp-back" onClick={onClose}>Back</button>
         {error ? <p className="mp-message error" role="alert">{error}</p> : <p className="mp-message">Loading…</p>}
       </div>
     )
@@ -182,7 +182,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
 
   return (
     <form ref={formRef} className="mp-panel mp-form mp-editor" onSubmit={save} noValidate>
-      <button type="button" className="mp-back" onClick={onClose}>Back to my products</button>
+      <button type="button" className="mp-back" onClick={onClose}>Back</button>
       <h2>{product ? `Edit: ${product.name}` : 'Add a product'}</h2>
       {product?.adminHidden && (
         <p className="mp-message error" role="status">
