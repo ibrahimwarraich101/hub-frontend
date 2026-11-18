@@ -65,16 +65,22 @@ export function MarketplaceApp({ onExit }: Props) {
   const previous = history[history.length - 2]
 
   return (
-    <section className="mp-app" aria-label="HUB Store">
-      <header className="mp-header">
-        {onExit && <button type="button" className="mp-back" onClick={onExit}>Back to HUB</button>}
-        <h1>HUB Store</h1>
-        <button type="button" className="mp-back mp-header-link" onClick={() => open({ page: 'orders' })}>My orders</button>
-        <button type="button" className={view.page === 'cart' ? 'mp-cart-button active' : 'mp-cart-button'} onClick={() => open({ page: 'cart' })}
-          aria-label={`Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}>
-          Cart<span className="mp-cart-count">{cartCount}</span>
-        </button>
+    <section className="mp-app mp-store" aria-label="HUB Store">
+      {/* Full-width bar that stays at the top while scrolling; its contents line up with the page below. */}
+      <header className="mp-topbar">
+        <div className="mp-topbar-inner">
+          {onExit && <button type="button" className="mp-back" onClick={onExit}>Back to HUB</button>}
+          <h1 className="mp-brand">HUB Store</h1>
+          <div className="mp-topbar-actions">
+            <button type="button" className={view.page === 'orders' || view.page === 'order' ? 'mp-back active' : 'mp-back'} onClick={() => open({ page: 'orders' })}>My orders</button>
+            <button type="button" className={view.page === 'cart' ? 'mp-cart-button active' : 'mp-cart-button'} onClick={() => open({ page: 'cart' })}
+              aria-label={`Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}>
+              Cart<span className="mp-cart-count">{cartCount}</span>
+            </button>
+          </div>
+        </div>
       </header>
+      <div className="mp-store-body">
       {view.page === 'product' && (
         <ProductPage key={view.productId} productId={view.productId} onBack={back}
           backLabel={previous?.page === 'shop' ? 'Back to shop' : previous?.page === 'cart' ? 'Back to cart' : 'Back to store'}
@@ -101,6 +107,7 @@ export function MarketplaceApp({ onExit }: Props) {
       {/* The store stays mounted (just hidden) so "Back" keeps the customer's search, category and page. */}
       <div hidden={view.page !== 'store'}>
         <StoreHome onOpenProduct={(id) => open({ page: 'product', productId: id })} onOpenShop={(merchantId) => open({ page: 'shop', merchantId })} />
+      </div>
       </div>
     </section>
   )

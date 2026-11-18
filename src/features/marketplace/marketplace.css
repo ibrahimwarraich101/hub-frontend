@@ -1,5 +1,5 @@
 /* File purpose: E-Commerce store, product page and Seller Center styles, using the HUB theme variables from index.css. */
-.mp-app { max-width: 1100px; margin: 0 auto; padding: 16px; text-align: left; color: var(--text-h); }
+.mp-app { width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; text-align: left; color: var(--text-h); }
 .mp-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .mp-header h1 { font-size: 1.6rem; margin: 0; }
 .mp-app button { font: inherit; cursor: pointer; }
@@ -301,4 +301,130 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
 @media (max-width: 560px) {
   .mp-shop-head { flex-direction: column; align-items: center; text-align: center; }
   .mp-shop-rating, .mp-shop-facts { justify-content: center; }
+}
+
+/* ---------- Store layout: top bar, banner, category tiles, rows and product cards (desktop first, phone rules below) ---------- */
+.mp-app.mp-store { max-width: none; padding: 0; }
+.mp-topbar { position: sticky; top: 0; z-index: 50; background: var(--hub-surface); border-bottom: 1px solid var(--hub-border); box-shadow: 0 2px 10px rgba(16, 24, 32, 0.05); }
+.mp-topbar-inner { max-width: var(--hub-max-width); margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
+.mp-topbar .mp-back { margin: 0; align-self: center; }
+.mp-brand { flex: 1; margin: 0; font-size: 22px; font-weight: 900; color: var(--hub-primary); letter-spacing: -0.5px; line-height: 1; white-space: nowrap; }
+.mp-topbar-actions { display: flex; align-items: center; gap: 8px; }
+.mp-app .mp-back.active, .mp-app .mp-back.active:hover { background: var(--hub-primary); color: var(--hub-on-primary); }
+.mp-store-body { max-width: var(--hub-max-width); margin: 0 auto; padding: 20px 20px 48px; }
+
+/* Banner with search; while searching or filtering it shrinks to just the search box. */
+.mp-hero { background: var(--hub-hero); border-radius: var(--hub-radius-banner); padding: 36px 32px; margin-bottom: 28px; display: flex; flex-direction: column; gap: 20px; }
+.mp-hero h2 { font-size: 32px; line-height: 1.15; margin: 0 0 8px; max-width: 560px; }
+.mp-hero-text p { color: var(--hub-secondary); max-width: 560px; }
+.mp-hero .mp-search { margin: 0; max-width: 640px; }
+.mp-hero .mp-search input { border-color: transparent; box-shadow: var(--hub-shadow); min-height: 48px; }
+.mp-hero .mp-search button { min-height: 48px; }
+.mp-hero.compact { background: none; padding: 0; margin-bottom: 14px; border-radius: 0; }
+.mp-hero.compact .mp-search { max-width: none; }
+.mp-hero.compact .mp-search input { border-color: var(--hub-border); box-shadow: none; }
+
+/* Sections and sideways-scrolling rows. */
+.mp-section { margin-bottom: 32px; }
+.mp-section-title { font-size: 20px; margin: 0 0 12px; color: var(--hub-heading); }
+.mp-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.mp-section-head .mp-section-title { margin: 0; }
+.mp-section-head .mp-link { margin: 0; align-self: center; }
+.mp-section.mp-shops { margin: 0 0 32px; }
+.mp-shops .mp-section-title { font-size: 20px; margin: 0 0 12px; }
+.mp-rail { list-style: none; margin: 0 -20px; padding: 4px 20px 12px; display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 20px; scrollbar-width: thin; }
+.mp-shops .mp-rail { margin: 0 -20px; padding: 4px 20px 12px; }
+.mp-rail > li { flex: none; scroll-snap-align: start; display: flex; }
+.mp-product-rail > li { width: 200px; }
+
+/* Category tiles: a product photo with the name on top, or a coloured tile when there is no photo yet. */
+.mp-cat-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.mp-app .mp-cat-tile { width: 100%; aspect-ratio: 4 / 3; position: relative; display: flex; align-items: flex-end; padding: 0; border: none;
+  border-radius: var(--hub-radius-card); overflow: hidden; text-align: left; box-shadow: var(--hub-shadow); transition: transform 0.15s, box-shadow 0.15s; }
+.mp-app .mp-cat-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 24, 32, 0.12); }
+.mp-cat-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.mp-cat-tile.has-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(8, 41, 30, 0.8)); }
+.mp-cat-letter { position: absolute; top: 8px; right: 14px; font-size: 64px; font-weight: 900; line-height: 1; opacity: 0.3; }
+.mp-cat-name { position: relative; z-index: 1; padding: 12px 14px; font-weight: 800; font-size: 1rem; line-height: 1.2; }
+.mp-cat-tile.has-photo .mp-cat-name { color: #ffffff; }
+
+/* Category filter chips while browsing: one row that scrolls sideways on phones, wraps on wider screens. */
+.mp-filter-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+.mp-scroll-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.mp-scroll-chips::-webkit-scrollbar { display: none; }
+.mp-scroll-chips .mp-chip { flex: none; white-space: nowrap; }
+.mp-scroll-chips.sub .mp-chip { background: var(--hub-surface); box-shadow: inset 0 0 0 1px var(--hub-border); font-size: 0.9rem; padding: 6px 14px; }
+.mp-scroll-chips.sub .mp-chip.active { background: var(--hub-primary); color: var(--hub-on-primary); box-shadow: none; }
+@media (min-width: 721px) { .mp-scroll-chips { flex-wrap: wrap; overflow: visible; } }
+
+/* Product list heading, count and sort. */
+.mp-products { scroll-margin-top: 84px; }
+.mp-products .mp-toolbar { align-items: flex-end; gap: 12px; flex-wrap: wrap; margin: 6px 0 14px; }
+.mp-products .mp-toolbar .mp-section-title { margin: 0; }
+.mp-sort { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--hub-secondary); }
+.mp-sort select { min-height: 40px; }
+
+/* Product cards: same-size square photo, name on at most two lines, big price, sale percentage. */
+.mp-grid { gap: 16px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); transition: opacity 0.15s; }
+.mp-grid.busy { opacity: 0.55; pointer-events: none; }
+.mp-grid > li { display: flex; }
+.mp-app .mp-card { height: 100%; padding: 0; gap: 0; }
+.mp-app .mp-card:hover { box-shadow: 0 6px 20px rgba(16, 24, 32, 0.1); }
+.mp-card-photo { position: relative; display: block; width: 100%; aspect-ratio: 1; background: var(--hub-surface-muted); overflow: hidden; }
+.mp-card-photo img, .mp-card-photo .mp-noimage { width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; display: flex; transition: transform 0.25s; }
+.mp-card:hover .mp-card-photo img { transform: scale(1.04); }
+.mp-card.sold-out .mp-card-photo img { opacity: 0.55; }
+.mp-card-body { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px; min-width: 0; }
+.mp-card .mp-name, .mp-card .mp-price, .mp-card .mp-seller { padding: 0; }
+.mp-card .mp-name { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; min-height: 2.6em; font-size: 0.95rem; }
+.mp-card .mp-price { font-size: 1.1rem; font-weight: 800; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; }
+.mp-card .mp-price s { margin: 0; font-size: 0.8rem; }
+.mp-card .mp-seller { margin-top: auto; padding-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-discount { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 8px; background: var(--hub-error); color: #ffffff; font-size: 0.75rem; font-weight: 800; }
+
+/* Grey placeholder cards while products load. */
+.mp-skeleton { display: flex; flex-direction: column; gap: 8px; padding-bottom: 14px; border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card); background: var(--hub-surface); overflow: hidden; }
+.mp-skeleton-photo { display: block; aspect-ratio: 1; }
+.mp-skeleton-line { display: block; height: 12px; margin: 0 12px; border-radius: 6px; }
+.mp-skeleton-line.short { width: 45%; }
+.mp-skeleton-photo, .mp-skeleton-line { background: linear-gradient(90deg, var(--hub-surface-muted) 25%, #e3e9e5 50%, var(--hub-surface-muted) 75%); background-size: 200% 100%; animation: mp-shimmer 1.2s linear infinite; }
+@keyframes mp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .mp-skeleton-photo, .mp-skeleton-line { animation: none; } }
+
+/* Nothing found. */
+.mp-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 20px; text-align: center; border: 1px dashed var(--hub-border); border-radius: var(--hub-radius-card); background: var(--hub-surface); }
+.mp-empty h3 { margin: 0; font-size: 18px; }
+.mp-empty p { color: var(--hub-secondary); }
+.mp-empty .mp-primary { margin-top: 8px; }
+
+/* Tablets and phones. */
+@media (max-width: 720px) {
+  .mp-topbar-inner { padding: 8px 16px; gap: 8px; }
+  .mp-brand { font-size: 19px; }
+  .mp-store-body { padding: 16px 16px 40px; }
+  .mp-hero { padding: 24px 18px; gap: 16px; border-radius: var(--hub-radius-card); margin-bottom: 24px; }
+  .mp-hero h2 { font-size: 24px; }
+  .mp-hero-text p { font-size: 0.9rem; }
+  .mp-section { margin-bottom: 26px; }
+  .mp-section-title, .mp-shops .mp-section-title { font-size: 18px; }
+  .mp-rail, .mp-shops .mp-rail { margin: 0 -16px; padding: 4px 16px 10px; scroll-padding: 0 16px; gap: 10px; }
+  .mp-product-rail > li { width: 158px; }
+  .mp-cat-tiles { display: flex; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 10px; gap: 10px; scroll-snap-type: x mandatory; scroll-padding: 0 16px; scrollbar-width: none; }
+  .mp-cat-tiles::-webkit-scrollbar { display: none; }
+  .mp-cat-tiles > li { flex: none; width: 132px; scroll-snap-align: start; }
+  .mp-cat-name { font-size: 0.9rem; padding: 10px 12px; }
+  .mp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .mp-card-body { padding: 8px 10px 10px; }
+  .mp-card .mp-name { font-size: 0.9rem; }
+  .mp-card .mp-price { font-size: 1rem; }
+  .mp-shop-card { width: 136px; }
+  .mp-products { scroll-margin-top: 64px; }
+}
+/* Small phones: the top bar keeps its three buttons; the store name is hidden from view (the page is already the store). */
+@media (max-width: 480px) {
+  .mp-brand { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mp-topbar-actions { margin-left: auto; }
+  .mp-app .mp-topbar .mp-back, .mp-app .mp-topbar .mp-cart-button { min-height: 40px; padding: 0 12px; font-size: 0.9rem; }
+  .mp-hero .mp-search button { padding: 0 16px; }
+  .mp-products .mp-toolbar { align-items: center; }
 }
