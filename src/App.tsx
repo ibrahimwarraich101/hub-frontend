@@ -10,6 +10,8 @@ import { FoodAdmin } from './features/food/admin/FoodAdmin'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
 import { businessOptions } from './shared/auth/businessOptions'
+import { useBusinessAccounts } from './shared/business/useBusinessAccounts'
+import type { BusinessStatus } from './shared/business/useBusinessAccounts'
 import './App.css'
 
 type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' | 'food-admin'
@@ -19,15 +21,10 @@ const AVAILABLE_BUSINESS = ['seller', 'restaurant']
 
 function App() {
   const { restoring, user, logout, hasRole, businessIntent, setBusinessIntent } = useAuth()
-  // An admin address (#admin/...) reopens the admin portal after a refresh.
-  const [service, setService] = useState<Service>(() => (window.location.hash.startsWith('#admin') ? 'admin'
-    // HUB Food addresses (#food-admin..., #food..., #restaurant...) reopen that screen after a refresh.
-    : /^#food-admin(\/|$)/.test(window.location.hash) ? 'food-admin'
-    : /^#food(\/|$)/.test(window.location.hash) ? 'food'
-    : /^#restaurant(\/|$)/.test(window.location.hash) ? 'restaurant'
-    // Coming back from JazzCash (?order=...&payment=...) opens the store on that order.
-    : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'))
-
+  // Whether this person has applied to sell or to run a restaurant, so the home page only shows them business tools they use.
+  // The service state is declared first so the answers reload every time the person returns to the home page.
+  const [service, setService] = useState<Service>(initialService)
+  const business = useBusinessAccounts(service === 'home' && businessIntent !== 'seller' && businessIntent !== 'restaurant')
   if (restoring) return <main className="hub-home"><p className="hub-loading">Loading…</p></main>
   if (!user) return <AuthScreens availableBusiness={AVAILABLE_BUSINESS} />
 
@@ -43,6 +40,7 @@ function App() {
   if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
 
   const intent = businessOptions.find((option) => option.id === businessIntent)
+  const isAdmin = hasRole('Administrator')
   const firstName = user.fullName.split(' ')[0]
   return (
     <main className="hub-home">
@@ -85,31 +83,74 @@ function App() {
         </button>
       </div>
 
-      <h2>Business</h2>
-      <div className="hub-services">
-        <button type="button" className="hub-tile business" onClick={() => setService('sell')}>
-          <strong>Sell on HUB Store</strong>
-          <span>Open your store and add products</span>
-        </button>
-        <button type="button" className="hub-tile business" onClick={() => setService('restaurant')}>
-          <strong>Restaurant on HUB Food</strong>
-          <span>Open your restaurant and add your menu</span>
-        </button>
-        {hasRole('Administrator') && (
-          <button type="button" className="hub-tile admin" onClick={() => setService('admin')}>
-            <strong>Admin portal</strong>
-            <span>Users, sellers, categories and products</span>
-          </button>
-        )}
-        {hasRole('Administrator') && (
-          <button type="button" className="hub-tile admin" onClick={() => setService('food-admin')}>
-            <strong>HUB Food admin</strong>
-            <span>Restaurant approvals and all food orders</span>
-          </button>
-        )}
-      </div>
+      {/* Business tools: only for people who have applied (named after their tool, e.g. "Seller Center") and administrators. */}
+      {(business.seller || business.restaurant || isAdmin) && (
+        <>
+          <h2>Business</h2>
+          <div className="hub-services">
+            {business.seller && (
+              <button type="button" className="hub-tile business" onClick={() => setService('sell')}>
+                <strong>Seller Center</strong>
+                <span>{statusLine(business.seller, 'Manage your store, products and orders')}</span>
+              </button>
+            )}
+            {business.restaurant && (
+              <button type="button" className="hub-tile business" onClick={() => setService('restaurant')}>
+                <strong>Restaurant Center</strong>
+                <span>{statusLine(business.restaurant, 'Manage your restaurant, menu and orders')}</span>
+              </button>
+            )}
+            {isAdmin && (
+              <button type="button" className="hub-tile admin" onClick={() => setService('admin')}>
+                <strong>Admin portal</strong>
+                <span>Users, sellers, categories and products</span>
+              </button>
+            )}
+            {isAdmin && (
+              <button type="button" className="hub-tile admin" onClick={() => setService('food-admin')}>
+                <strong>HUB Food admin</strong>
+                <span>Restaurant approvals and all food orders</span>
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Everyone else: one small invitation at the bottom, offering only what they have not applied for yet. */}
+      {business.loaded && (!business.seller || !business.restaurant) && (
+        <section className="hub-partner" aria-label="Partner with HUB">
+          <div>
+            <strong>Partner with HUB</strong>
+            <span>Sell your products or open your restaurant to HUB customers.</span>
+          </div>
+          <div className="hub-partner-actions">
+            {!business.seller && <button type="button" className="hub-button secondary small" onClick={() => setService('sell')}>Sell on HUB Store</button>}
+            {!business.restaurant && <button type="button" className="hub-button secondary small" onClick={() => setService('restaurant')}>Open a restaurant</button>}
+          </div>
+        </section>
+      )}
     </main>
   )
+}
+
+// The line under a business tile: the normal description once approved, otherwise where the application stands.
+function statusLine(status: BusinessStatus, approved: string): string {
+  if (status === 'Approved') return approved
+  if (status === 'Pending') return 'Your application is being reviewed'
+  if (status === 'Rejected') return 'Your application was not approved. See why'
+  return 'Your account is suspended. See why'
+}
+
+// The first screen after loading the page.
+function initialService(): Service {
+  // An admin address (#admin/...) reopens the admin portal after a refresh.
+  return window.location.hash.startsWith('#admin') ? 'admin'
+    // HUB Food addresses (#food-admin..., #food..., #restaurant...) reopen that screen after a refresh.
+    : /^#food-admin(\/|$)/.test(window.location.hash) ? 'food-admin'
+    : /^#food(\/|$)/.test(window.location.hash) ? 'food'
+    : /^#restaurant(\/|$)/.test(window.location.hash) ? 'restaurant'
+    // Coming back from JazzCash (?order=...&payment=...) opens the store on that order.
+    : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'
 }
 
 function initials(name: string): string {
