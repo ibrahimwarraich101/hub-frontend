@@ -66,6 +66,11 @@ export const authApi = {
   verifyEmail: (email: string, code: string) => sendJson<TokenResponse>('/api/auth/verify-email', 'POST', { email, code }),
   // Always answers the same way; a new code arrives at most once a minute.
   resendCode: (email: string) => sendJson<{ message: string }>('/api/auth/resend-code', 'POST', { email }),
+  // "Forgot password?": always answers the same way; a reset code arrives at most once a minute.
+  forgotPassword: (email: string) => sendJson<{ message: string }>('/api/auth/forgot-password', 'POST', { email }),
+  // The right code sets the new password and logs out every session; the user then logs in again.
+  resetPassword: (email: string, code: string, newPassword: string) =>
+    sendJson<void>('/api/auth/reset-password', 'POST', { email, code, newPassword }),
   // Each refresh returns a NEW refresh token; the old one stops working.
   refresh: (refreshToken: string) => sendJson<TokenResponse>('/api/auth/refresh', 'POST', { refreshToken }),
   logout: (accessToken: string) => sendJson<void>('/api/auth/logout', 'POST', undefined, accessToken),
