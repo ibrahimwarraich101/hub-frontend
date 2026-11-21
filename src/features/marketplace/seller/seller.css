@@ -162,3 +162,4 @@
   .sx-row-action { text-align: left; align-self: end; }
 }
 .sx-main .mp-panel:has(> .sx-table-wrap) { overflow: hidden; }
+.sx-table .mp-pill { white-space: nowrap; }

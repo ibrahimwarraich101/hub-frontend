@@ -52,7 +52,7 @@ function SellerOrderList({ tab, onTab, onOpen }: { tab: OrderStatus | ''; onTab:
   const pages = list ? Math.max(1, Math.ceil(list.total / list.pageSize)) : 1
   return (
     <div className="mp-panel">
-      <h2>Your orders</h2>
+      <h2>Your orders{list ? ` (${list.total})` : ''}</h2>
       <div className="mp-chips" role="tablist" aria-label="Order status">
         {tabs.map((item) => (
           <button key={item.label} type="button" role="tab" aria-selected={tab === item.status}
@@ -63,21 +63,43 @@ function SellerOrderList({ tab, onTab, onOpen }: { tab: OrderStatus | ''; onTab:
       {!list && !error && <p className="mp-message">Loading…</p>}
       {list && list.items.length === 0 && <p className="mp-message">No orders here yet.</p>}
       {list && list.items.length > 0 && (
-        <ul className="mp-seller-list">
-          {list.items.map((item) => (
-            <li key={item.id}>
-              <button type="button" className="mp-seller-row" onClick={() => onOpen(item.id)}>
-                {item.firstImageUrl ? <img src={mediaUrl(item.firstImageUrl) ?? ''} alt="" /> : <span className="mp-noimage">No photo</span>}
-                <span className="mp-seller-row-main">
-                  <strong>{item.number} · {item.customerName}</strong>
-                  <span className="mp-hint">{item.itemCount} item{item.itemCount === 1 ? '' : 's'} · {orderDate(item.createdAt)}</span>
-                  <span className="mp-price">{formatPrice(item.total, item.currency)}</span>
-                </span>
-                <StatusPill status={item.status} />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="sx-table-wrap">
+          <table className="sx-table">
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Items</th>
+                <th scope="col">Total</th>
+                <th scope="col">Placed</th>
+                <th scope="col">Status</th>
+                <th scope="col"><span className="sx-visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.items.map((item) => (
+                // The whole row opens the order; the Open button is there for keyboard and screen-reader users.
+                <tr key={item.id} onClick={() => onOpen(item.id)}>
+                  <td data-label="Order">
+                    <span className="sx-product">
+                      {item.firstImageUrl ? <img src={mediaUrl(item.firstImageUrl) ?? ''} alt="" /> : <span className="sx-noimage" />}
+                      <span><strong>{item.number}</strong></span>
+                    </span>
+                  </td>
+                  <td data-label="Customer">{item.customerName ?? '—'}</td>
+                  <td data-label="Items">{item.itemCount} item{item.itemCount === 1 ? '' : 's'}</td>
+                  <td data-label="Total"><span className="sx-money">{formatPrice(item.total, item.currency)}</span></td>
+                  <td data-label="Placed" className="sx-muted">{orderDate(item.createdAt)}</td>
+                  <td data-label="Status"><StatusPill status={item.status} /></td>
+                  <td className="sx-row-action">
+                    <button type="button" className="sx-link" onClick={(event) => { event.stopPropagation(); onOpen(item.id) }}
+                      aria-label={`Open order ${item.number}`}>Open</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {list && pages > 1 && (
         <div className="mp-pager">
