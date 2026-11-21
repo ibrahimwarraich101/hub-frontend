@@ -1,11 +1,13 @@
 // File purpose: Checkout for ONE store's items: delivery details, payment method (JazzCash wallet or card), order
 // summary, then "Place order and pay" sends the customer to JazzCash. Free delivery for now.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { Field } from '../../shared/auth/AuthScreens'
 import { PhoneField } from '../../shared/forms/PhoneField'
+import { Toast } from '../../shared/layout/Toast'
+import type { ToastMessage } from '../../shared/layout/Toast'
 import { formatPrice } from './api'
 import { cartPaths } from './cartApi'
 import type { Cart, CartStore } from './cartApi'
@@ -25,7 +27,10 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
   const [method, setMethod] = useState<PaymentMethod>('Wallet')
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
+  // A problem loading the cart stays on the page; a problem placing the order pops up for a few seconds.
   const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+  const hideToast = useCallback(() => setToast(null), [])
   // Made once for this screen: pressing the button twice never makes two orders.
   const [requestKey] = useState(() => newRequestKey('checkout'))
 
@@ -44,7 +49,7 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
   async function submit(event: FormEvent) {
     event.preventDefault()
     setTried(true)
-    setError(null)
+    setToast(null)
     const found = validateDelivery(values)
     if (Object.keys(found).length > 0) {
       ;(formRef.current?.elements.namedItem(Object.keys(found)[0]) as HTMLElement | null)?.focus()
@@ -59,7 +64,7 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
       })
     } catch (reason) {
       // Only things the website cannot know (stock changed a moment ago, server down) come from the server.
-      setError(reason instanceof ApiError ? reason.message : 'Could not place your order. Please try again.')
+      setToast({ id: Date.now(), text: reason instanceof ApiError ? reason.message : 'Could not place your order. Please try again.' })
       setBusy(false)
       return
     }
@@ -74,6 +79,7 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
   return (
     <div className="mp-checkout">
       <h2 className="mp-cart-title">Checkout</h2>
+      <Toast message={toast} onDone={hideToast} />
       {error && <p className="mp-message error" role="alert">{error}</p>}
       {store === undefined && !error && <p className="mp-message">Loading…</p>}
       {store === null && <p className="mp-message">There is nothing from this store in your cart any more.</p>}
