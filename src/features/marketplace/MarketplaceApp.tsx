@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { useSignInRequest } from '../../shared/auth/GuestContext'
 import { SignInNeeded } from '../../shared/auth/SignInNeeded'
+import { confirmLeave, hasUnsavedChanges } from '../../shared/forms/unsavedChanges'
 import { ModuleBar } from '../../shared/layout/AppShell'
 import { enterSection, goTo, sectionDepth, sectionPath, useSectionHistory } from '../../shared/layout/sectionRoute'
 import { CartPage } from './CartPage'
@@ -105,6 +106,12 @@ export function MarketplaceApp({ onExit, onSellerCenter }: Props) {
 
   // The browser's Back/Forward buttons.
   useSectionHistory(SECTION, useCallback((path: string | null) => {
+    // The browser's Back with unsaved changes (checkout): put this page back in the address and ask first.
+    if (hasUnsavedChanges()) {
+      goTo(SECTION, pathOf(view))
+      confirmLeave(() => window.history.back())
+      return
+    }
     if (path === null) { onExit?.(); return }
     const next = readView(path)
     setHistory((pages) => {
@@ -112,19 +119,20 @@ export function MarketplaceApp({ onExit, onSellerCenter }: Props) {
       return next.page === 'store' ? [next] : [...pages.slice(-19), next]
     })
     window.scrollTo({ top: 0 })
-  }, [onExit]))
+  }, [onExit, view]))
 
   // replace: swap the current page instead of adding a step (used after placing an order, so Back skips checkout).
-  const open = useCallback((next: View, replace = false) => {
+  // Asks first when a form on the current page (checkout) has unsaved changes.
+  const open = useCallback((next: View, replace = false) => confirmLeave(() => {
     goTo(SECTION, pathOf(next), replace)
     // Opening the store home starts over; anything else is added on top.
     setHistory((pages) => next.page === 'store' ? [next] : replace ? [...pages.slice(0, -1), next] : [...pages.slice(-19), next])
     window.scrollTo({ top: 0 })
-  }, [])
+  }), [])
 
   // Back: one step back in the browser while that stays inside the store, otherwise up to the parent page.
   const back = useCallback(() => {
-    if (sectionDepth() > 1) window.history.back()
+    if (sectionDepth() > 1) confirmLeave(() => window.history.back())
     else open(parentOf(view), true)
   }, [open, view])
 

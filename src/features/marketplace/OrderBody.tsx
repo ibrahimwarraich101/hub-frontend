@@ -3,6 +3,7 @@ import { mediaUrl } from '../../shared/api/client'
 import { formatPrice } from './api'
 import { orderDate, statusLabels, statusTones } from './ordersApi'
 import type { Order, OrderStatus } from './ordersApi'
+import { formatPhone } from '../../shared/forms/phone'
 
 const steps: OrderStatus[] = ['AwaitingPayment', 'Placed', 'Confirmed', 'Shipped', 'Delivered']
 
@@ -57,7 +58,7 @@ export function OrderBody({ order, showCustomer }: { order: Order; showCustomer?
         <dl className="mp-facts">
           {showCustomer && order.customerName && <><dt>Customer</dt><dd>{order.customerName}</dd></>}
           <dt>Name</dt><dd>{order.delivery.name}</dd>
-          <dt>Phone</dt><dd>{order.delivery.phone}</dd>
+          <dt>Phone</dt><dd>{formatPhone(order.delivery.phone)}</dd>
           <dt>Address</dt><dd>{order.delivery.address}, {order.delivery.city}</dd>
           {order.note && <><dt>Note</dt><dd>{order.note}</dd></>}
           <dt>Ordered</dt><dd>{orderDate(order.createdAt)}</dd>

@@ -7,6 +7,7 @@ import { Pager } from './Pager'
 import { ReasonAction } from './ReasonAction'
 import type { AdminRoute } from './sections'
 import { useAdminData } from './useAdminData'
+import { formatPhone } from '../../shared/forms/phone'
 
 export function UsersPage({ userId, go }: { userId: string | null; go: (route: AdminRoute) => void }) {
   return userId ? <UserDetailsView userId={userId} go={go} /> : <UserList go={go} />
@@ -50,7 +51,7 @@ function UserList({ go }: { go: (route: AdminRoute) => void }) {
                   <tr key={user.id} className="adm-row-link" onClick={() => go({ section: 'users', id: user.id })}>
                     <td><button type="button" className="adm-link" onClick={(event) => { event.stopPropagation(); go({ section: 'users', id: user.id }) }}>{user.fullName}</button></td>
                     <td>{user.email}</td>
-                    <td>{user.phone}</td>
+                    <td>{formatPhone(user.phone)}</td>
                     <td>{user.roles.join(', ')}</td>
                     <td><span className={`hub-pill ${user.isActive ? 'success' : 'error'}`}>{user.isActive ? 'Active' : 'Blocked'}</span></td>
                     <td>{new Date(user.createdAt).toLocaleDateString('en-PK')}</td>
@@ -92,7 +93,7 @@ function UserDetailsView({ userId, go }: { userId: string; go: (route: AdminRout
             </div>
             <dl className="adm-facts">
               <dt>Email</dt><dd>{data.user.email}</dd>
-              <dt>Phone</dt><dd>{data.user.phone}</dd>
+              <dt>Phone</dt><dd>{formatPhone(data.user.phone)}</dd>
               <dt>Roles</dt><dd>{data.user.roles.join(', ') || '—'}</dd>
               <dt>Joined</dt><dd>{dateTime(data.user.createdAt)}</dd>
               <dt>Logged in on</dt><dd>{data.activeSessions} device{data.activeSessions === 1 ? '' : 's'}</dd>

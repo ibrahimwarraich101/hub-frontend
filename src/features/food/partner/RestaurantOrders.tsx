@@ -7,6 +7,7 @@ import { useAuth } from '../../../shared/auth/AuthContext'
 import { ComplaintThread } from '../ComplaintThread'
 import { foodPaths, money, statusLabel, timeAgo } from '../foodApi'
 import type { FoodOrder, FoodOrderPage, OrderStatus } from '../foodApi'
+import { formatPhone } from '../../../shared/forms/phone'
 
 const FILTERS: { value: OrderStatus; label: string }[] = [
   { value: 'Placed', label: 'New' },
@@ -177,7 +178,7 @@ export function RestaurantOrders() {
           </div>
           <dl className="fd-facts">
             <dt>Customer</dt><dd>{open.delivery.name}</dd>
-            <dt>Phone</dt><dd><a href={`tel:${open.delivery.phone}`}>{open.delivery.phone}</a></dd>
+            <dt>Phone</dt><dd><a href={`tel:${open.delivery.phone}`}>{formatPhone(open.delivery.phone)}</a></dd>
             <dt>Address</dt><dd>{open.delivery.address}, {open.delivery.city}</dd>
             {open.note && (<><dt>Note</dt><dd>{open.note}</dd></>)}
           </dl>

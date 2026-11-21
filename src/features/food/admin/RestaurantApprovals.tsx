@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import { useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { dateTime, decisionsFor, foodPaths } from '../foodApi'
 import type { AdminRestaurant, AdminRestaurantPage, RestaurantDecision, RestaurantStatus } from '../foodApi'
+import { formatPhone } from '../../../shared/forms/phone'
 
 const STATUSES: RestaurantStatus[] = ['Pending', 'Approved', 'Suspended', 'Rejected']
 
@@ -62,6 +64,8 @@ export function RestaurantApprovals() {
 function ReviewCard({ item, onDone }: { item: AdminRestaurant; onDone: (text: string) => void }) {
   const { authFetch } = useAuth()
   const [reason, setReason] = useState('')
+  // A typed reason that was not used for a decision yet is an unsaved change.
+  useUnsavedChanges(reason.trim() !== '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const account = item.account
@@ -72,6 +76,7 @@ function ReviewCard({ item, onDone }: { item: AdminRestaurant; onDone: (text: st
     setError(null)
     try {
       await authFetch(foodPaths.adminReview(account.id), 'POST', { decision, reason: reason.trim(), expectedVersion: account.version })
+      setReason('')
       onDone(`${account.name}: ${decision.toLowerCase()} done.`)
     } catch (problem) {
       setError(problem instanceof ApiError ? problem.message : 'Could not save the decision.')
@@ -86,10 +91,10 @@ function ReviewCard({ item, onDone }: { item: AdminRestaurant; onDone: (text: st
         <span className={`fd-status fd-status-${account.status.toLowerCase()}`}>{account.status}</span>
       </div>
       <dl className="fd-facts">
-        <dt>Owner</dt><dd>{item.owner.fullName} · {item.owner.email} · {item.owner.phone}</dd>
+        <dt>Owner</dt><dd>{item.owner.fullName} · {item.owner.email} · {formatPhone(item.owner.phone)}</dd>
         <dt>Cuisine</dt><dd>{account.cuisine}</dd>
         <dt>Address</dt><dd>{account.addressLine}, {account.city}</dd>
-        <dt>Restaurant phone</dt><dd>{account.phone}</dd>
+        <dt>Restaurant phone</dt><dd>{formatPhone(account.phone)}</dd>
         {account.description && (<><dt>About</dt><dd>{account.description}</dd></>)}
         <dt>Submitted</dt><dd>{dateTime(account.submittedAt)}</dd>
         {account.reviewReason && (<><dt>Last reason</dt><dd>{account.reviewReason}</dd></>)}

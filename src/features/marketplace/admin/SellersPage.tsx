@@ -7,6 +7,7 @@ import type { AdminRoute } from '../../admin/sections'
 import { useAdminData } from '../../admin/useAdminData'
 import { decisionsFor, sellerPaths, shortDate } from '../sellerApi'
 import type { AdminSeller, AdminSellerPage, SellerDecision, SellerStatus } from '../sellerApi'
+import { formatPhone } from '../../../shared/forms/phone'
 
 const STATUSES: SellerStatus[] = ['Pending', 'Approved', 'Suspended', 'Rejected']
 const tones: Record<SellerStatus, string> = { Pending: 'warning', Approved: 'success', Suspended: 'error', Rejected: 'muted' }
@@ -87,8 +88,8 @@ function SellerCard({ seller, go, onDone }: { seller: AdminSeller; go: (route: A
       </div>
       <dl className="adm-facts">
         <dt>Owner</dt>
-        <dd><button type="button" className="adm-link" onClick={() => go({ section: 'users', id: owner.id })}>{owner.fullName}</button> · {owner.email} · {owner.phone}</dd>
-        <dt>Store phone</dt><dd>{account.phone}</dd>
+        <dd><button type="button" className="adm-link" onClick={() => go({ section: 'users', id: owner.id })}>{owner.fullName}</button> · {owner.email} · {formatPhone(owner.phone)}</dd>
+        <dt>Store phone</dt><dd>{formatPhone(account.phone)}</dd>
         {account.description && <><dt>About</dt><dd>{account.description}</dd></>}
         <dt>Submitted</dt><dd>{shortDate(account.submittedAt)}</dd>
         {account.reviewReason && <><dt>Last reason</dt><dd>{account.reviewReason}</dd></>}

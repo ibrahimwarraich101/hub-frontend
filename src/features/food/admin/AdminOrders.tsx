@@ -7,6 +7,7 @@ import { useAuth } from '../../../shared/auth/AuthContext'
 import { ComplaintThread } from '../ComplaintThread'
 import { dateTime, foodPaths, money, statusLabel } from '../foodApi'
 import type { AdminOrder, AdminOrderFilter, AdminOrderPage, AdminOrderTotals } from '../foodApi'
+import { formatPhone } from '../../../shared/forms/phone'
 
 type Filters = { status: AdminOrderFilter; search: string; from: string; to: string; restaurant: { id: string; name: string } | null; page: number }
 
@@ -222,7 +223,7 @@ function OrderView({ orderId, onBack, onRestaurant }: ViewProps) {
           <dl className="fd-facts">
             <dt>Name</dt><dd>{data.customer.fullName}</dd>
             <dt>Email</dt><dd>{data.customer.email}</dd>
-            <dt>Phone</dt><dd>{data.customer.phone}</dd>
+            <dt>Phone</dt><dd>{formatPhone(data.customer.phone)}</dd>
           </dl>
         </div>
 
@@ -231,7 +232,7 @@ function OrderView({ orderId, onBack, onRestaurant }: ViewProps) {
           <dl className="fd-facts">
             <dt>Name</dt><dd>{order.restaurantName}</dd>
             <dt>Phone</dt><dd>{data.restaurantPhone}</dd>
-            <dt>Owner</dt><dd>{data.restaurantOwner.fullName} · {data.restaurantOwner.email} · {data.restaurantOwner.phone}</dd>
+            <dt>Owner</dt><dd>{data.restaurantOwner.fullName} · {data.restaurantOwner.email} · {formatPhone(data.restaurantOwner.phone)}</dd>
           </dl>
           <button type="button" className="fd-link" onClick={() => onRestaurant({ id: order.restaurantId, name: order.restaurantName })}>
             See all orders from this restaurant
@@ -273,7 +274,7 @@ function OrderView({ orderId, onBack, onRestaurant }: ViewProps) {
         </div>
         <dl className="fd-facts">
           <dt>Deliver to</dt><dd>{order.delivery.name}, {order.delivery.address}, {order.delivery.city}</dd>
-          <dt>Phone</dt><dd>{order.delivery.phone}</dd>
+          <dt>Phone</dt><dd>{formatPhone(order.delivery.phone)}</dd>
           {order.note && (<><dt>Note</dt><dd>{order.note}</dd></>)}
         </dl>
       </aside>

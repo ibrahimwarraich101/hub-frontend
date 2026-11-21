@@ -6,6 +6,7 @@ import { useAuth } from '../../shared/auth/AuthContext'
 import { ComplaintThread } from './ComplaintThread'
 import { complaintTopicLabel, dateTime, foodPaths, money, statusLabel, trackerSteps } from './foodApi'
 import type { ComplaintTopic, FoodOrder } from './foodApi'
+import { formatPhone } from '../../shared/forms/phone'
 
 type Props = { orderId: string }
 
@@ -185,7 +186,7 @@ export function OrderDetails({ orderId }: Props) {
         </div>
         <dl className="fd-facts">
           <dt>Deliver to</dt><dd>{order.delivery.name}, {order.delivery.address}, {order.delivery.city}</dd>
-          <dt>Phone</dt><dd>{order.delivery.phone}</dd>
+          <dt>Phone</dt><dd>{formatPhone(order.delivery.phone)}</dd>
           {order.note && (<><dt>Note</dt><dd>{order.note}</dd></>)}
         </dl>
       </aside>

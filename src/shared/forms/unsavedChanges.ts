@@ -18,6 +18,11 @@ function dirtyGuard(): Guard | undefined {
   return [...guards.values()].find((guard) => guard.dirty)
 }
 
+// The form's work is done (e.g. the order was placed and the page is going to JazzCash): stop warning about it.
+export function clearUnsavedChanges() {
+  guards.forEach((guard) => { guard.dirty = false })
+}
+
 export function hasUnsavedChanges(): boolean {
   return dirtyGuard() !== undefined
 }
@@ -74,8 +79,9 @@ export function useUnsavedChanges(dirty: boolean, formRef: RefObject<HTMLFormEle
   // Refresh or closing the tab: the browser asks "Leave site? Changes you made may not be saved."
   useEffect(() => {
     if (!dirty) return
-    const warn = (event: BeforeUnloadEvent) => { event.preventDefault() }
+    // Checked when the page is leaving, so clearUnsavedChanges() just before a redirect turns it off.
+    const warn = (event: BeforeUnloadEvent) => { if (guards.get(id)?.dirty) event.preventDefault() }
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty])
+  }, [dirty, id])
 }

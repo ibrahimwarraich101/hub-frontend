@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { foodPaths } from '../foodApi'
 import type { AdminOrderTotals } from '../foodApi'
+import { confirmLeave, hasUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { enterSection, goTo, leaveSection, sectionPath, useSectionHistory } from '../foodRoute'
 import { AdminCategories } from './AdminCategories'
 import { AdminComplaints } from './AdminComplaints'
@@ -23,13 +24,20 @@ export function FoodAdmin({ onExit: leave }: Props) {
   const { authFetch } = useAuth()
   const [area, setAreaState] = useState<Area>(() => readArea(sectionPath(SECTION)))
   useEffect(() => { enterSection(SECTION, readArea(sectionPath(SECTION))) }, [])
-  const onExit = useCallback(() => { leaveSection(); leave() }, [leave])
+  // Leaving or switching areas asks first when a typed reason, note or name was not saved yet.
+  const onExit = useCallback(() => confirmLeave(() => { leaveSection(); leave() }), [leave])
   useSectionHistory(SECTION, useCallback((path: string | null) => {
+    // The browser's Back with unsaved changes: put this area back in the address and ask first.
+    if (hasUnsavedChanges()) {
+      goTo(SECTION, area)
+      confirmLeave(() => window.history.back())
+      return
+    }
     if (path === null) leave()
     else setAreaState(readArea(path))
-  }, [leave]))
+  }, [leave, area]))
   // Switching areas replaces the address, so Back still leaves the admin area in one step.
-  const setArea = (next: Area) => { goTo(SECTION, next, true); setAreaState(next) }
+  const setArea = (next: Area, then?: () => void) => confirmLeave(() => { goTo(SECTION, next, true); setAreaState(next); then?.() })
   // An order opened from a complaint ("Open the full order").
   const [orderId, setOrderId] = useState<string | null>(null)
   const [openComplaints, setOpenComplaints] = useState(0)
@@ -60,7 +68,7 @@ export function FoodAdmin({ onExit: leave }: Props) {
       <div className="fd-admin-areas" role="tablist" aria-label="Admin area">
         {areas.map((item) => (
           <button key={item.value} type="button" role="tab" aria-selected={area === item.value} className={area === item.value ? 'active' : undefined}
-            onClick={() => { setArea(item.value); setOrderId(null) }}>
+            onClick={() => setArea(item.value, () => setOrderId(null))}>
             {item.label}
             {item.value === 'complaints' && openComplaints > 0 && <span className="fd-tab-badge">{openComplaints}</span>}
           </button>
@@ -70,7 +78,7 @@ export function FoodAdmin({ onExit: leave }: Props) {
       {area === 'orders' && <AdminOrders key={orderId ?? 'list'} initialOrderId={orderId} />}
       {area === 'categories' && <AdminCategories />}
       {area === 'complaints' && (
-        <AdminComplaints onChanged={count} onOpenOrder={(id) => { setOrderId(id); setArea('orders') }} />
+        <AdminComplaints onChanged={count} onOpenOrder={(id) => setArea('orders', () => setOrderId(id))} />
       )}
     </section>
   )

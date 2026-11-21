@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import { useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { foodPaths } from '../foodApi'
 import type { AdminCategory } from '../foodApi'
 import { PhotoButton } from '../partner/PhotoButton'
@@ -14,6 +15,8 @@ export function AdminCategories() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [name, setName] = useState('')
+  // A half-typed new category is an unsaved change.
+  useUnsavedChanges(name.trim() !== '')
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(() => {
@@ -88,6 +91,8 @@ function CategoryRow({ item, up, down, onSaved, onError }: RowProps) {
   const { authFetch } = useAuth()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(item.name)
+  // A changed name that was not saved yet is an unsaved change.
+  useUnsavedChanges(editing && name.trim() !== item.name)
   const [busy, setBusy] = useState(false)
 
   async function update(change: Partial<Pick<AdminCategory, 'name' | 'sortOrder' | 'active'>>, text?: string) {
