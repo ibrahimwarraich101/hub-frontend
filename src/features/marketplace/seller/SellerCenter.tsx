@@ -22,7 +22,7 @@ import type { SellerAccount } from '../sellerApi'
 import { sellerProductPaths } from '../sellerProductsApi'
 import type { SellerProductPage } from '../sellerProductsApi'
 import '../marketplace.css'
-import './seller.css'
+import '../../../shared/layout/workspace.css'
 import { SellerOrders } from './SellerOrders'
 import { SellerProducts } from './SellerProducts'
 

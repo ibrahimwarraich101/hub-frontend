@@ -79,10 +79,10 @@ function App() {
   }, [user, authMode])
 
   // Moving with the top bar or the phone tab bar: leave the current service's address, then open the new one.
-  // True while a seller looks at their own store from Seller Center ("View my store"); any top-bar move ends it.
-  const [sellerPreview, setSellerPreview] = useState(false)
+  // Set while a seller or restaurant owner looks at their own store or restaurant from their center; any top-bar move ends it.
+  const [preview, setPreview] = useState<'ecommerce' | 'food' | null>(null)
   const navigate = useCallback((place: HubPlace) => {
-    setSellerPreview(false)
+    setPreview(null)
     leaveSection()
     setService(place)
     window.scrollTo({ top: 0 })
@@ -123,15 +123,15 @@ function App() {
     : service === 'home' && businessIntent === 'restaurant' ? 'restaurant' : service
   const home = () => setService('home')
   // Business tools and admin pages keep their own full-screen layout.
-  if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} onViewStore={() => { setSellerPreview(true); setService('ecommerce') }} />
+  if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} onViewStore={() => { setPreview('ecommerce'); setService('ecommerce') }} />
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
-  if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} />
+  if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} onViewRestaurant={() => { setPreview('food'); setService('food') }} />
   if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
 
   // Customer screens share the HUB frame: top bar with the services and account menu, and the phone tab bar.
   const place: HubPlace = view === 'ecommerce' || view === 'food' || view === 'bills' || view === 'payment-methods' ? view : 'home'
   // Business pages leave the customer section's address, so a refresh does not reopen the store under them.
-  const openTool = (target: Service) => () => { setSellerPreview(false); leaveSection(); setService(target); window.scrollTo({ top: 0 }) }
+  const openTool = (target: Service) => () => { setPreview(null); leaveSection(); setService(target); window.scrollTo({ top: 0 }) }
   const isAdmin = hasRole('Administrator')
   const tools = [
     ...(business.seller ? [{ label: 'Seller Center', onClick: openTool('sell') }] : []),
@@ -140,8 +140,10 @@ function App() {
   ]
   return (
     <AppShell active={place} onNavigate={navigate} tools={tools}
-      preview={sellerPreview && place === 'ecommerce'
+      preview={preview === 'ecommerce' && place === 'ecommerce'
         ? { text: 'You are seeing your store the way customers see it.', action: 'Back to Seller Center', onAction: openTool('sell') }
+        : preview === 'food' && place === 'food'
+        ? { text: 'You are seeing your restaurant the way customers see it.', action: 'Back to Restaurant Center', onAction: openTool('restaurant') }
         : undefined}>
       {place === 'ecommerce' && <MarketplaceApp onExit={home} onSellerCenter={business.seller ? openTool('sell') : undefined} />}
       {place === 'food' && <FoodApp onExit={home} />}
