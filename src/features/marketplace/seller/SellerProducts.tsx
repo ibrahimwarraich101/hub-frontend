@@ -288,6 +288,14 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
         )}
       </fieldset>
 
+      {/* Photos come before the Save button: they are saved as soon as they are added, moved or deleted. */}
+      <fieldset>
+        <legend>Photos</legend>
+        {product
+          ? <PhotoManager product={product} onChange={setProduct} />
+          : <p className="auth-hint">Save the product first with the button below, then you can add up to {limits.maxImages} photos.</p>}
+      </fieldset>
+
       <label className="mp-check">
         <input type="checkbox" name="active" checked={form.active} onChange={(e) => update({ active: e.target.checked })} />
         Show this product in the store
@@ -305,13 +313,6 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
         <button type="submit" className="mp-primary" disabled={busy}>{busy ? 'Saving…' : product ? 'Save changes' : 'Save and add photos'}</button>
         <button type="button" className="mp-chip" onClick={onClose}>Cancel</button>
       </div>
-
-      <fieldset>
-        <legend>Photos</legend>
-        {product
-          ? <PhotoManager product={product} onChange={setProduct} />
-          : <p className="auth-hint">Save the product first, then you can add up to {limits.maxImages} photos.</p>}
-      </fieldset>
     </form>
   )
 }
@@ -377,7 +378,8 @@ function PhotoManager({ product, onChange }: { product: SellerProduct; onChange:
 
   return (
     <div className="mp-photos">
-      <p className="auth-hint">The first photo is the main photo. JPEG, PNG or WebP, up to 8 MB each, at least 200 x 200 pixels.</p>
+      <p className="auth-hint">The first photo is the main photo. JPEG, PNG or WebP, up to 8 MB each, at least 200 x 200 pixels.
+        Photos are saved as soon as you add, move or delete them; "Save changes" below is only for the product details.</p>
       {images.length > 0 && (
         <ol className="mp-photo-grid">
           {images.map((image, index) => (
