@@ -12,11 +12,13 @@ import { phoneDigits } from '../forms/phone'
 import { rules } from '../forms/validation'
 import { MAX_PAYMENT_METHODS, paymentMethodPaths } from './paymentMethodsApi'
 import type { SavedPaymentMethod } from './paymentMethodsApi'
+import { usePaymentProvider } from './paymentProvider'
 import './payments.css'
 
 // The list and the add form. Used inside a module (e.g. Bills) or as its own page (PaymentMethodsPage below).
 export function PaymentMethods() {
   const { authFetch } = useAuth()
+  const payments = usePaymentProvider()
   const [methods, setMethods] = useState<SavedPaymentMethod[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -53,6 +55,10 @@ export function PaymentMethods() {
       <section className="pm-card">
         <h2>Saved methods</h2>
         <p className="pm-muted">Choose one when you pay. You still approve every payment with JazzCash.</p>
+        {/* Saved wallets are JazzCash wallets: say so while payments go through another company (e.g. Safepay, cards only). */}
+        {payments.loaded && payments.provider !== 'JazzCash' && (
+          <p className="pm-muted" role="status">Payments are made by card on {payments.name} right now, so saved JazzCash wallets cannot be used to pay for the moment. They stay saved for later.</p>
+        )}
         {error && <p className="pm-message error" role="alert">{error} <button type="button" className="hub-button secondary small" onClick={load}>Try again</button></p>}
         {!methods && !error && <p className="pm-muted">Loading…</p>}
         {methods && methods.length === 0 && <p className="pm-empty">You have not saved a payment method yet. Add your JazzCash wallet below.</p>}

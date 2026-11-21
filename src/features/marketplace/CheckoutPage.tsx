@@ -1,5 +1,5 @@
-// File purpose: Checkout for ONE store's items: delivery details, payment method (JazzCash wallet or card), order
-// summary, then "Place order and pay" sends the customer to JazzCash. Free delivery for now.
+// File purpose: Checkout for ONE store's items: delivery details, payment method (JazzCash wallet or card, or
+// card only with Safepay), order summary, then "Place order and pay" sends the customer to the payment page. Free delivery for now.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
@@ -12,7 +12,8 @@ import type { ToastMessage } from '../../shared/layout/Toast'
 import { formatPrice } from './api'
 import { cartPaths } from './cartApi'
 import type { Cart, CartStore } from './cartApi'
-import { newRequestKey, orderPaths, paymentMethods, validateDelivery } from './ordersApi'
+import { newRequestKey, orderPaths, paymentMethodOptions, validateDelivery } from './ordersApi'
+import { usePaymentProvider } from '../../shared/payments/paymentProvider'
 import type { DeliveryFields, Order, PaymentMethod } from './ordersApi'
 import { startPayment } from './payment'
 
@@ -28,7 +29,11 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
   // Delivery details typed here are lost when leaving, so leaving asks first (name and phone start filled in).
   const [startValues] = useState(() => JSON.stringify(values))
   useUnsavedChanges(JSON.stringify(values) !== startValues, formRef)
-  const [method, setMethod] = useState<PaymentMethod>('Wallet')
+  const [picked, setPicked] = useState<PaymentMethod>('Wallet')
+  const payments = usePaymentProvider()
+  const options = paymentMethodOptions(payments.name, payments.methods)
+  // A choice the payment company does not take (e.g. a wallet with Safepay) falls back to the first one it does.
+  const method = payments.allows(picked) ? picked : options[0]?.id ?? 'Card'
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
   // A problem loading the cart stays on the page; a problem placing the order pops up for a few seconds.
@@ -72,7 +77,7 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
       setBusy(false)
       return
     }
-    // The order exists now: going to JazzCash or to the order page must not ask about unsaved changes.
+    // The order exists now: going to the payment page or to the order page must not ask about unsaved changes.
     clearUnsavedChanges()
     try {
       await startPayment(authFetch, order.id, method)
@@ -107,17 +112,17 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
               </label>
             </section>
             <section className="mp-panel" aria-label="Payment method">
-              <h3>Pay with JazzCash</h3>
+              <h3>Pay with {payments.name}</h3>
               <div className="mp-methods" role="radiogroup" aria-label="Payment method">
-                {paymentMethods.map((option) => (
+                {options.map((option) => (
                   <button key={option.id} type="button" role="radio" aria-checked={method === option.id}
-                    className={method === option.id ? 'mp-method active' : 'mp-method'} onClick={() => setMethod(option.id)}>
+                    className={method === option.id ? 'mp-method active' : 'mp-method'} onClick={() => setPicked(option.id)}>
                     <strong>{option.label}</strong>
                     <span>{option.hint}</span>
                   </button>
                 ))}
               </div>
-              <p className="mp-hint">No cash on delivery. You will pay on JazzCash’s secure page and come back here.</p>
+              <p className="mp-hint">No cash on delivery. You will pay on {payments.name}’s secure page and come back here.</p>
             </section>
           </div>
 
@@ -138,7 +143,7 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
             <p className="mp-cart-row total"><span>Total</span><span>{formatPrice(store.subtotal, 'PKR')}</span></p>
             {problems && <p className="mp-message error">Some items changed. Go back to your cart and fix them first.</p>}
             <button type="submit" className="mp-primary" disabled={busy || problems}>
-              {busy ? 'Taking you to JazzCash…' : `Place order and pay ${formatPrice(store.subtotal, 'PKR')}`}
+              {busy ? `Taking you to ${payments.name}…` : `Place order and pay ${formatPrice(store.subtotal, 'PKR')}`}
             </button>
             <p className="mp-hint">Your items are held for 30 minutes while you pay.</p>
           </aside>

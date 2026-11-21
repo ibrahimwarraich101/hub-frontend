@@ -1,4 +1,4 @@
-// File purpose: Checkout, order and JazzCash payment API types, paths and form rules (matches docs/ECOMMERCE_ORDERS.md in hub-backend).
+// File purpose: Checkout, order and online payment API types, paths and form rules (matches docs/ECOMMERCE_ORDERS.md in hub-backend).
 import { rules, firstError } from '../../shared/forms/validation'
 import type { MyReview } from './reviewsApi'
 
@@ -87,10 +87,13 @@ export const statusTones: Record<OrderStatus, string> = {
   AwaitingPayment: 'warning', Placed: 'info', Confirmed: 'info', Shipped: 'info', Delivered: 'success', Cancelled: 'error',
 }
 
-export const paymentMethods: { id: PaymentMethod; label: string; hint: string }[] = [
-  { id: 'Wallet', label: 'JazzCash wallet', hint: 'Pay from your JazzCash mobile account.' },
-  { id: 'Card', label: 'Debit or credit card', hint: 'Enter your card on JazzCash’s secure page. HUB never sees your card number.' },
-]
+// The ways to pay, worded for the payment company in use (see usePaymentProvider). Safepay offers cards only.
+export function paymentMethodOptions(provider: string, allowed: PaymentMethod[]): { id: PaymentMethod; label: string; hint: string }[] {
+  return [
+    { id: 'Wallet' as const, label: 'JazzCash wallet', hint: 'Pay from your JazzCash mobile account.' },
+    { id: 'Card' as const, label: 'Debit or credit card', hint: `Enter your card on ${provider}’s secure page. HUB never sees your card number.` },
+  ].filter((option) => allowed.includes(option.id))
+}
 
 export type DeliveryFields = 'name' | 'phone' | 'address' | 'city' | 'note'
 

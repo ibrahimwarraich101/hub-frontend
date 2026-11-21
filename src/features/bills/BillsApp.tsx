@@ -1,6 +1,6 @@
 // File purpose: Entry point of Bills on the website: pay a bill, My bills, one bill (receipt), and My payment methods,
 // shown inside the HUB frame with the shared service bar (Back, HUB Bills, Pay a bill, My bills, Payment methods).
-// Coming back from JazzCash opens the paid bill. The page is kept in the address (#bills, #bills/history, #bills/bill/<id>,
+// Coming back from the payment page opens the paid bill. The page is kept in the address (#bills, #bills/history, #bills/bill/<id>,
 // #bills/methods), so Refresh and the browser's Back button work.
 import { useCallback, useEffect, useState } from 'react'
 import { ModuleBar } from '../../shared/layout/AppShell'
@@ -34,7 +34,7 @@ function pathOf(view: View): string {
 }
 
 function firstView(): View {
-  // JazzCash sends the customer back with ?bill=...&payment=...
+  // The payment page sends the customer back with ?bill=...&payment=...
   const back = readBillReturn()
   if (!back) return readView(sectionPath(SECTION))
   clearBillReturn()
@@ -90,7 +90,7 @@ export function BillsApp({ onExit }: { onExit: () => void }) {
             {!view.start && (
               <div className="bl-hero">
                 <h2>Pay your bills</h2>
-                <p>Electricity, gas, water, internet, mobile and school fees in one place. Pay safely with JazzCash and keep every receipt.</p>
+                <p>Electricity, gas, water, internet, mobile and school fees in one place. Pay safely online and keep every receipt.</p>
               </div>
             )}
             <PayBill key={view.start ? `${view.start.billerId}-${view.start.reference}` : 'new'} start={view.start}

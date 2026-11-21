@@ -1,11 +1,12 @@
 // File purpose: The customer's orders: a list, and one order with its progress, "Pay now" while unpaid, and "Cancel order"
-// until the store confirms it, and "Rate your items" once delivered. Also shows the result after coming back from JazzCash.
+// until the store confirms it, and "Rate your items" once delivered. Also shows the result after coming back from the payment page.
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { formatPrice } from './api'
 import { OrderBody, StatusPill } from './OrderBody'
-import { orderDate, orderPaths, paymentMethods } from './ordersApi'
+import { orderDate, orderPaths, paymentMethodOptions } from './ordersApi'
+import { usePaymentProvider } from '../../shared/payments/paymentProvider'
 import type { Order, OrderPage, PaymentMethod } from './ordersApi'
 import { paymentResultMessages, startPayment } from './payment'
 import { OrderReviews } from './Reviews'
@@ -65,7 +66,11 @@ export function OrderDetails({ orderId, paymentResult, startMessage }: DetailsPr
   const { authFetch } = useAuth()
   const [order, setOrder] = useState<Order | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [method, setMethod] = useState<PaymentMethod>('Wallet')
+  const [picked, setPicked] = useState<PaymentMethod>('Wallet')
+  const payments = usePaymentProvider()
+  const options = paymentMethodOptions(payments.name, payments.methods)
+  // A choice the payment company does not take (e.g. a wallet with Safepay) falls back to the first one it does.
+  const method = payments.allows(picked) ? picked : options[0]?.id ?? 'Card'
   const [paying, setPaying] = useState(false)
   const [payError, setPayError] = useState<string | null>(startMessage)
   const [cancelling, setCancelling] = useState(false)
@@ -124,20 +129,20 @@ export function OrderDetails({ orderId, paymentResult, startMessage }: DetailsPr
 
           {canPay && (
             <section className="mp-panel" aria-label="Pay now">
-              <h3>Pay {formatPrice(order.total, order.currency)} with JazzCash</h3>
+              <h3>Pay {formatPrice(order.total, order.currency)} with {payments.name}</h3>
               <p className="mp-hint">Please pay before {orderDate(order.paymentDueAt)}, or the order is cancelled and the items go back on sale.</p>
               {order.lastPayment?.message && order.lastPayment.status !== 'Successful' && <p className="mp-hint">{order.lastPayment.message}</p>}
               <div className="mp-methods" role="radiogroup" aria-label="Payment method">
-                {paymentMethods.map((option) => (
+                {options.map((option) => (
                   <button key={option.id} type="button" role="radio" aria-checked={method === option.id}
-                    className={method === option.id ? 'mp-method active' : 'mp-method'} onClick={() => setMethod(option.id)}>
+                    className={method === option.id ? 'mp-method active' : 'mp-method'} onClick={() => setPicked(option.id)}>
                     <strong>{option.label}</strong>
                     <span>{option.hint}</span>
                   </button>
                 ))}
               </div>
               <button type="button" className="mp-primary" disabled={paying} onClick={() => void pay()}>
-                {paying ? 'Taking you to JazzCash…' : 'Pay now'}
+                {paying ? `Taking you to ${payments.name}…` : 'Pay now'}
               </button>
             </section>
           )}

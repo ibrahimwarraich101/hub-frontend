@@ -1,5 +1,5 @@
 // File purpose: One bill: the receipt once paid (receipt number, when, paid with), or, while waiting, paying it before
-// the held amount runs out. An expired bill can be looked up again. Shows the JazzCash result after coming back.
+// the held amount runs out. An expired bill can be looked up again. Shows the payment result after coming back.
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
@@ -9,7 +9,7 @@ import { PayChoice } from './PayChoice'
 
 export function BillDetails({ billId, result, onLookUpAgain, onManagePayments }: {
   billId: string
-  // JazzCash result when coming back from paying (success, failed...).
+  // Payment result when coming back from paying (success, failed...).
   result: string | null
   onLookUpAgain: (billerId: string, reference: string) => void
   onManagePayments: () => void
@@ -27,7 +27,7 @@ export function BillDetails({ billId, result, onLookUpAgain, onManagePayments }:
   }, [authFetch, billId])
   useEffect(load, [load])
 
-  // While JazzCash is still processing, check again every few seconds.
+  // While the payment is still processing, check again every few seconds.
   useEffect(() => {
     if (result !== 'pending' || bill?.status !== 'AwaitingPayment') return
     const timer = window.setTimeout(load, 5000)
