@@ -1,5 +1,5 @@
 // File purpose: Entry point of the E-Commerce store on the website: store home, shop pages, product page, cart, checkout and orders,
-// shown inside the HUB frame with the store's bar (Back, "HUB Store", Shop, My orders, Cart). Coming back from JazzCash opens the paid order.
+// shown inside the HUB frame with the store's bar (Back, "HUB Store", Shop, My orders, Cart). Coming back from the payment page opens the paid order.
 // The current page is kept in the address (#store, #store/product/<id>, #store/shop/<id>, #store/cart, #store/checkout/<shop id>,
 // #store/orders, #store/order/<id>), so Refresh and the browser's Back button work.
 // Visitors who are not logged in can browse the store and products; the cart, checkout and orders ask them to sign in.
@@ -73,7 +73,7 @@ function sameView(a: View, b: View) {
 }
 
 function firstView(): View {
-  // JazzCash sends the customer back with ?order=...&payment=...
+  // The payment page sends the customer back with ?order=...&payment=...
   const back = readPaymentReturn()
   if (!back) return readView(sectionPath(SECTION))
   clearPaymentReturn()

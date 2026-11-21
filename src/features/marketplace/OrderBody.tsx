@@ -21,7 +21,7 @@ export function OrderBody({ order, showCustomer }: { order: Order; showCustomer?
           <p className="mp-message error">
             Cancelled {order.cancelledAt ? `on ${orderDate(order.cancelledAt)}` : ''} by {order.cancelledBy === 'System' ? 'HUB' : order.cancelledBy?.toLowerCase()}.
             {' '}Reason: {order.cancelReason}
-            {order.refundNeeded && ' This order was paid, so HUB will return the money to the same JazzCash account or card.'}
+            {order.refundNeeded && ' This order was paid, so HUB will return the money to the same account or card it was paid with.'}
           </p>
         ) : (
           <ol className="mp-steps">
@@ -62,7 +62,7 @@ export function OrderBody({ order, showCustomer }: { order: Order; showCustomer?
           <dt>Address</dt><dd>{order.delivery.address}, {order.delivery.city}</dd>
           {order.note && <><dt>Note</dt><dd>{order.note}</dd></>}
           <dt>Ordered</dt><dd>{orderDate(order.createdAt)}</dd>
-          {order.paidAt && <><dt>Paid</dt><dd>{orderDate(order.paidAt)} with JazzCash</dd></>}
+          {order.paidAt && <><dt>Paid</dt><dd>{orderDate(order.paidAt)} online</dd></>}
         </dl>
       </section>
     </>

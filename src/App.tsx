@@ -186,7 +186,7 @@ function authFromAddress(): 'login' | 'signup' | null {
 // The first screen after loading the page.
 function initialService(): Service {
   return serviceFromAddress()
-    // Coming back from JazzCash: ?bill=...&payment=... opens that bill; ?order=...&payment=... opens the store on that order.
+    // Coming back from the payment page: ?bill=...&payment=... opens that bill; ?order=...&payment=... opens the store on that order.
     ?? (new URLSearchParams(window.location.search).has('bill') ? 'bills'
       : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home')
 }

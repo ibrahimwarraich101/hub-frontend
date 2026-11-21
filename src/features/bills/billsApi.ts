@@ -1,5 +1,5 @@
-// File purpose: Bills API calls and response types (matches docs/BILLS.md in hub-backend), plus starting a JazzCash
-// payment for a bill and reading the result JazzCash sends back (?bill=...&payment=...).
+// File purpose: Bills API calls and response types (matches docs/BILLS.md in hub-backend), plus starting an online
+// payment for a bill (JazzCash or Safepay, chosen by the server) and reading the result the payment page sends back (?bill=...&payment=...).
 
 export type Biller = {
   id: string
@@ -83,10 +83,10 @@ export const billPaths = {
 
 type AuthFetch = <T>(path: string, method?: string, body?: unknown) => Promise<T>
 
-// Wallet = JazzCash mobile account, Card = debit/credit card typed on JazzCash's own page.
+// Wallet = JazzCash mobile account, Card = debit/credit card typed on the payment company's own page.
 export type PayMethod = 'Wallet' | 'Card'
 
-// Asks our server for a short-lived JazzCash launch address and opens it. JazzCash brings the customer back afterwards.
+// Asks our server for a short-lived launch address and opens it. The payment page brings the customer back afterwards.
 export async function startBillPayment(authFetch: AuthFetch, billId: string, method: PayMethod, paymentMethodId: string | null): Promise<void> {
   const { launchUrl } = await authFetch<{ paymentId: string; launchUrl: string }>(billPaths.pay(billId), 'POST', {
     method, paymentMethodId, returnUrl: `${window.location.origin}/`, idempotencyKey: newKey('pay'),
@@ -94,7 +94,7 @@ export async function startBillPayment(authFetch: AuthFetch, billId: string, met
   window.location.assign(launchUrl)
 }
 
-// The result JazzCash sent back in the address, if any (read once when the website opens).
+// The result the payment page sent back in the address, if any (read once when the website opens).
 export function readBillReturn(): { billId: string; result: string } | null {
   const params = new URLSearchParams(window.location.search)
   const billId = params.get('bill')
@@ -108,7 +108,7 @@ export function clearBillReturn() {
 
 export const billResultMessages: Record<string, { tone: 'success' | 'error' | 'info'; text: string }> = {
   success: { tone: 'success', text: 'Payment received. Your bill is paid. Keep the receipt number below.' },
-  pending: { tone: 'info', text: 'JazzCash is still processing your payment. This page will show the result once it is confirmed.' },
+  pending: { tone: 'info', text: 'Your payment is still being processed. This page will show the result once it is confirmed.' },
   failed: { tone: 'error', text: 'The payment did not go through. You can try again before the time runs out.' },
   cancelled: { tone: 'error', text: 'You cancelled the payment. You can try again before the time runs out.' },
 }
