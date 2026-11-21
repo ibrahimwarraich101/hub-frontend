@@ -5,6 +5,7 @@ import type { ChangeEvent, FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
+import { confirmLeave, useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { fetchCategories, formatPrice } from '../api'
 import {
   categoryChoices, checkPhoto, emptyForm, formFromProduct, hasColor, hasSize, limits, newKey, optionTypeLabels,
@@ -148,11 +149,19 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
   const [error, setError] = useState<string | null>(null)
   const [conflict, setConflict] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
+  // The form as last loaded or saved; anything different is an unsaved change (see unsavedChanges.ts).
+  const [savedForm, setSavedForm] = useState<string | null>(() => (productId ? null : JSON.stringify(emptyForm())))
+  const dirty = form !== null && savedForm !== null && JSON.stringify(form) !== savedForm
+  useUnsavedChanges(dirty, formRef)
+  const close = () => confirmLeave(onClose)
 
   const load = useCallback(() => {
     if (!productId) return
     authFetch<SellerProduct>(sellerProductPaths.one(productId))
-      .then((loaded) => { setProduct(loaded); setForm(formFromProduct(loaded)); setConflict(false); setError(null); setTried(false) })
+      .then((loaded) => {
+        const loadedForm = formFromProduct(loaded)
+        setProduct(loaded); setForm(loadedForm); setSavedForm(JSON.stringify(loadedForm)); setConflict(false); setError(null); setTried(false)
+      })
       .catch((reason: unknown) => setError(reason instanceof ApiError && reason.status === 404 ? 'This product was not found.'
         : reason instanceof ApiError ? reason.message : 'Could not load this product.'))
   }, [authFetch, productId])
@@ -187,12 +196,15 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
     try {
       if (product) {
         const saved = await authFetch<SellerProduct>(sellerProductPaths.one(product.id), 'PUT', productRequest(form, product.version))
+        const savedValues = formFromProduct(saved)
         setProduct(saved)
-        setForm(formFromProduct(saved))
+        setForm(savedValues)
+        setSavedForm(JSON.stringify(savedValues))
         setTried(false)
         setNotice('Saved.')
       } else {
         const saved = await authFetch<SellerProduct>(sellerProductPaths.create, 'POST', productRequest(form))
+        setSavedForm(JSON.stringify(form))
         onCreated(saved.id)
       }
     } catch (reason) {
@@ -208,7 +220,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
   if (!form) {
     return (
       <div className="mp-panel">
-        <button type="button" className="mp-back" onClick={onClose}>Back</button>
+        <button type="button" className="mp-back" onClick={close}>Back</button>
         {error ? <p className="mp-message error" role="alert">{error}</p> : <p className="mp-message">Loading…</p>}
       </div>
     )
@@ -221,7 +233,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
 
   return (
     <form ref={formRef} className="mp-panel mp-form mp-editor" onSubmit={save} noValidate>
-      <button type="button" className="mp-back" onClick={onClose}>Back</button>
+      <button type="button" className="mp-back" onClick={close}>Back</button>
       <h2>{product ? `Edit: ${product.name}` : 'Add a product'}</h2>
       {product?.adminHidden && (
         <p className="mp-message error" role="status">
@@ -350,7 +362,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
       {notice && <p className="mp-message" role="status">{notice}</p>}
       <div className="mp-actions">
         <button type="submit" className="mp-primary" disabled={busy}>{busy ? 'Saving…' : product ? 'Save changes' : 'Save and add photos'}</button>
-        <button type="button" className="mp-chip" onClick={onClose}>Cancel</button>
+        <button type="button" className="mp-chip" onClick={close}>Cancel</button>
       </div>
     </form>
   )

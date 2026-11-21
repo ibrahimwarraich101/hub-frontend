@@ -1,6 +1,7 @@
 // File purpose: The approved owner manages menu sections and dishes: add, rename and hide sections; add and edit dishes
 // (the form opens right where the owner clicked), dish photos, mark sold out and hide from the menu in one click.
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { confirmLeave, useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
@@ -33,6 +34,10 @@ export function MenuManager() {
   const [formError, setFormError] = useState<string | null>(null)
   const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null)
   const draftForm = useRef<HTMLFormElement>(null)
+  // The dish form as it opened; any difference (or a half-typed section name) is an unsaved change.
+  const [draftStart, setDraftStart] = useState<string | null>(null)
+  const draftDirty = draft !== null && JSON.stringify(draft) !== draftStart
+  useUnsavedChanges(draftDirty || sectionName.trim() !== '' || renaming !== null, draftDirty ? draftForm : null)
   const anchor = draft?.anchor
 
   // Bring the dish form into view where it opened.
@@ -103,7 +108,7 @@ export function MenuManager() {
     available: change.available ?? item.available, archived: change.archived ?? item.archived, sortOrder: item.sortOrder, expectedVersion: item.version,
   })
 
-  const openDraft = (next: Draft) => { setFormError(null); setDraft(next) }
+  const openDraft = (next: Draft) => confirmLeave(() => { setFormError(null); setDraft(next); setDraftStart(JSON.stringify(next)) })
 
   if (!menu) return error ? <div className="fd-message error" role="alert">{error}</div> : <div className="fd-message">Loading…</div>
 
@@ -136,7 +141,7 @@ export function MenuManager() {
       {formError && <p className="fd-message error" role="alert">{formError}</p>}
       <div className="fd-actions">
         <button type="submit" className="fd-primary" disabled={busy}>{busy ? 'Saving…' : 'Save dish'}</button>
-        <button type="button" className="fd-secondary" onClick={() => setDraft(null)}>Cancel</button>
+        <button type="button" className="fd-secondary" onClick={() => confirmLeave(() => setDraft(null))}>Cancel</button>
       </div>
     </form>
   )

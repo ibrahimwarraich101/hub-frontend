@@ -12,6 +12,7 @@ import { PaymentMethodsPage } from './shared/payments/PaymentMethods'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
 import { GuestProvider } from './shared/auth/GuestContext'
+import { hasUnsavedChanges } from './shared/forms/unsavedChanges'
 import { useBusinessAccounts } from './shared/business/useBusinessAccounts'
 import { AppShell } from './shared/layout/AppShell'
 import type { HubPlace } from './shared/layout/AppShell'
@@ -35,7 +36,11 @@ function App() {
   // The browser's Back/Forward buttons: an address like #store/... or #food/... opens that service; an empty address is the home page.
   // (Inside a service, the service follows its own addresses.)
   useEffect(() => {
-    const follow = () => setService((current) => serviceFromAddress() ?? (ADDRESSED.includes(current) ? 'home' : current))
+    // With unsaved changes the open page keeps the screen; it puts its address back and asks first (unsavedChanges.ts).
+    const follow = () => {
+      if (hasUnsavedChanges()) return
+      setService((current) => serviceFromAddress() ?? (ADDRESSED.includes(current) ? 'home' : current))
+    }
     window.addEventListener('popstate', follow)
     return () => window.removeEventListener('popstate', follow)
   }, [])

@@ -10,6 +10,7 @@ import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
 import { PhoneField } from '../../../shared/forms/PhoneField'
+import { confirmLeave, hasUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../../shared/forms/validation'
 import type { FieldErrors } from '../../../shared/forms/validation'
 import '../../../shared/auth/auth.css'
@@ -70,15 +71,22 @@ export function RestaurantCenter({ onExit: leave, onViewRestaurant }: Props) {
   const [startPath] = useState(() => pathOf(readPage(sectionPath(SECTION))))
   useEffect(() => { enterSection(SECTION, startPath) }, [startPath])
   useSectionHistory(SECTION, useCallback((path: string | null) => {
+    // The browser's Back with unsaved changes: put this page back in the address and ask first.
+    if (hasUnsavedChanges()) {
+      goTo(SECTION, pathOf(page))
+      confirmLeave(() => window.history.back())
+      return
+    }
     if (path === null) leave()
     else { setPage(readPage(path)); window.scrollTo({ top: 0 }) }
-  }, [leave]))
-  const exit = () => { leaveSection(); leave() }
-  const open = (next: Page) => {
+  }, [leave, page]))
+  // Every way out of the current page asks first when a form has unsaved changes.
+  const exit = () => confirmLeave(() => { leaveSection(); leave() })
+  const open = (next: Page) => confirmLeave(() => {
     if (next !== page) goTo(SECTION, pathOf(next))
     setPage(next)
     window.scrollTo({ top: 0 })
-  }
+  })
 
   const load = useCallback(() => {
     authFetch<RestaurantAccount>(foodPaths.account)
@@ -121,12 +129,12 @@ export function RestaurantCenter({ onExit: leave, onViewRestaurant }: Props) {
   }
 
   // The restaurant as customers see it: its page in HUB Food.
-  const viewRestaurant = () => {
+  const viewRestaurant = () => confirmLeave(() => {
     if (!account || !onViewRestaurant) return
     history.pushState({ hubDepth: 1 }, '', `#food/restaurant/${encodeURIComponent(account.id)}`)
     onViewRestaurant()
     window.scrollTo({ top: 0 })
-  }
+  })
 
   const badge = (id: Page) => id === 'orders' ? stats?.waitingOrders ?? 0 : id === 'complaints' ? stats?.openComplaints ?? 0 : 0
   const heading = approved ? TITLES[page]

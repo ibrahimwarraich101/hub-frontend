@@ -9,6 +9,7 @@ import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
 import { PhoneField } from '../../../shared/forms/PhoneField'
+import { confirmLeave, hasUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../../shared/forms/validation'
 import type { FieldErrors } from '../../../shared/forms/validation'
 import { enterSection, goTo, leaveSection, sectionPath, useSectionHistory } from '../../../shared/layout/sectionRoute'
@@ -81,24 +82,32 @@ export function SellerCenter({ onExit, onViewStore }: Props) {
   const [startPath] = useState(() => pathOf(readPage(sectionPath(SECTION))))
   useEffect(() => { enterSection(SECTION, startPath) }, [startPath])
   useSectionHistory(SECTION, useCallback((path: string | null) => {
+    // The browser's Back with unsaved changes: put this page back in the address and ask first.
+    if (hasUnsavedChanges()) {
+      goTo(SECTION, pathOf(page))
+      confirmLeave(() => window.history.back())
+      return
+    }
     if (path === null) onExit()
     else { setPage(readPage(path)); window.scrollTo({ top: 0 }) }
-  }, [onExit]))
+  }, [onExit, page]))
 
-  const open = (next: Page, options: OpenOptions = {}) => {
+  // Every way out of the current page asks first when a form has unsaved changes.
+  const open = (next: Page, options: OpenOptions = {}) => confirmLeave(() => openNow(next, options))
+  const openNow = (next: Page, options: OpenOptions) => {
     if (next !== page) goTo(SECTION, pathOf(next))
     setPage(next)
     setStart((current) => ({ key: current.key + 1, ...options }))
     window.scrollTo({ top: 0 })
   }
-  const exit = () => { leaveSection(); onExit() }
+  const exit = () => confirmLeave(() => { leaveSection(); onExit() })
   // The store as customers see it: this store's page in HUB Store (the seller account id is the shop id).
-  const viewStore = () => {
+  const viewStore = () => confirmLeave(() => {
     if (!account || !onViewStore) return
     history.pushState({ hubDepth: 1 }, '', `#store/shop/${encodeURIComponent(account.id)}`)
     onViewStore()
     window.scrollTo({ top: 0 })
-  }
+  })
 
   const approved = account?.status === 'Approved' && !editing
   const heading = approved ? TITLES[page]
