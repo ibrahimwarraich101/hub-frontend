@@ -1,7 +1,6 @@
 /* File purpose: "My payment methods" styles, using the HUB theme variables from index.css. */
-.pm-page { width: 100%; max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; text-align: left; display: flex; flex-direction: column; gap: 12px; }
-.pm-page > .hub-button { align-self: flex-start; }
-.pm-page h1 { margin: 4px 0 0; }
+.pm-page { width: 100%; max-width: 720px; margin: 0 auto; padding: 24px 20px 48px; text-align: left; display: flex; flex-direction: column; gap: 16px; }
+.pm-title { margin: 0; font-size: 24px; }
 .pm { display: flex; flex-direction: column; gap: 16px; }
 .pm-card { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: var(--hub-surface); border: 1px solid var(--hub-card-border);
   border-radius: var(--hub-radius-card); box-shadow: var(--hub-shadow); }

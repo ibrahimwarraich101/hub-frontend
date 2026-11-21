@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { ApiError, getJson, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
+import { useSignInRequest } from '../../shared/auth/GuestContext'
 import { dateTime, foodPaths, money } from './foodApi'
 import type { FoodCart, RestaurantDetails, RestaurantReview } from './foodApi'
 
@@ -15,7 +16,8 @@ type Props = {
 }
 
 export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }: Props) {
-  const { authFetch } = useAuth()
+  const { authFetch, user } = useAuth()
+  const askSignIn = useSignInRequest()
   const [details, setDetails] = useState<RestaurantDetails | null>(null)
   const [reviews, setReviews] = useState<RestaurantReview[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +45,8 @@ export function RestaurantMenu({ restaurantId, cart, onCartChange, onCheckout }:
   const quantityOf = (menuItemId: string) => mine?.items.find((line) => line.menuItemId === menuItemId)?.quantity ?? 0
 
   async function setQuantity(menuItemId: string, quantity: number) {
+    // A visitor browsing without an account signs in first, then comes back to this menu.
+    if (!user) { askSignIn(); return }
     setBusy(menuItemId)
     setDishError(null)
     try {

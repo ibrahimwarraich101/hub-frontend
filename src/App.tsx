@@ -1,6 +1,6 @@
 // File purpose: TEMPORARY HUB home with login, until the shared app shell (navigation) is merged.
 // Logged out: login / sign-up. Logged in: greeting, the service tiles and business tools. Modules plug their entry screens in here.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdminPortal } from './features/admin/AdminPortal'
 import { MarketplaceApp } from './features/marketplace/MarketplaceApp'
 import { SellerCenter } from './features/marketplace/seller/SellerCenter'
@@ -11,9 +11,13 @@ import { BillsApp } from './features/bills/BillsApp'
 import { PaymentMethodsPage } from './shared/payments/PaymentMethods'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
-import { businessOptions } from './shared/auth/businessOptions'
+import { GuestProvider } from './shared/auth/GuestContext'
 import { useBusinessAccounts } from './shared/business/useBusinessAccounts'
-import type { BusinessStatus } from './shared/business/useBusinessAccounts'
+import { AppShell } from './shared/layout/AppShell'
+import type { HubPlace } from './shared/layout/AppShell'
+import { leaveSection } from './shared/layout/sectionRoute'
+import { HomePage } from './shared/home/HomePage'
+import { LandingPage } from './shared/home/LandingPage'
 import './App.css'
 
 type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' | 'food-admin' | 'bills' | 'payment-methods'
@@ -22,178 +26,146 @@ type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' |
 const AVAILABLE_BUSINESS = ['seller', 'restaurant']
 
 function App() {
-  const { restoring, user, logout, hasRole, businessIntent, setBusinessIntent } = useAuth()
+  const { restoring, user, hasRole, businessIntent, setBusinessIntent } = useAuth()
   // Whether this person has applied to sell or to run a restaurant, so the home page only shows them business tools they use.
   // The service state is declared first so the answers reload every time the person returns to the home page.
   const [service, setService] = useState<Service>(initialService)
   const business = useBusinessAccounts(service === 'home' && businessIntent !== 'seller' && businessIntent !== 'restaurant')
-  if (restoring) return <main className="hub-home"><p className="hub-loading">Loading…</p></main>
-  if (!user) return <AuthScreens availableBusiness={AVAILABLE_BUSINESS} />
+
+  // The browser's Back/Forward buttons: an address like #store/... or #food/... opens that service; an empty address is the home page.
+  // (Inside a service, the service follows its own addresses.)
+  useEffect(() => {
+    const follow = () => setService((current) => serviceFromAddress() ?? (ADDRESSED.includes(current) ? 'home' : current))
+    window.addEventListener('popstate', follow)
+    return () => window.removeEventListener('popstate', follow)
+  }, [])
+
+  // Logged out: which form is open, kept in the address so the browser's Back button returns to the website.
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | null>(authFromAddress)
+  useEffect(() => {
+    const follow = () => setAuthMode(authFromAddress())
+    window.addEventListener('popstate', follow)
+    return () => window.removeEventListener('popstate', follow)
+  }, [])
+  // A visitor browsing the store or Food returns to the same page after signing in (returnTo is that page's address).
+  const returnTo = useRef<string | null>(null)
+  // Whether the form's address was added by this page, so "Back to HUB" can simply go back one step.
+  const pushedAuth = useRef(false)
+  const openAuth = useCallback((mode: 'login' | 'signup', back?: string) => {
+    const hash = window.location.hash
+    returnTo.current = back ?? (hash.startsWith('#store') || hash.startsWith('#food') ? hash : null)
+    if (authFromAddress()) history.replaceState(null, '', mode === 'login' ? '#signin' : '#signup')
+    else { history.pushState(null, '', mode === 'login' ? '#signin' : '#signup'); pushedAuth.current = true }
+    setAuthMode(mode)
+    window.scrollTo({ top: 0 })
+  }, [])
+  const closeAuth = () => {
+    if (pushedAuth.current) { pushedAuth.current = false; history.back(); return }
+    if (authFromAddress()) history.replaceState(null, '', window.location.pathname + window.location.search)
+    setAuthMode(null)
+  }
+  // After logging in: replace #signin / #signup with the page the visitor was browsing (or the home page),
+  // before any service screen opens, so it reads the right address.
+  useEffect(() => {
+    if (!user || !authMode) return
+    const back = returnTo.current
+    returnTo.current = null
+    pushedAuth.current = false
+    history.replaceState(back ? { hubDepth: 1 } : null, '', back ?? window.location.pathname + window.location.search)
+    // Follows the address just changed above (the browser history is outside React).
+    // oxlint-disable-next-line react/set-state-in-effect
+    setService(serviceFromAddress() ?? 'home')
+    setAuthMode(null)
+  }, [user, authMode])
+
+  // Moving with the top bar or the phone tab bar: leave the current service's address, then open the new one.
+  const navigate = useCallback((place: HubPlace) => {
+    leaveSection()
+    setService(place)
+    window.scrollTo({ top: 0 })
+  }, [])
+  // Visitors open the store or Food from the public website; path is a page inside it (e.g. "product/<id>").
+  const browse = useCallback((place: 'ecommerce' | 'food', path = '') => {
+    const section = place === 'ecommerce' ? 'store' : 'food'
+    history.pushState({ hubDepth: 1 }, '', '#' + (path ? `${section}/${path}` : section))
+    setService(place)
+    window.scrollTo({ top: 0 })
+  }, [])
+  const signIn = useCallback(() => openAuth('login'), [openAuth])
+
+  if (restoring || (user && authMode)) return <main className="hub-home"><p className="hub-loading">Loading…</p></main>
+  // Logged out: the public HUB website; "Sign in" / "Sign up" open the forms (#signin, #signup, so Back returns to the website).
+  // Visitors can also browse HUB Store and HUB Food; adding to a cart, checkout and orders ask them to sign in.
+  if (!user) {
+    if (authMode) return <AuthScreens key={authMode} initialMode={authMode} availableBusiness={AVAILABLE_BUSINESS} onBack={closeAuth} />
+    if (service === 'ecommerce' || service === 'food') {
+      // Bills and payment methods need an account; after signing in, the visitor lands on that page.
+      const guestNavigate = (place: HubPlace) => {
+        if (place === 'bills' || place === 'payment-methods') openAuth('login', place === 'bills' ? '#bills' : '#payment-methods')
+        else navigate(place)
+      }
+      return (
+        <GuestProvider value={signIn}>
+          <AppShell active={service} onNavigate={guestNavigate} onSignIn={signIn} onSignUp={() => openAuth('signup')}>
+            {service === 'ecommerce' ? <MarketplaceApp onExit={() => setService('home')} /> : <FoodApp onExit={() => setService('home')} />}
+          </AppShell>
+        </GuestProvider>
+      )
+    }
+    return <LandingPage onSignIn={signIn} onSignUp={() => openAuth('signup')} onBrowse={browse} />
+  }
 
   // Someone who chose "E-Commerce store seller" at sign-up goes straight to the seller application.
   const view: Service = service === 'home' && businessIntent === 'seller' ? 'sell'
     : service === 'home' && businessIntent === 'restaurant' ? 'restaurant' : service
   const home = () => setService('home')
-  if (view === 'ecommerce') return <MarketplaceApp onExit={home} />
+  // Business tools and admin pages keep their own full-screen layout.
   if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} />
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
-  if (view === 'food') return <FoodApp onExit={home} />
   if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} />
   if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
-  if (view === 'bills') return <BillsApp onExit={home} />
-  if (view === 'payment-methods') return <PaymentMethodsPage onExit={home} />
 
-  const intent = businessOptions.find((option) => option.id === businessIntent)
-  const isAdmin = hasRole('Administrator')
-  const firstName = user.fullName.split(' ')[0]
+  // Customer screens share the HUB frame: top bar with the services and account menu, and the phone tab bar.
+  const place: HubPlace = view === 'ecommerce' || view === 'food' || view === 'bills' || view === 'payment-methods' ? view : 'home'
   return (
-    <main className="hub-home">
-      <header className="hub-top">
-        <p className="hub-logo">HUB</p>
-        <UserMenu fullName={user.fullName} onPaymentMethods={() => setService('payment-methods')} onLogout={() => void logout()} />
-      </header>
-
-      <section className="hub-hero">
-        <p>Hello, {firstName}</p>
-        <h1>Everyday Services in One App</h1>
-        <p className="hub-hero-sub">Ride. Eat. Shop. Stay fit. Pay bills. All with HUB.</p>
-        <p className="hub-roles">Your roles: {user.roles.join(', ')}</p>
-      </section>
-
-      {intent && !AVAILABLE_BUSINESS.includes(intent.id) && (
-        <div className="hub-intent" role="status">
-          <span>You chose <strong>{intent.label}</strong> at sign-up. The application form is provided by the {intent.module} module.</span>
-          <button type="button" className="hub-button secondary small" onClick={() => setBusinessIntent(null)}>Dismiss</button>
-        </div>
-      )}
-
-      <h2>Choose a service</h2>
-      <div className="hub-services">
-        <button type="button" className="hub-tile shop" onClick={() => setService('ecommerce')}>
-          <strong>E-Commerce</strong>
-          <span>Everything you need</span>
-        </button>
-        <button type="button" className="hub-tile drive" disabled title="Built by the HUB Drive module">
-          <strong>HUB Drive</strong>
-          <span>Coming soon</span>
-        </button>
-        <button type="button" className="hub-tile food" onClick={() => setService('food')}>
-          <strong>HUB Food</strong>
-          <span>Order from restaurants near you</span>
-        </button>
-        <button type="button" className="hub-tile bills" onClick={() => setService('bills')}>
-          <strong>Pay bills</strong>
-          <span>Electricity, gas, internet and fees</span>
-        </button>
-      </div>
-
-      {/* Business tools: only for people who have applied (named after their tool, e.g. "Seller Center") and administrators. */}
-      {(business.seller || business.restaurant || isAdmin) && (
-        <>
-          <h2>Business</h2>
-          <div className="hub-services">
-            {business.seller && (
-              <button type="button" className="hub-tile business" onClick={() => setService('sell')}>
-                <strong>Seller Center</strong>
-                <span>{statusLine(business.seller, 'Manage your store, products and orders')}</span>
-              </button>
-            )}
-            {business.restaurant && (
-              <button type="button" className="hub-tile business" onClick={() => setService('restaurant')}>
-                <strong>Restaurant Center</strong>
-                <span>{statusLine(business.restaurant, 'Manage your restaurant, menu and orders')}</span>
-              </button>
-            )}
-            {isAdmin && (
-              <button type="button" className="hub-tile admin" onClick={() => setService('admin')}>
-                <strong>Admin portal</strong>
-                <span>Users, sellers, categories and products</span>
-              </button>
-            )}
-            {isAdmin && (
-              <button type="button" className="hub-tile admin" onClick={() => setService('food-admin')}>
-                <strong>HUB Food admin</strong>
-                <span>Restaurant approvals and all food orders</span>
-              </button>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Everyone else: one small invitation at the bottom, offering only what they have not applied for yet. */}
-      {business.loaded && (!business.seller || !business.restaurant) && (
-        <section className="hub-partner" aria-label="Partner with HUB">
-          <div>
-            <strong>Partner with HUB</strong>
-            <span>Sell your products or open your restaurant to HUB customers.</span>
-          </div>
-          <div className="hub-partner-actions">
-            {!business.seller && <button type="button" className="hub-button secondary small" onClick={() => setService('sell')}>Sell on HUB Store</button>}
-            {!business.restaurant && <button type="button" className="hub-button secondary small" onClick={() => setService('restaurant')}>Open a restaurant</button>}
-          </div>
-        </section>
-      )}
-    </main>
+    <AppShell active={place} onNavigate={navigate}>
+      {place === 'ecommerce' && <MarketplaceApp onExit={home} />}
+      {place === 'food' && <FoodApp onExit={home} />}
+      {place === 'bills' && <BillsApp onExit={home} />}
+      {place === 'payment-methods' && <PaymentMethodsPage onExit={home} />}
+      {place === 'home' && <HomePage open={setService} business={business} availableBusiness={AVAILABLE_BUSINESS} />}
+    </AppShell>
   )
 }
 
-// The line under a business tile: the normal description once approved, otherwise where the application stands.
-function statusLine(status: BusinessStatus, approved: string): string {
-  if (status === 'Approved') return approved
-  if (status === 'Pending') return 'Your application is being reviewed'
-  if (status === 'Rejected') return 'Your application was not approved. See why'
-  return 'Your account is suspended. See why'
+// Services whose screens are kept in the address bar (#store/..., #food/..., #bills/..., ...).
+const ADDRESSED: Service[] = ['ecommerce', 'food', 'bills', 'payment-methods', 'restaurant', 'food-admin']
+
+// The service an address belongs to (refresh, Back/Forward), or null for the home page.
+function serviceFromAddress(): Service | null {
+  const hash = window.location.hash
+  const is = (section: string) => hash === '#' + section || hash.startsWith('#' + section + '/')
+  // An admin address (#admin/...) reopens the admin portal after a refresh.
+  return hash.startsWith('#admin') ? 'admin'
+    : is('food-admin') ? 'food-admin'
+    : is('food') ? 'food'
+    : is('restaurant') ? 'restaurant'
+    : is('store') ? 'ecommerce'
+    : is('bills') ? 'bills'
+    : is('payment-methods') ? 'payment-methods' : null
+}
+
+// The login or sign-up form named in the address (#signin, #signup), or null for the public website.
+function authFromAddress(): 'login' | 'signup' | null {
+  return window.location.hash === '#signin' ? 'login' : window.location.hash === '#signup' ? 'signup' : null
 }
 
 // The first screen after loading the page.
 function initialService(): Service {
-  // An admin address (#admin/...) reopens the admin portal after a refresh.
-  return window.location.hash.startsWith('#admin') ? 'admin'
-    // HUB Food addresses (#food-admin..., #food..., #restaurant...) reopen that screen after a refresh.
-    : /^#food-admin(\/|$)/.test(window.location.hash) ? 'food-admin'
-    : /^#food(\/|$)/.test(window.location.hash) ? 'food'
-    : /^#restaurant(\/|$)/.test(window.location.hash) ? 'restaurant'
+  return serviceFromAddress()
     // Coming back from JazzCash: ?bill=...&payment=... opens that bill; ?order=...&payment=... opens the store on that order.
-    : new URLSearchParams(window.location.search).has('bill') ? 'bills'
-    : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home'
-}
-
-// The person's name in the top corner. "Payment methods" and "Log out" are not shown on the page; they are inside the menu that opens from the name.
-function UserMenu({ fullName, onPaymentMethods, onLogout }: { fullName: string; onPaymentMethods: () => void; onLogout: () => void }) {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  // Close the menu on a click outside it or with the Escape key.
-  useEffect(() => {
-    if (!open) return
-    const close = (event: MouseEvent) => { if (!menuRef.current?.contains(event.target as Node)) setOpen(false) }
-    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
-    document.addEventListener('mousedown', close)
-    document.addEventListener('keydown', escape)
-    return () => {
-      document.removeEventListener('mousedown', close)
-      document.removeEventListener('keydown', escape)
-    }
-  }, [open])
-
-  return (
-    <div className="hub-user" ref={menuRef}>
-      <button type="button" className="hub-user-button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-        <span className="hub-avatar" aria-hidden="true">{initials(fullName)}</span>
-        <span className="hub-user-name">{fullName}</span>
-      </button>
-      {open && (
-        <div className="hub-user-menu" role="menu">
-          <button type="button" role="menuitem" className="hub-button secondary small" onClick={onPaymentMethods}>Payment methods</button>
-          <button type="button" role="menuitem" className="hub-button secondary small" onClick={onLogout}>Log out</button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function initials(name: string): string {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'U'
+    ?? (new URLSearchParams(window.location.search).has('bill') ? 'bills'
+      : new URLSearchParams(window.location.search).has('payment') ? 'ecommerce' : 'home')
 }
 
 export default App

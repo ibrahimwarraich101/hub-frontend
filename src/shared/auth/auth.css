@@ -114,3 +114,20 @@
 .auth-success { color: var(--hub-primary); background: var(--hub-mint); padding: 10px 12px; border-radius: 12px; }
 /* ".auth-card button { font: inherit }" resets the weight, so set it again for the big buttons. */
 .auth-card .auth-primary, .auth-card .auth-outline, .auth-card .auth-secondary { font-weight: 700; }
+
+/* "Back to HUB": returns to the public website above the form. */
+.auth-home { display: inline-flex; align-items: center; min-height: 36px; margin-bottom: 16px; padding: 0 14px; border: none; border-radius: 10px;
+  background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; }
+.auth-home:hover { background: #c9efd8; }
+
+/* ---------- Guest browsing: a page that needs an account (SignInNeeded.tsx) ---------- */
+.auth-needed { max-width: 520px; margin: 48px auto; padding: 36px 32px; text-align: center; background: var(--hub-surface);
+  border: 1px solid var(--hub-card-border); border-radius: 20px; }
+.auth-needed h2 { margin: 0 0 10px; font-size: 1.5rem; color: var(--hub-heading); }
+.auth-needed p { margin: 0 0 24px; color: var(--hub-secondary); line-height: 1.55; }
+.auth-needed-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.auth-needed-actions button { min-height: 44px; padding: 0 24px; border-radius: var(--hub-radius-pill); font-weight: 700; }
+.auth-needed-primary { border: 1.5px solid var(--hub-primary); background: var(--hub-primary); color: var(--hub-on-primary); }
+.auth-needed-primary:hover { background: #003a2c; }
+.auth-needed-secondary { border: 1.5px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-heading); }
+.auth-needed-secondary:hover { border-color: var(--hub-primary); color: var(--hub-primary); }

@@ -1,8 +1,10 @@
 // File purpose: "My payment methods" (shared by every module): the customer's saved JazzCash wallets, choosing the
 // default, removing, and adding a wallet. Cards are shown as coming later: they will be saved only by JazzCash, and
 // HUB never sees card numbers. All mistakes are shown under the field, never as browser popups.
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { ModuleBar } from '../layout/AppShell'
+import { enterSection, useSectionHistory } from '../layout/sectionRoute'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { PhoneField } from '../forms/PhoneField'
@@ -158,11 +160,16 @@ function sortMethods(methods: SavedPaymentMethod[]): SavedPaymentMethod[] {
 
 // "My payment methods" as its own page (opened from the menu under the person's name on the HUB home page).
 export function PaymentMethodsPage({ onExit }: { onExit: () => void }) {
+  // The page has its own address (#payment-methods), so Refresh keeps it open and the browser's Back button returns home.
+  useEffect(() => { enterSection('payment-methods', '') }, [])
+  useSectionHistory('payment-methods', useCallback((path: string | null) => { if (path === null) onExit() }, [onExit]))
   return (
-    <main className="pm-page">
-      <button type="button" className="hub-button secondary small" onClick={onExit}>Back</button>
-      <h1>My payment methods</h1>
-      <PaymentMethods />
-    </main>
+    <>
+      <ModuleBar title="My account" />
+      <main className="pm-page">
+        <h2 className="pm-title">My payment methods</h2>
+        <PaymentMethods />
+      </main>
+    </>
   )
 }

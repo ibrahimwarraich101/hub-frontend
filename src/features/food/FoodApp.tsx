@@ -1,10 +1,15 @@
 // File purpose: HUB Food for customers: browse restaurants, open a menu, cart and checkout, and track orders.
+// Shown inside the HUB frame with the shared service bar (Back, HUB Food, Restaurants, My orders, Cart).
 // Screens switch inside this component, and the current one is kept in the address (#food, #food/restaurant/<id>,
 // #food/cart, #food/checkout/<restaurant id>, #food/orders, #food/order/<id>), so Refresh and the browser's Back button work. The header's Back button
 // goes back one step, or up to the parent screen when the page was opened directly.
+// Visitors who are not logged in can browse restaurants and menus; the cart, checkout and orders ask them to sign in.
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
+import { useSignInRequest } from '../../shared/auth/GuestContext'
+import { SignInNeeded } from '../../shared/auth/SignInNeeded'
+import { ModuleBar } from '../../shared/layout/AppShell'
 import { CartView } from './CartView'
 import { foodPaths } from './foodApi'
 import type { FoodCart } from './foodApi'
@@ -49,12 +54,9 @@ function parentOf(view: View): View {
   return view.kind === 'checkout' ? { kind: 'restaurant', id: view.id } : { kind: 'home' }
 }
 
-const backLabel: Record<View['kind'], string> = {
-  home: '← HUB', restaurant: '← Back', cart: '← Back', checkout: '← Back', orders: '← Back', order: '← Back',
-}
-
 export function FoodApp({ onExit }: Props) {
-  const { authFetch } = useAuth()
+  const { authFetch, user } = useAuth()
+  const askSignIn = useSignInRequest()
   const [view, setView] = useState<View>(() => readView(sectionPath(SECTION)))
   const [cart, setCart] = useState<FoodCart | null>(null)
   const [cartError, setCartError] = useState<string | null>(null)
@@ -68,10 +70,11 @@ export function FoodApp({ onExit }: Props) {
   }, [onExit]))
 
   const refreshCart = useCallback(() => {
+    if (!user) return
     authFetch<FoodCart>(foodPaths.cart)
       .then((data) => { setCart(data); setCartError(null) })
       .catch((reason: unknown) => setCartError(reason instanceof ApiError ? reason.message : 'Could not load your cart.'))
-  }, [authFetch])
+  }, [authFetch, user])
 
   useEffect(() => { refreshCart() }, [refreshCart])
 
@@ -89,30 +92,38 @@ export function FoodApp({ onExit }: Props) {
   }
 
   const count = cart?.itemCount ?? 0
+  // Screens that belong to an account; a visitor browsing as a guest is asked to sign in instead.
+  const needsAccount = !user && view.kind !== 'home' && view.kind !== 'restaurant'
+  const accountScreen = (next: View) => () => { if (!user) askSignIn(); else if (view.kind !== next.kind) go(next) }
   return (
-    <section className="fd-app" aria-label="HUB Food">
-      <header className="fd-header">
-        <button type="button" className="fd-back" onClick={back}>{backLabel[view.kind]}</button>
-        <h1>HUB Food</h1>
-        <button type="button" className="fd-link" aria-current={view.kind === 'orders' ? 'page' : undefined}
-          onClick={() => view.kind !== 'orders' && go({ kind: 'orders' })}>My orders</button>
-        <button type="button" className="fd-cart-button" onClick={() => view.kind !== 'cart' && go({ kind: 'cart' })} aria-label={`Cart, ${count} items`}>
-          🛒 Cart <span className="fd-cart-count">{count}</span>
-        </button>
-      </header>
+    <section className="fd-app fd-customer" aria-label="HUB Food">
+      {/* The same bar as the store and Bills: Back, the service name and its pages. Leaving Food is done with the HUB top bar. */}
+      <ModuleBar title="HUB Food" onTitle={() => view.kind !== 'home' && go({ kind: 'home' })} onBack={view.kind === 'home' ? undefined : back}
+        tabs={[
+          { label: 'Restaurants', active: view.kind === 'home' || view.kind === 'restaurant', onClick: () => view.kind !== 'home' && go({ kind: 'home' }) },
+          { label: 'My orders', active: view.kind === 'orders' || view.kind === 'order', onClick: accountScreen({ kind: 'orders' }) },
+          { label: 'Cart', count: user ? count : undefined, active: view.kind === 'cart' || view.kind === 'checkout', onClick: accountScreen({ kind: 'cart' }) },
+        ]} />
+      <div className="fd-body">
+      {needsAccount && (
+        <SignInNeeded title={view.kind === 'cart' || view.kind === 'checkout' ? 'Sign in to see your cart' : 'Sign in to see your orders'}
+          text="Your food cart and orders are kept in your HUB account. Sign in, or create a free account, and you will come back to this page."
+          onBrowse={() => go({ kind: 'home' })} />
+      )}
       {cartError && <div className="fd-message error" role="alert">{cartError}</div>}
 
       {view.kind === 'home' && <RestaurantList onOpen={(id) => go({ kind: 'restaurant', id })} />}
       {view.kind === 'restaurant' && (
         <RestaurantMenu restaurantId={view.id} cart={cart} onCartChange={setCart} onCheckout={() => go({ kind: 'checkout', id: view.id })} />
       )}
-      {(view.kind === 'cart' || view.kind === 'checkout') && (
+      {!needsAccount && (view.kind === 'cart' || view.kind === 'checkout') && (
         <CartView cart={cart} checkoutFor={view.kind === 'checkout' ? view.id : null} onCartChange={setCart}
           onCheckout={(id) => go({ kind: 'checkout', id })} onCancelCheckout={back}
           onOrdered={(id) => { refreshCart(); go({ kind: 'order', id }, true) }} onBrowse={() => go({ kind: 'home' })} />
       )}
-      {view.kind === 'orders' && <OrdersView onOpen={(id) => go({ kind: 'order', id })} onBrowse={() => go({ kind: 'home' })} />}
-      {view.kind === 'order' && <OrderDetails orderId={view.id} />}
+      {!needsAccount && view.kind === 'orders' && <OrdersView onOpen={(id) => go({ kind: 'order', id })} onBrowse={() => go({ kind: 'home' })} />}
+      {!needsAccount && view.kind === 'order' && <OrderDetails orderId={view.id} />}
+      </div>
     </section>
   )
 }

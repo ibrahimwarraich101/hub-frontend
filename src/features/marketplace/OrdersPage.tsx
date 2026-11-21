@@ -10,7 +10,7 @@ import type { Order, OrderPage, PaymentMethod } from './ordersApi'
 import { paymentResultMessages, startPayment } from './payment'
 import { OrderReviews } from './Reviews'
 
-export function OrdersList({ onOpen, onBack }: { onOpen: (id: string) => void; onBack: () => void }) {
+export function OrdersList({ onOpen }: { onOpen: (id: string) => void }) {
   const { authFetch } = useAuth()
   const [page, setPage] = useState(1)
   const [data, setData] = useState<OrderPage | null>(null)
@@ -27,7 +27,6 @@ export function OrdersList({ onOpen, onBack }: { onOpen: (id: string) => void; o
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1
   return (
     <div className="mp-orders">
-      <button type="button" className="mp-back" onClick={onBack}>Back</button>
       <h2 className="mp-cart-title">My orders</h2>
       {error && <p className="mp-message error" role="alert">{error}</p>}
       {!data && !error && <p className="mp-message">Loading…</p>}
@@ -60,9 +59,9 @@ export function OrdersList({ onOpen, onBack }: { onOpen: (id: string) => void; o
   )
 }
 
-type DetailsProps = { orderId: string; paymentResult: string | null; startMessage: string | null; onBack: () => void }
+type DetailsProps = { orderId: string; paymentResult: string | null; startMessage: string | null }
 
-export function OrderDetails({ orderId, paymentResult, startMessage, onBack }: DetailsProps) {
+export function OrderDetails({ orderId, paymentResult, startMessage }: DetailsProps) {
   const { authFetch } = useAuth()
   const [order, setOrder] = useState<Order | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -112,7 +111,6 @@ export function OrderDetails({ orderId, paymentResult, startMessage, onBack }: D
   const canCancel = order?.status === 'AwaitingPayment' || order?.status === 'Placed'
   return (
     <div className="mp-orders">
-      <button type="button" className="mp-back" onClick={onBack}>Back</button>
       {error && <p className="mp-message error" role="alert">{error}</p>}
       {!order && !error && <p className="mp-message">Loading…</p>}
       {order && (

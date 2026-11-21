@@ -1,6 +1,10 @@
 // File purpose: Entry point of Bills on the website: pay a bill, My bills, one bill (receipt), and My payment methods,
-// with a top bar like the store's ("HUB Bills" returns to the HUB home). Coming back from JazzCash opens the paid bill.
-import { useCallback, useState } from 'react'
+// shown inside the HUB frame with the shared service bar (Back, HUB Bills, Pay a bill, My bills, Payment methods).
+// Coming back from JazzCash opens the paid bill. The page is kept in the address (#bills, #bills/history, #bills/bill/<id>,
+// #bills/methods), so Refresh and the browser's Back button work.
+import { useCallback, useEffect, useState } from 'react'
+import { ModuleBar } from '../../shared/layout/AppShell'
+import { enterSection, goTo, sectionDepth, sectionPath, useSectionHistory } from '../../shared/layout/sectionRoute'
 import { PaymentMethods } from '../../shared/payments/PaymentMethods'
 import { BillDetails } from './BillDetails'
 import { clearBillReturn, readBillReturn } from './billsApi'
@@ -14,10 +18,25 @@ type View =
   | { page: 'bill'; billId: string; result: string | null }
   | { page: 'methods' }
 
+const SECTION = 'bills'
+
+function readView(path: string | null): View {
+  const [page, id] = (path ?? '').split('/')
+  if (page === 'bill' && id) return { page: 'bill', billId: decodeURIComponent(id), result: null }
+  if (page === 'history') return { page: 'history' }
+  if (page === 'methods') return { page: 'methods' }
+  return { page: 'pay' }
+}
+
+function pathOf(view: View): string {
+  if (view.page === 'bill') return `bill/${encodeURIComponent(view.billId)}`
+  return view.page === 'pay' ? '' : view.page
+}
+
 function firstView(): View {
   // JazzCash sends the customer back with ?bill=...&payment=...
   const back = readBillReturn()
-  if (!back) return { page: 'pay' }
+  if (!back) return readView(sectionPath(SECTION))
   clearBillReturn()
   return { page: 'bill', billId: back.billId, result: back.result }
 }
@@ -26,29 +45,46 @@ export function BillsApp({ onExit }: { onExit: () => void }) {
   const [history, setHistory] = useState<View[]>(() => [firstView()])
   const view = history[history.length - 1]!
 
+  // Put the first page in the address bar when Bills opens.
+  const [startPath] = useState(() => pathOf(history[0]!))
+  useEffect(() => {
+    enterSection(SECTION, startPath)
+    if (sectionPath(SECTION) !== startPath) goTo(SECTION, startPath, true)
+  }, [startPath])
+
   const open = useCallback((next: View) => {
+    goTo(SECTION, pathOf(next))
     setHistory((pages) => (next.page === 'pay' && !next.start ? [next] : [...pages.slice(-19), next]))
     window.scrollTo({ top: 0 })
   }, [])
-  const back = useCallback(() => {
-    setHistory((pages) => (pages.length > 1 ? pages.slice(0, -1) : [{ page: 'pay' }]))
+
+  // The browser's Back/Forward buttons.
+  useSectionHistory(SECTION, useCallback((path: string | null) => {
+    if (path === null) { onExit(); return }
+    const next = readView(path)
+    setHistory((pages) => {
+      const previous = pages[pages.length - 2]
+      if (previous && pathOf(previous) === path) return pages.slice(0, -1)
+      return next.page === 'pay' ? [next] : [...pages.slice(-19), next]
+    })
     window.scrollTo({ top: 0 })
+  }, [onExit]))
+
+  // Back: one step back in the browser while that stays inside Bills, otherwise to "Pay a bill".
+  const back = useCallback(() => {
+    if (sectionDepth() > 1) window.history.back()
+    else { goTo(SECTION, '', true); setHistory([{ page: 'pay' }]) }
   }, [])
 
   return (
     <section className="bl-app" aria-label="HUB Bills">
-      <header className="bl-topbar">
-        <div className="bl-topbar-inner">
-          {/* The name takes the customer back to the HUB home page. */}
-          <h1 className="bl-brand"><button type="button" className="bl-brand-button" onClick={onExit}>HUB Bills</button></h1>
-          <nav className="bl-topbar-actions" aria-label="Bills">
-            <button type="button" className={view.page === 'pay' ? 'bl-nav active' : 'bl-nav'} onClick={() => open({ page: 'pay' })}>Pay a bill</button>
-            <button type="button" className={view.page === 'history' || view.page === 'bill' ? 'bl-nav active' : 'bl-nav'} onClick={() => open({ page: 'history' })}>My bills</button>
-          </nav>
-        </div>
-      </header>
+      <ModuleBar title="HUB Bills" onTitle={() => open({ page: 'pay' })} onBack={view.page === 'pay' && !view.start ? undefined : back}
+        tabs={[
+          { label: 'Pay a bill', active: view.page === 'pay', onClick: () => open({ page: 'pay' }) },
+          { label: 'My bills', active: view.page === 'history' || view.page === 'bill', onClick: () => open({ page: 'history' }) },
+          { label: 'Payment methods', active: view.page === 'methods', onClick: () => open({ page: 'methods' }) },
+        ]} />
       <div className="bl-body">
-        {view.page !== 'pay' && <button type="button" className="hub-button secondary small bl-back" onClick={back}>Back</button>}
         {view.page === 'pay' && (
           <>
             {!view.start && (

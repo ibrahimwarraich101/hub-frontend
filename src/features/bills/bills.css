@@ -2,17 +2,7 @@
    Buttons are text only in theme-coloured boxes, like every HUB button. */
 .bl-app { width: 100%; text-align: left; color: var(--hub-text); }
 .bl-app button { font-family: inherit; cursor: pointer; }
-.bl-topbar { position: sticky; top: 0; z-index: 50; background: var(--hub-surface); border-bottom: 1px solid var(--hub-border); box-shadow: 0 2px 10px rgba(16, 24, 32, 0.05); }
-.bl-topbar-inner { max-width: 880px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
-.bl-brand { flex: 1; margin: 0; font-size: 22px; font-weight: 900; color: var(--hub-primary); letter-spacing: -0.5px; line-height: 1; white-space: nowrap; }
-.bl-app .bl-brand-button { padding: 4px 0; border: none; background: none; font: inherit; color: inherit; letter-spacing: inherit; }
-.bl-app .bl-brand-button:hover { color: var(--hub-bright); }
-.bl-topbar-actions { display: flex; gap: 8px; }
-.bl-app .bl-nav { min-height: 40px; padding: 0 14px; border: none; border-radius: 10px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; }
-.bl-app .bl-nav:hover { background: #c9efd8; }
-.bl-app .bl-nav.active { background: var(--hub-primary); color: var(--hub-on-primary); }
-.bl-body { max-width: 880px; margin: 0 auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 16px; }
-.bl-back { align-self: flex-start; }
+.bl-body { width: 100%; max-width: 880px; margin: 0 auto; padding: 24px 20px 48px; display: flex; flex-direction: column; gap: 16px; }
 
 .bl-hero { background: var(--hub-hero); border-radius: var(--hub-radius-banner); padding: 28px; }
 .bl-hero h2 { font-size: 28px; margin: 0 0 6px; }
@@ -94,9 +84,6 @@
 
 /* Phones. */
 @media (max-width: 600px) {
-  .bl-topbar-inner { padding: 8px 16px; gap: 8px; }
-  .bl-brand { font-size: 18px; }
-  .bl-app .bl-nav { min-height: 38px; padding: 0 10px; font-size: 0.9rem; }
   .bl-body { padding: 16px 16px 40px; }
   .bl-hero { padding: 20px 18px; border-radius: var(--hub-radius-card); }
   .bl-hero h2 { font-size: 23px; }

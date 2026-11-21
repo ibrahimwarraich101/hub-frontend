@@ -210,7 +210,7 @@
 .mp-cart-line-total { font-weight: 800; color: var(--hub-heading); }
 .mp-app .mp-small { min-height: 34px; padding: 0 12px; font-size: 0.85rem; border-radius: 10px; }
 .mp-cart-subtotal { display: flex; justify-content: space-between; padding-top: 12px; }
-.mp-cart-summary { position: sticky; top: 16px; }
+.mp-cart-summary { position: sticky; top: calc(var(--sh-top, 0px) + 16px); }
 .mp-cart-summary h3 { margin: 0 0 4px; }
 .mp-cart-row { display: flex; justify-content: space-between; gap: 12px; }
 .mp-cart-row.total { font-size: 1.15rem; font-weight: 800; color: var(--hub-heading); border-top: 1px solid var(--hub-border); padding-top: 10px; margin-top: 4px; }
@@ -305,15 +305,6 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
 
 /* ---------- Store layout: top bar, banner, category tiles, rows and product cards (desktop first, phone rules below) ---------- */
 .mp-app.mp-store { max-width: none; padding: 0; }
-.mp-topbar { position: sticky; top: 0; z-index: 50; background: var(--hub-surface); border-bottom: 1px solid var(--hub-border); box-shadow: 0 2px 10px rgba(16, 24, 32, 0.05); }
-.mp-topbar-inner { max-width: var(--hub-max-width); margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
-.mp-topbar .mp-back { margin: 0; align-self: center; }
-.mp-brand { flex: 1; margin: 0; font-size: 22px; font-weight: 900; color: var(--hub-primary); letter-spacing: -0.5px; line-height: 1; white-space: nowrap; }
-.mp-topbar-actions { display: flex; align-items: center; gap: 8px; }
-/* "HUB Store" in the top bar returns to the HUB home page; it keeps the look of the store name. */
-.mp-app .mp-brand-button { padding: 4px 0; border: none; background: none; font: inherit; color: inherit; letter-spacing: inherit; cursor: pointer; }
-.mp-app .mp-brand-button:hover { color: var(--hub-bright); }
-.mp-app .mp-back.active, .mp-app .mp-back.active:hover { background: var(--hub-primary); color: var(--hub-on-primary); }
 .mp-store-body { max-width: var(--hub-max-width); margin: 0 auto; padding: 20px 20px 48px; }
 
 /* Banner with search; while searching or filtering it shrinks to just the search box. */
@@ -361,7 +352,7 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
 @media (min-width: 721px) { .mp-scroll-chips { flex-wrap: wrap; overflow: visible; } }
 
 /* Product list heading, count and sort. */
-.mp-products { scroll-margin-top: 84px; }
+.mp-products { scroll-margin-top: calc(var(--sh-top, 0px) + 20px); }
 .mp-products .mp-toolbar { align-items: flex-end; gap: 12px; flex-wrap: wrap; margin: 6px 0 14px; }
 .mp-products .mp-toolbar .mp-section-title { margin: 0; }
 .mp-sort { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--hub-secondary); }
@@ -402,8 +393,6 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
 
 /* Tablets and phones. */
 @media (max-width: 720px) {
-  .mp-topbar-inner { padding: 8px 16px; gap: 8px; }
-  .mp-brand { font-size: 19px; }
   .mp-store-body { padding: 16px 16px 40px; }
   .mp-hero { padding: 24px 18px; gap: 16px; border-radius: var(--hub-radius-card); margin-bottom: 24px; }
   .mp-hero h2 { font-size: 24px; }
@@ -421,12 +410,8 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
   .mp-card .mp-name { font-size: 0.9rem; }
   .mp-card .mp-price { font-size: 1rem; }
   .mp-shop-card { width: 136px; }
-  .mp-products { scroll-margin-top: 64px; }
 }
-/* Small phones: smaller top bar buttons so the store name, "My orders" and "Cart" fit on one line. */
 @media (max-width: 480px) {
-  .mp-brand { font-size: 18px; }
-  .mp-app .mp-topbar .mp-back, .mp-app .mp-topbar .mp-cart-button { min-height: 40px; padding: 0 12px; font-size: 0.9rem; }
   .mp-hero .mp-search button { padding: 0 16px; }
   .mp-products .mp-toolbar { align-items: center; }
 }

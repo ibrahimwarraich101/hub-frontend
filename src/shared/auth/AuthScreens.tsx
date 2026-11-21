@@ -16,6 +16,10 @@ import './auth.css'
 type Props = {
   // Lets a module enable its own business option without changing this file.
   availableBusiness?: string[]
+  // Which form opens first ("Sign in" or "Sign up" on the public website).
+  initialMode?: 'login' | 'signup'
+  // Returns to the public HUB website.
+  onBack?: () => void
 }
 
 // Year for the footer, read once when the page loads.
@@ -28,8 +32,8 @@ const panelServices = [
   { name: 'Store', text: 'Shop from local sellers', tone: 'shop' },
 ]
 
-export function AuthScreens({ availableBusiness = [] }: Props) {
-  const [mode, setMode] = useState<'login' | 'signup' | 'verify' | 'forgot'>('login')
+export function AuthScreens({ availableBusiness = [], initialMode = 'login', onBack }: Props) {
+  const [mode, setMode] = useState<'login' | 'signup' | 'verify' | 'forgot'>(initialMode)
   // The address waiting for its code, and whether a code was just sent (sign-up) or may have been sent (login).
   const [verifyEmail, setVerifyEmail] = useState('')
   const showVerify = (email: string) => { setVerifyEmail(email); setMode('verify') }
@@ -59,6 +63,7 @@ export function AuthScreens({ availableBusiness = [] }: Props) {
       </aside>
       <main className="auth-main">
         <div className="auth-page">
+          {onBack && <button type="button" className="auth-home" onClick={onBack}>Back to HUB</button>}
           <h1 className="auth-brand">HUB</h1>
           {mode === 'login' && <LoginForm notice={loginNotice} onSignup={() => setMode('signup')} onVerify={showVerify}
             onForgot={(email) => { setResetEmail(email); setMode('forgot') }} />}

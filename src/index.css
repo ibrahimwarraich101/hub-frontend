@@ -58,7 +58,7 @@
   --accent-border: var(--hub-bright);
   --shadow: var(--hub-shadow);
 
-  --sans: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --sans: 'Inter', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --heading: var(--sans);
   --mono: ui-monospace, Consolas, monospace;
 

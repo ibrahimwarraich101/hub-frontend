@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
+import { useSignInRequest } from '../../shared/auth/GuestContext'
 import { fetchProduct, formatPrice } from './api'
 import type { ProductDetails, ProductVariant } from './api'
 import { cartPaths } from './cartApi'
@@ -11,7 +12,6 @@ import { ProductReviews, RatingLine } from './Reviews'
 
 type Props = {
   productId: string
-  onBack: () => void
   // New number of items in the cart after adding.
   onCount: (count: number) => void
   onOpenCart: () => void
@@ -21,7 +21,7 @@ type Props = {
 // Most units one order line can ask for when stock is not tracked.
 const MaxQuantity = 99
 
-export function ProductPage({ productId, onBack, onCount, onOpenCart, onOpenShop }: Props) {
+export function ProductPage({ productId, onCount, onOpenCart, onOpenShop }: Props) {
   const [product, setProduct] = useState<ProductDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,7 +41,6 @@ export function ProductPage({ productId, onBack, onCount, onOpenCart, onOpenShop
 
   return (
     <div className="mp-product">
-      <button type="button" className="mp-back" onClick={onBack}>Back</button>
 
       {error && <div className="mp-message error" role="alert">{error}</div>}
       {!error && !product && <div className="mp-message">Loading product…</div>}
@@ -58,7 +57,8 @@ function unique(values: (string | null)[]): string[] {
 function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
   product: ProductDetails; onCount: (count: number) => void; onOpenCart: () => void; onOpenShop: (merchantId: string) => void
 }) {
-  const { authFetch } = useAuth()
+  const { authFetch, user } = useAuth()
+  const askSignIn = useSignInRequest()
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
   const colors = unique(product.variants.map((v) => v.color))
@@ -111,6 +111,8 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
       return
     }
     const choice = [selected?.color, selected?.size].filter(Boolean).join(', ')
+    // A visitor browsing without an account signs in first, then comes back to this product.
+    if (!user) { askSignIn(); return }
     setAdding(true)
     try {
       const cart = await authFetch<Cart>(cartPaths.items, 'POST', { productId: product.id, variantId: selected?.id ?? null, quantity })
