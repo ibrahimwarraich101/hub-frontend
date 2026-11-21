@@ -2,6 +2,7 @@
 // Used for every admin decision that is written to the activity log.
 import { useState } from 'react'
 import { ApiError } from '../../shared/api/client'
+import { useUnsavedChanges } from '../../shared/forms/unsavedChanges'
 import { reasonError } from './adminApi'
 
 type Props = {
@@ -20,6 +21,8 @@ export function ReasonAction({ label, explanation, tone = 'primary', disabled, o
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const problem = tried ? reasonError(reason) : null
+  // A typed reason that was not confirmed yet is an unsaved change.
+  useUnsavedChanges(open && reason.trim() !== '')
   const buttonClass = tone === 'danger' ? 'hub-button danger small' : 'hub-button small'
 
   if (!open) {

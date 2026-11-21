@@ -12,7 +12,7 @@ import { PaymentMethodsPage } from './shared/payments/PaymentMethods'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
 import { GuestProvider } from './shared/auth/GuestContext'
-import { hasUnsavedChanges } from './shared/forms/unsavedChanges'
+import { confirmLeave, hasUnsavedChanges } from './shared/forms/unsavedChanges'
 import { useBusinessAccounts } from './shared/business/useBusinessAccounts'
 import { AppShell } from './shared/layout/AppShell'
 import type { HubPlace } from './shared/layout/AppShell'
@@ -86,12 +86,13 @@ function App() {
   // Moving with the top bar or the phone tab bar: leave the current service's address, then open the new one.
   // Set while a seller or restaurant owner looks at their own store or restaurant from their center; any top-bar move ends it.
   const [preview, setPreview] = useState<'ecommerce' | 'food' | null>(null)
-  const navigate = useCallback((place: HubPlace) => {
+  // Asks first when a form on the current page (e.g. checkout) has unsaved changes.
+  const navigate = useCallback((place: HubPlace) => confirmLeave(() => {
     setPreview(null)
     leaveSection()
     setService(place)
     window.scrollTo({ top: 0 })
-  }, [])
+  }), [])
   // Visitors open the store or Food from the public website; path is a page inside it (e.g. "product/<id>").
   const browse = useCallback((place: 'ecommerce' | 'food', path = '') => {
     const section = place === 'ecommerce' ? 'store' : 'food'
@@ -136,7 +137,7 @@ function App() {
   // Customer screens share the HUB frame: top bar with the services and account menu, and the phone tab bar.
   const place: HubPlace = view === 'ecommerce' || view === 'food' || view === 'bills' || view === 'payment-methods' ? view : 'home'
   // Business pages leave the customer section's address, so a refresh does not reopen the store under them.
-  const openTool = (target: Service) => () => { setPreview(null); leaveSection(); setService(target); window.scrollTo({ top: 0 }) }
+  const openTool = (target: Service) => () => confirmLeave(() => { setPreview(null); leaveSection(); setService(target); window.scrollTo({ top: 0 }) })
   const isAdmin = hasRole('Administrator')
   const tools = [
     ...(business.seller ? [{ label: 'Seller Center', onClick: openTool('sell') }] : []),

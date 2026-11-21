@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import { useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { dateTime, decisionsFor, foodPaths } from '../foodApi'
 import type { AdminRestaurant, AdminRestaurantPage, RestaurantDecision, RestaurantStatus } from '../foodApi'
 
@@ -62,6 +63,8 @@ export function RestaurantApprovals() {
 function ReviewCard({ item, onDone }: { item: AdminRestaurant; onDone: (text: string) => void }) {
   const { authFetch } = useAuth()
   const [reason, setReason] = useState('')
+  // A typed reason that was not used for a decision yet is an unsaved change.
+  useUnsavedChanges(reason.trim() !== '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const account = item.account
@@ -72,6 +75,7 @@ function ReviewCard({ item, onDone }: { item: AdminRestaurant; onDone: (text: st
     setError(null)
     try {
       await authFetch(foodPaths.adminReview(account.id), 'POST', { decision, reason: reason.trim(), expectedVersion: account.version })
+      setReason('')
       onDone(`${account.name}: ${decision.toLowerCase()} done.`)
     } catch (problem) {
       setError(problem instanceof ApiError ? problem.message : 'Could not save the decision.')

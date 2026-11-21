@@ -6,6 +6,7 @@ import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { Field } from '../../shared/auth/AuthScreens'
 import { PhoneField } from '../../shared/forms/PhoneField'
+import { clearUnsavedChanges, useUnsavedChanges } from '../../shared/forms/unsavedChanges'
 import { Toast } from '../../shared/layout/Toast'
 import type { ToastMessage } from '../../shared/layout/Toast'
 import { formatPrice } from './api'
@@ -24,6 +25,9 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
   const [values, setValues] = useState<Record<DeliveryFields, string>>({
     name: user?.fullName ?? '', phone: user?.phone ?? '', address: '', city: '', note: '',
   })
+  // Delivery details typed here are lost when leaving, so leaving asks first (name and phone start filled in).
+  const [startValues] = useState(() => JSON.stringify(values))
+  useUnsavedChanges(JSON.stringify(values) !== startValues, formRef)
   const [method, setMethod] = useState<PaymentMethod>('Wallet')
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -68,6 +72,8 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
       setBusy(false)
       return
     }
+    // The order exists now: going to JazzCash or to the order page must not ask about unsaved changes.
+    clearUnsavedChanges()
     try {
       await startPayment(authFetch, order.id, method)
     } catch (reason) {

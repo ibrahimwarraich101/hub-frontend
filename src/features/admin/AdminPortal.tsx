@@ -1,7 +1,8 @@
 // File purpose: HUB admin portal (website only, Administrators only): left menu, top bar and the selected page.
 // The page is kept in the address (e.g. #admin/users/<id>) so refreshing or going Back stays in the right place.
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../shared/auth/AuthContext'
+import { confirmLeave, hasUnsavedChanges } from '../../shared/forms/unsavedChanges'
 import { adminSections } from './sections'
 import type { AdminRoute } from './sections'
 import './admin.css'
@@ -16,24 +17,36 @@ export function AdminPortal({ onExit }: { onExit: () => void }) {
   const [route, setRoute] = useState<AdminRoute>(readRoute)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // Follow the browser's Back/Forward buttons.
+  // The address of the page on screen, so the browser's Back can be undone while a typed reason is not saved.
+  const shown = useRef(window.location.hash)
+
+  // Follow the browser's Back/Forward buttons; with unsaved changes, put the page back in the address and ask first.
   useEffect(() => {
-    const onHash = () => setRoute(readRoute())
+    const onHash = () => {
+      if (hasUnsavedChanges()) {
+        history.pushState(null, '', shown.current)
+        confirmLeave(() => window.history.back())
+        return
+      }
+      shown.current = window.location.hash
+      setRoute(readRoute())
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  const go = useCallback((next: AdminRoute) => {
+  // Every move asks first when a typed reason was not confirmed yet.
+  const go = useCallback((next: AdminRoute) => confirmLeave(() => {
     window.location.hash = `admin/${next.section}${next.id ? '/' + encodeURIComponent(next.id) : ''}`
     setMenuOpen(false)
     window.scrollTo({ top: 0 })
-  }, [])
+  }), [])
 
-  const exit = () => {
+  const exit = () => confirmLeave(() => {
     // Leave the admin address so a refresh opens the HUB home.
     history.replaceState(null, '', window.location.pathname + window.location.search)
     onExit()
-  }
+  })
 
   const current = adminSections.find((item) => item.id === route.section) ?? adminSections[0]
   const groups = [...new Set(adminSections.map((item) => item.group))]

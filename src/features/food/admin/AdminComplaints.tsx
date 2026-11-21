@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
+import { confirmLeave, useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { ComplaintThread } from '../ComplaintThread'
 import { complaintTopicLabel, dateTime, foodPaths, money, statusLabel } from '../foodApi'
 import type { AdminComplaint, ComplaintStatus, FoodComplaintPage } from '../foodApi'
@@ -51,7 +52,7 @@ export function AdminComplaints({ onOpenOrder, onChanged }: Props) {
   if (openId) {
     return (
       <ComplaintView complaintId={openId} onOpenOrder={onOpenOrder}
-        onBack={() => { setOpenId(null); load({ cancelled: false }) }}
+        onBack={() => confirmLeave(() => { setOpenId(null); load({ cancelled: false }) })}
         onClosed={(text) => { setNotice(text); setOpenId(null); setData(null); load({ cancelled: false }); onChanged() }} />
     )
   }
@@ -120,6 +121,8 @@ function ComplaintView({ complaintId, onBack, onClosed, onOpenOrder }: ViewProps
   const [data, setData] = useState<AdminComplaint | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [note, setNote] = useState('')
+  // A typed note that was not sent yet is an unsaved change.
+  useUnsavedChanges(note.trim() !== '')
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -137,6 +140,7 @@ function ComplaintView({ complaintId, onBack, onClosed, onOpenOrder }: ViewProps
     setError(null)
     try {
       await authFetch(foodPaths.adminCloseComplaint(complaintId), 'POST', { outcome, note: note.trim(), expectedVersion: data.complaint.version })
+      setNote('')
       onClosed(`Complaint about order ${data.complaint.orderNumber}: ${outcome.toLowerCase()}.`)
     } catch (reason) {
       setError(reason instanceof ApiError ? reason.message : 'Could not save the decision.')
