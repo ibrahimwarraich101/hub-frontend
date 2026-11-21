@@ -23,6 +23,7 @@ import { MenuManager } from './MenuManager'
 import { RestaurantComplaints } from './RestaurantComplaints'
 import { RestaurantOrders } from './RestaurantOrders'
 import { RestaurantSettings } from './RestaurantSettings'
+import { formatPhone } from '../../../shared/forms/phone'
 
 type Page = 'dashboard' | 'orders' | 'menu' | 'complaints' | 'settings'
 
@@ -237,7 +238,7 @@ function ApplicationPanel({ account, onRefresh, onEdit }: { account: RestaurantA
       <dl className="sx-facts">
         <div><dt>Restaurant</dt><dd>{account.name}</dd></div>
         <div><dt>Cuisine</dt><dd>{account.cuisine}</dd></div>
-        <div><dt>Phone</dt><dd>{account.phone}</dd></div>
+        <div><dt>Phone</dt><dd>{formatPhone(account.phone)}</dd></div>
         <div><dt>City</dt><dd>{account.city}</dd></div>
         <div className="wide"><dt>Address</dt><dd>{account.addressLine}</dd></div>
       </dl>

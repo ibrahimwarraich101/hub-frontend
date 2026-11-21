@@ -26,6 +26,7 @@ import '../marketplace.css'
 import '../../../shared/layout/workspace.css'
 import { SellerOrders } from './SellerOrders'
 import { SellerProducts } from './SellerProducts'
+import { formatPhone } from '../../../shared/forms/phone'
 
 type Props = {
   onExit: () => void
@@ -197,7 +198,7 @@ function AccountPanel({ account, onRefresh, onEdit }: { account: SellerAccount; 
       )}
       <dl className="sx-facts">
         <div><dt>Store name</dt><dd>{account.name}</dd></div>
-        <div><dt>Store phone</dt><dd>{account.phone}</dd></div>
+        <div><dt>Store phone</dt><dd>{formatPhone(account.phone)}</dd></div>
         <div><dt>Applied on</dt><dd>{shortDate(account.submittedAt)}</dd></div>
         {account.reviewedAt && <div><dt>Last decision</dt><dd>{shortDate(account.reviewedAt)}</dd></div>}
         {account.description && <div className="wide"><dt>About your store</dt><dd>{account.description}</dd></div>}

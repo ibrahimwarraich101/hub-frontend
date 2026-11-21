@@ -8,6 +8,7 @@ import { confirmLeave, useUnsavedChanges } from '../../../shared/forms/unsavedCh
 import { ComplaintThread } from '../ComplaintThread'
 import { complaintTopicLabel, dateTime, foodPaths, money, statusLabel } from '../foodApi'
 import type { AdminComplaint, ComplaintStatus, FoodComplaintPage } from '../foodApi'
+import { formatPhone } from '../../../shared/forms/phone'
 
 type Props = { onOpenOrder: (orderId: string) => void; onChanged: () => void }
 
@@ -192,7 +193,7 @@ function ComplaintView({ complaintId, onBack, onClosed, onOpenOrder }: ViewProps
           <dl className="fd-facts">
             <dt>Name</dt><dd>{data.customer.fullName}</dd>
             <dt>Email</dt><dd>{data.customer.email}</dd>
-            <dt>Phone</dt><dd>{data.customer.phone}</dd>
+            <dt>Phone</dt><dd>{formatPhone(data.customer.phone)}</dd>
           </dl>
         </div>
         <div className="fd-panel">
