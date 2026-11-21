@@ -415,3 +415,19 @@ a.mp-rating-link:hover strong { text-decoration: underline; }
   .mp-hero .mp-search button { padding: 0 16px; }
   .mp-products .mp-toolbar { align-items: center; }
 }
+
+/* ---------- Product photo zoom on hover (ZoomPhoto in ProductPage.tsx) ----------
+   A lens follows the mouse over the photo, and that part is shown enlarged in a panel over the product details.
+   Only for a mouse on a wide screen; touch screens and phones keep the plain photo (tap opens the full-screen viewer). */
+.mp-zoom { position: relative; }
+.mp-zoom .mp-main-button { position: relative; overflow: hidden; border-radius: var(--hub-radius-card); }
+.mp-zoom-lens, .mp-zoom-pane { display: none; }
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+  .mp-zoom .mp-main-button { cursor: crosshair; }
+  .mp-zoom-lens { display: block; position: absolute; pointer-events: none; border: 1.5px solid var(--hub-primary);
+    background: rgba(255, 255, 255, 0.35); box-shadow: 0 0 0 9999px rgba(16, 24, 32, 0.12); }
+  .mp-zoom-pane { display: block; position: absolute; top: 0; left: calc(100% + 24px); z-index: 30; width: 100%; aspect-ratio: 1;
+    overflow: hidden; background: var(--hub-surface); border: 1px solid var(--hub-card-border); border-radius: var(--hub-radius-card);
+    box-shadow: 0 16px 40px rgba(16, 24, 32, 0.18); pointer-events: none; }
+  .mp-zoom-pane img { display: block; max-width: none; object-fit: cover; transform-origin: 0 0; }
+}
