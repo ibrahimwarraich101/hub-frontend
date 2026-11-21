@@ -6,6 +6,9 @@ import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { Field } from '../../shared/auth/AuthScreens'
 import { PhoneField } from '../../shared/forms/PhoneField'
+import { SavedAddressPicker } from '../../shared/account/SavedAddressPicker'
+import { matchesAddress } from '../../shared/account/accountApi'
+import type { Address } from '../../shared/account/accountApi'
 import { clearUnsavedChanges, useUnsavedChanges } from '../../shared/forms/unsavedChanges'
 import { Toast } from '../../shared/layout/Toast'
 import type { ToastMessage } from '../../shared/layout/Toast'
@@ -27,8 +30,21 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
     name: user?.fullName ?? '', phone: user?.phone ?? '', address: '', city: '', note: '',
   })
   // Delivery details typed here are lost when leaving, so leaving asks first (name and phone start filled in).
-  const [startValues] = useState(() => JSON.stringify(values))
+  const [startValues, setStartValues] = useState(() => JSON.stringify(values))
   useUnsavedChanges(JSON.stringify(values) !== startValues, formRef)
+  // A saved address from My account fills address, city and phone. While nothing was typed, that counts as the starting
+  // point, so it does not trigger the unsaved-changes warning.
+  const [savedAddress, setSavedAddress] = useState<Address | null>(null)
+  const fillFromSaved = (address: Address, onlyIfEmpty = false) => {
+    setValues((current) => {
+      if (onlyIfEmpty && current.address.trim()) return current
+      const next = { ...current, address: address.addressLine, city: address.city, phone: address.contactPhone }
+      if (JSON.stringify(current) === startValues) setStartValues(JSON.stringify(next))
+      return next
+    })
+    setSavedAddress(address)
+  }
+  const selectedAddress = savedAddress && matchesAddress(savedAddress, values.address, values.city, values.phone) ? savedAddress.id : null
   const [picked, setPicked] = useState<PaymentMethod>('Wallet')
   const payments = usePaymentProvider()
   const options = paymentMethodOptions(payments.name, payments.methods)
@@ -100,6 +116,7 @@ export function CheckoutPage({ merchantId, onOrder }: Props) {
             <section className="mp-panel mp-form" aria-label="Delivery details">
               <h3>Delivery details</h3>
               <p className="mp-hint">{store.merchantName} delivers this order to you.</p>
+              <SavedAddressPicker selectedId={selectedAddress} onPick={(address) => fillFromSaved(address)} onDefault={(address) => fillFromSaved(address, true)} />
               <Field label="Full name" name="name" value={values.name} onChange={set('name')} error={errors.name} autoComplete="name" />
               <PhoneField label="Phone" name="phone" value={values.phone} onChange={set('phone')} error={errors.phone} />
               <Field label="Address" name="address" value={values.address} onChange={set('address')} error={errors.address}

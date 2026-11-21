@@ -39,3 +39,8 @@ export const DEFAULT_POSITION = { latitude: 31.5204, longitude: 74.3587 }
 
 // Address labels offered as one-tap choices; anything else can be typed.
 export const LABEL_CHOICES = ['Home', 'Office', 'Other']
+
+// Whether a form's address, city and phone are exactly this saved address (checkout highlights the matching card).
+export function matchesAddress(address: Address, line: string, city: string, phone: string): boolean {
+  return address.addressLine === line.trim() && address.city === city.trim() && address.contactPhone === phone
+}

@@ -67,3 +67,17 @@
   .ac-grid { grid-template-columns: 1fr; }
   .ac-map { height: 260px; }
 }
+
+/* Saved addresses on checkout (SavedAddressPicker.tsx) */
+.ac-pick { display: flex; flex-direction: column; gap: 8px; }
+.ac-pick-title { font-size: 0.9rem; font-weight: 700; color: var(--hub-heading); }
+.ac-pick-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.ac-pick-card { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; text-align: left; cursor: pointer;
+  border: 1.5px solid var(--hub-border); border-radius: 14px; background: var(--hub-surface); color: var(--hub-text); font: inherit; }
+.ac-pick-card:hover { border-color: var(--hub-bright); }
+.ac-pick-card.active { border-color: var(--hub-primary); background: var(--hub-mint); box-shadow: inset 0 0 0 1px var(--hub-primary); }
+.ac-pick-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ac-pick-head strong { color: var(--hub-heading); }
+.ac-pick-line { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ac-pick-muted { font-size: 0.82rem; color: var(--hub-secondary); }
+.ac-pick-empty { margin: 0; padding: 10px 14px; border-radius: 12px; background: var(--hub-surface-muted); color: var(--hub-secondary); font-size: 0.88rem; }

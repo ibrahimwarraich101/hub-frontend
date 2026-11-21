@@ -11,6 +11,9 @@ import type { FieldErrors } from '../../shared/forms/validation'
 import '../../shared/auth/auth.css'
 import { foodPhone, foodPaths, money, newRequestKey } from './foodApi'
 import type { FoodCart, FoodOrder, FoodOrderPage, RestaurantCart } from './foodApi'
+import { SavedAddressPicker } from '../../shared/account/SavedAddressPicker'
+import { matchesAddress } from '../../shared/account/accountApi'
+import type { Address } from '../../shared/account/accountApi'
 
 type Props = {
   cart: FoodCart | null
@@ -134,7 +137,20 @@ function Checkout({ cart, onCancel, onOrdered }: { cart: RestaurantCart; onCance
   const [error, setError] = useState<string | null>(null)
   const [fromLastOrder, setFromLastOrder] = useState(false)
   const errors = tried ? validate(values) : {}
-  const set = (field: CheckoutFields) => (value: string) => setValues((current) => ({ ...current, [field]: value }))
+  // Once the customer types, nothing is filled in for them any more.
+  const typed = useRef(false)
+  const set = (field: CheckoutFields) => (value: string) => { typed.current = true; setValues((current) => ({ ...current, [field]: value })) }
+
+  // A saved address from My account fills address, city and phone. The default one is used when the page opens
+  // (before the customer types), and it is preferred over the last order's address.
+  const [savedAddress, setSavedAddress] = useState<Address | null>(null)
+  const fillFromSaved = (address: Address, automatic = false) => {
+    if (automatic && typed.current) return
+    setValues((current) => ({ ...current, deliveryAddress: address.addressLine, deliveryCity: address.city, deliveryPhone: address.contactPhone }))
+    setSavedAddress(address)
+  }
+  const selectedAddress = savedAddress && matchesAddress(savedAddress, values.deliveryAddress, values.deliveryCity, values.deliveryPhone)
+    ? savedAddress.id : null
 
   // Start from the delivery details of the last food order (only fields the customer has not typed in yet).
   useEffect(() => {
@@ -188,7 +204,8 @@ function Checkout({ cart, onCancel, onOrdered }: { cart: RestaurantCart; onCance
       </ul>
       <Totals cart={cart} />
       <h3>Delivery details</h3>
-      {fromLastOrder && <p className="fd-meta">Filled in from your last order. Change anything that is different this time.</p>}
+      <SavedAddressPicker selectedId={selectedAddress} onPick={(address) => fillFromSaved(address)} onDefault={(address) => fillFromSaved(address, true)} />
+      {fromLastOrder && !savedAddress && <p className="fd-meta">Filled in from your last order. Change anything that is different this time.</p>}
       <Field label="Name" name="deliveryName" value={values.deliveryName} onChange={set('deliveryName')} error={errors.deliveryName} autoComplete="name" />
       <PhoneField label="Phone" name="deliveryPhone" value={values.deliveryPhone} onChange={set('deliveryPhone')} error={errors.deliveryPhone}
         hint="The restaurant calls this number when delivering." />
