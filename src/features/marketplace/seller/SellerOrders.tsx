@@ -24,8 +24,9 @@ const nextStep: Partial<Record<OrderStatus, { status: OrderStatus; label: string
   Shipped: { status: 'Delivered', label: 'Mark as delivered' },
 }
 
-export function SellerOrders() {
-  const [openId, setOpenId] = useState<string | null>(null)
+// openId: open straight on one order (e.g. from the dashboard).
+export function SellerOrders({ openId: startId = null }: { openId?: string | null }) {
+  const [openId, setOpenId] = useState<string | null>(startId ?? null)
   const [tab, setTab] = useState<OrderStatus | ''>('Placed')
   if (openId) return <SellerOrderDetails orderId={openId} onBack={() => setOpenId(null)} />
   return <SellerOrderList tab={tab} onTab={setTab} onOpen={setOpenId} />
@@ -51,7 +52,7 @@ function SellerOrderList({ tab, onTab, onOpen }: { tab: OrderStatus | ''; onTab:
   const pages = list ? Math.max(1, Math.ceil(list.total / list.pageSize)) : 1
   return (
     <div className="mp-panel">
-      <h2>Orders</h2>
+      <h2>Your orders</h2>
       <div className="mp-chips" role="tablist" aria-label="Order status">
         {tabs.map((item) => (
           <button key={item.label} type="button" role="tab" aria-selected={tab === item.status}

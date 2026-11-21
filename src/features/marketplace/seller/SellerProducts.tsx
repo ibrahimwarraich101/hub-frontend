@@ -12,9 +12,10 @@ import {
 } from '../sellerProductsApi'
 import type { OptionType, ProductErrors, ProductForm, SellerProduct, SellerProductPage } from '../sellerProductsApi'
 
-export function SellerProducts() {
+// startNew: open straight on the "Add a product" form (e.g. from the dashboard).
+export function SellerProducts({ startNew = false }: { startNew?: boolean }) {
   // null = list; 'new' = add form; otherwise the product being edited.
-  const [editing, setEditing] = useState<string | null>(null)
+  const [editing, setEditing] = useState<string | null>(startNew ? 'new' : null)
   const [listKey, setListKey] = useState(0)
 
   if (editing) {
@@ -49,7 +50,7 @@ function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string
   return (
     <div className="mp-panel">
       <div className="mp-admin-head">
-        <h2>My products</h2>
+        <h2>All products{data ? ` (${data.total})` : ''}</h2>
         <button type="button" className="mp-primary" onClick={onAdd}>Add product</button>
       </div>
       <form className="mp-search" role="search" onSubmit={(e) => { e.preventDefault(); setQuery({ search, page: 1 }) }}>

@@ -120,7 +120,7 @@ function App() {
     : service === 'home' && businessIntent === 'restaurant' ? 'restaurant' : service
   const home = () => setService('home')
   // Business tools and admin pages keep their own full-screen layout.
-  if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} />
+  if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} onViewStore={() => setService('ecommerce')} />
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
   if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} />
   if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
@@ -147,7 +147,7 @@ function App() {
 }
 
 // Services whose screens are kept in the address bar (#store/..., #food/..., #bills/..., ...).
-const ADDRESSED: Service[] = ['ecommerce', 'food', 'bills', 'payment-methods', 'restaurant', 'food-admin']
+const ADDRESSED: Service[] = ['sell', 'ecommerce', 'food', 'bills', 'payment-methods', 'restaurant', 'food-admin']
 
 // The service an address belongs to (refresh, Back/Forward), or null for the home page.
 function serviceFromAddress(): Service | null {
@@ -159,6 +159,7 @@ function serviceFromAddress(): Service | null {
     : is('food') ? 'food'
     : is('restaurant') ? 'restaurant'
     : is('store') ? 'ecommerce'
+    : is('seller') ? 'sell'
     : is('bills') ? 'bills'
     : is('payment-methods') ? 'payment-methods' : null
 }
