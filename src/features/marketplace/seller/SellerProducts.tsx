@@ -10,7 +10,8 @@ import {
   categoryChoices, checkPhoto, emptyForm, formFromProduct, hasColor, hasSize, limits, newKey, optionTypeLabels,
   productRequest, sellerProductPaths, validateProduct,
 } from '../sellerProductsApi'
-import type { OptionType, ProductErrors, ProductForm, SellerProduct, SellerProductPage } from '../sellerProductsApi'
+import type { OptionType, ProductErrors, ProductForm, SellerProduct, SellerProductPage, SellerProductSummary } from '../sellerProductsApi'
+import { shortDate } from '../sellerApi'
 
 // startNew: open straight on the "Add a product" form (e.g. from the dashboard).
 export function SellerProducts({ startNew = false }: { startNew?: boolean }) {
@@ -29,6 +30,19 @@ export function SellerProducts({ startNew = false }: { startNew?: boolean }) {
     )
   }
   return <ProductList key={listKey} onAdd={() => setEditing('new')} onEdit={setEditing} />
+}
+
+// The stock column: how many are left, with a colour for "low" (5 or fewer) and "out".
+function stockOf(item: SellerProductSummary): { text: string; tone: string } {
+  if (item.totalStock === null) return { text: 'Not tracked', tone: '' }
+  if (item.totalStock === 0) return { text: 'Out of stock', tone: 'out' }
+  return { text: `${item.totalStock} in stock`, tone: item.totalStock <= 5 ? 'low' : 'ok' }
+}
+
+// The status column: whether customers can see the product.
+function statusOf(item: SellerProductSummary): { text: string; className: string } {
+  if (item.adminHidden) return { text: 'Hidden by HUB', className: 'mp-status-suspended' }
+  return item.active ? { text: 'In store', className: 'mp-status-approved' } : { text: 'Hidden', className: 'mp-status-pending' }
 }
 
 function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string) => void }) {
@@ -64,27 +78,51 @@ function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string
         <p className="mp-message">{query.search ? 'No products match your search.' : 'You have no products yet. Click "Add product" to list your first one.'}</p>
       )}
       {data && data.items.length > 0 && (
-        <ul className="mp-seller-list">
-          {data.items.map((item) => (
-            <li key={item.id}>
-              <button type="button" className="mp-seller-row" onClick={() => onEdit(item.id)}>
-                {item.imageUrl ? <img src={mediaUrl(item.imageUrl) ?? ''} alt="" /> : <span className="mp-noimage">No photo</span>}
-                <span className="mp-seller-row-main">
-                  <strong>{item.name}</strong>
-                  <span className="mp-price">
-                    {formatPrice(item.salePrice ?? item.price, 'PKR')}
-                    {item.salePrice !== null && <s>{formatPrice(item.price, 'PKR')}</s>}
-                  </span>
-                  <span className="mp-seller">
-                    {item.totalStock === null ? 'Stock not tracked' : item.totalStock === 0 ? 'Out of stock' : `${item.totalStock} in stock`}
-                    {item.variantCount > 0 && ` · ${item.variantCount} options`}
-                  </span>
-                </span>
-                <span className={`mp-status ${item.adminHidden ? 'mp-status-suspended' : item.active ? 'mp-status-approved' : 'mp-status-pending'}`}>{item.adminHidden ? 'Hidden by HUB' : item.active ? 'In store' : 'Hidden'}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="sx-table-wrap">
+          <table className="sx-table">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Price</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Status</th>
+                <th scope="col">Last changed</th>
+                <th scope="col"><span className="sx-visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.items.map((item) => {
+                const stock = stockOf(item)
+                const status = statusOf(item)
+                return (
+                  // The whole row opens the product; the Edit button is there for keyboard and screen-reader users.
+                  <tr key={item.id} onClick={() => onEdit(item.id)}>
+                    <td data-label="Product">
+                      <span className="sx-product">
+                        {item.imageUrl ? <img src={mediaUrl(item.imageUrl) ?? ''} alt="" /> : <span className="sx-noimage" />}
+                        <span>
+                          <strong>{item.name}</strong>
+                          {item.variantCount > 0 && <small>{item.variantCount} options</small>}
+                        </span>
+                      </span>
+                    </td>
+                    <td data-label="Price">
+                      <span className="sx-money">{formatPrice(item.salePrice ?? item.price, 'PKR')}</span>
+                      {item.salePrice !== null && <s className="sx-was">{formatPrice(item.price, 'PKR')}</s>}
+                    </td>
+                    <td data-label="Stock"><span className={`sx-stock ${stock.tone}`}>{stock.text}</span></td>
+                    <td data-label="Status"><span className={`mp-status ${status.className}`}>{status.text}</span></td>
+                    <td data-label="Last changed" className="sx-muted">{shortDate(item.updatedAt)}</td>
+                    <td className="sx-row-action">
+                      <button type="button" className="sx-link" onClick={(event) => { event.stopPropagation(); onEdit(item.id) }}
+                        aria-label={`Edit ${item.name}`}>Edit</button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
       {data && pages > 1 && (
         <div className="mp-pager">
