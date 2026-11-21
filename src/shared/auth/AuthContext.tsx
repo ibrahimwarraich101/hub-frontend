@@ -15,8 +15,12 @@ export type AuthState = {
   restoring: boolean
   user: CurrentUser | null
   hasRole: (role: string) => boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (input: RegisterInput) => Promise<void>
+  // "verify" = the email must be confirmed first: show the code screen (a code was emailed).
+  login: (email: string, password: string) => Promise<'done' | 'verify'>
+  register: (input: RegisterInput) => Promise<'done' | 'verify'>
+  // Confirms the email with the emailed code and logs the user in.
+  verifyEmail: (email: string, code: string) => Promise<void>
+  resendCode: (email: string) => Promise<void>
   logout: () => Promise<void>
   // Calls the API with the user's access key, refreshing it once if it expired.
   authFetch: <T>(path: string, method?: string, body?: unknown) => Promise<T>
@@ -93,15 +97,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { active = false }
   }, [renew])
 
-  const login = useCallback(async (email: string, password: string) => {
-    await startSession(await authApi.login(email, password))
+  const login = useCallback(async (email: string, password: string): Promise<'done' | 'verify'> => {
+    try {
+      await startSession(await authApi.login(email, password))
+      return 'done'
+    } catch (reason) {
+      // Right password, email not confirmed yet.
+      if (reason instanceof ApiError && reason.status === 403) return 'verify'
+      throw reason
+    }
   }, [startSession])
 
-  // Sign-up creates the account, then logs in with the same details.
-  const register = useCallback(async (input: RegisterInput) => {
-    await authApi.register(input)
+  // Sign-up creates the account. New accounts confirm their email with the emailed code first; otherwise log in.
+  const register = useCallback(async (input: RegisterInput): Promise<'done' | 'verify'> => {
+    const created = await authApi.register(input)
+    if (created.emailVerificationRequired) return 'verify'
     await startSession(await authApi.login(input.email, input.password))
+    return 'done'
   }, [startSession])
+
+  const verifyEmail = useCallback(async (email: string, code: string) => {
+    await startSession(await authApi.verifyEmail(email, code))
+  }, [startSession])
+
+  const resendCode = useCallback(async (email: string) => {
+    await authApi.resendCode(email)
+  }, [])
 
   const logout = useCallback(async () => {
     const token = accessToken.current
@@ -133,11 +154,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasRole: (role) => user?.roles.includes(role) ?? false,
     login,
     register,
+    verifyEmail,
+    resendCode,
     logout,
     authFetch,
     businessIntent,
     setBusinessIntent,
-  }), [restoring, user, login, register, logout, authFetch, businessIntent, setBusinessIntent])
+  }), [restoring, user, login, register, verifyEmail, resendCode, logout, authFetch, businessIntent, setBusinessIntent])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -1,11 +1,13 @@
 // File purpose: The approved owner edits restaurant details, delivery fee, minimum order and delivery time, uploads the
 // logo and cover photo, chooses food categories, and sees a live preview of the card customers see. Opening and closing
 // is done only with the button at the top of the Restaurant Center.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
+import { PhoneField } from '../../../shared/forms/PhoneField'
+import { useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { collect, firstError, hasErrors, rules } from '../../../shared/forms/validation'
 import { foodPhone, foodPaths, money } from '../foodApi'
 import type { RestaurantAccount } from '../foodApi'
@@ -14,12 +16,20 @@ import { PhotoButton } from './PhotoButton'
 
 type Props = { account: RestaurantAccount; onSaved: (account: RestaurantAccount) => void }
 
-export function RestaurantSettings({ account, onSaved }: Props) {
-  const { authFetch } = useAuth()
-  const [values, setValues] = useState({
+// The form's values for a saved restaurant.
+function valuesOf(account: RestaurantAccount) {
+  return {
     description: account.description ?? '', phone: account.phone, cuisine: account.cuisine, addressLine: account.addressLine, city: account.city,
     deliveryFee: String(account.deliveryFee), minimumOrder: String(account.minimumOrder), deliveryMinutes: String(account.deliveryMinutes),
-  })
+  }
+}
+
+export function RestaurantSettings({ account, onSaved }: Props) {
+  const { authFetch } = useAuth()
+  const [values, setValues] = useState(() => valuesOf(account))
+  // Anything different from the saved restaurant is an unsaved change.
+  const formRef = useRef<HTMLFormElement>(null)
+  useUnsavedChanges(JSON.stringify(values) !== JSON.stringify(valuesOf(account)), formRef)
   const open = account.open
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null)
@@ -53,6 +63,7 @@ export function RestaurantSettings({ account, onSaved }: Props) {
         minimumOrder: Number(values.minimumOrder), deliveryMinutes: Math.round(Number(values.deliveryMinutes)), open, expectedVersion: account.version,
       })
       onSaved(saved)
+      setValues(valuesOf(saved))
       setMessage({ text: 'Saved.', error: false })
     } catch (reason) {
       setMessage({ text: reason instanceof ApiError ? reason.message : 'Could not save. Please try again.', error: true })
@@ -126,7 +137,7 @@ export function RestaurantSettings({ account, onSaved }: Props) {
       </section>
     </div>
 
-    <form className="fd-panel fd-form" onSubmit={submit} noValidate>
+    <form ref={formRef} className="fd-panel fd-form" onSubmit={submit} noValidate>
       <h2>Restaurant settings</h2>
       <p className="fd-meta">To open or close for orders, use the button at the top of the Restaurant Center.</p>
       <Field label="Cuisine label on your card" name="cuisine" value={values.cuisine} onChange={set('cuisine')} error={errors.cuisine}
@@ -135,7 +146,7 @@ export function RestaurantSettings({ account, onSaved }: Props) {
         About your restaurant
         <textarea rows={3} maxLength={2000} value={values.description} onChange={(e) => set('description')(e.target.value)} />
       </label>
-      <Field label="Phone" name="phone" type="tel" value={values.phone} onChange={set('phone')} error={errors.phone} />
+      <PhoneField label="Phone" name="phone" value={values.phone} onChange={set('phone')} error={errors.phone} />
       <Field label="Address" name="addressLine" value={values.addressLine} onChange={set('addressLine')} error={errors.addressLine} />
       <Field label="City" name="city" value={values.city} onChange={set('city')} error={errors.city} />
       <div className="fd-row">

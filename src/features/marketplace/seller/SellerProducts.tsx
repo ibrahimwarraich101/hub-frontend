@@ -5,16 +5,19 @@ import type { ChangeEvent, FormEvent } from 'react'
 import { ApiError, mediaUrl } from '../../../shared/api/client'
 import { useAuth } from '../../../shared/auth/AuthContext'
 import { Field } from '../../../shared/auth/AuthScreens'
+import { confirmLeave, useUnsavedChanges } from '../../../shared/forms/unsavedChanges'
 import { fetchCategories, formatPrice } from '../api'
 import {
   categoryChoices, checkPhoto, emptyForm, formFromProduct, hasColor, hasSize, limits, newKey, optionTypeLabels,
   productRequest, sellerProductPaths, validateProduct,
 } from '../sellerProductsApi'
-import type { OptionType, ProductErrors, ProductForm, SellerProduct, SellerProductPage } from '../sellerProductsApi'
+import type { OptionType, ProductErrors, ProductForm, SellerProduct, SellerProductPage, SellerProductSummary } from '../sellerProductsApi'
+import { shortDate } from '../sellerApi'
 
-export function SellerProducts() {
+// startNew: open straight on the "Add a product" form (e.g. from the dashboard).
+export function SellerProducts({ startNew = false }: { startNew?: boolean }) {
   // null = list; 'new' = add form; otherwise the product being edited.
-  const [editing, setEditing] = useState<string | null>(null)
+  const [editing, setEditing] = useState<string | null>(startNew ? 'new' : null)
   const [listKey, setListKey] = useState(0)
 
   if (editing) {
@@ -28,6 +31,19 @@ export function SellerProducts() {
     )
   }
   return <ProductList key={listKey} onAdd={() => setEditing('new')} onEdit={setEditing} />
+}
+
+// The stock column: how many are left, with a colour for "low" (5 or fewer) and "out".
+function stockOf(item: SellerProductSummary): { text: string; tone: string } {
+  if (item.totalStock === null) return { text: 'Not tracked', tone: '' }
+  if (item.totalStock === 0) return { text: 'Out of stock', tone: 'out' }
+  return { text: `${item.totalStock} in stock`, tone: item.totalStock <= 5 ? 'low' : 'ok' }
+}
+
+// The status column: whether customers can see the product.
+function statusOf(item: SellerProductSummary): { text: string; className: string } {
+  if (item.adminHidden) return { text: 'Hidden by HUB', className: 'mp-status-suspended' }
+  return item.active ? { text: 'In store', className: 'mp-status-approved' } : { text: 'Hidden', className: 'mp-status-pending' }
 }
 
 function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string) => void }) {
@@ -49,7 +65,7 @@ function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string
   return (
     <div className="mp-panel">
       <div className="mp-admin-head">
-        <h2>My products</h2>
+        <h2>All products{data ? ` (${data.total})` : ''}</h2>
         <button type="button" className="mp-primary" onClick={onAdd}>Add product</button>
       </div>
       <form className="mp-search" role="search" onSubmit={(e) => { e.preventDefault(); setQuery({ search, page: 1 }) }}>
@@ -63,27 +79,51 @@ function ProductList({ onAdd, onEdit }: { onAdd: () => void; onEdit: (id: string
         <p className="mp-message">{query.search ? 'No products match your search.' : 'You have no products yet. Click "Add product" to list your first one.'}</p>
       )}
       {data && data.items.length > 0 && (
-        <ul className="mp-seller-list">
-          {data.items.map((item) => (
-            <li key={item.id}>
-              <button type="button" className="mp-seller-row" onClick={() => onEdit(item.id)}>
-                {item.imageUrl ? <img src={mediaUrl(item.imageUrl) ?? ''} alt="" /> : <span className="mp-noimage">No photo</span>}
-                <span className="mp-seller-row-main">
-                  <strong>{item.name}</strong>
-                  <span className="mp-price">
-                    {formatPrice(item.salePrice ?? item.price, 'PKR')}
-                    {item.salePrice !== null && <s>{formatPrice(item.price, 'PKR')}</s>}
-                  </span>
-                  <span className="mp-seller">
-                    {item.totalStock === null ? 'Stock not tracked' : item.totalStock === 0 ? 'Out of stock' : `${item.totalStock} in stock`}
-                    {item.variantCount > 0 && ` · ${item.variantCount} options`}
-                  </span>
-                </span>
-                <span className={`mp-status ${item.adminHidden ? 'mp-status-suspended' : item.active ? 'mp-status-approved' : 'mp-status-pending'}`}>{item.adminHidden ? 'Hidden by HUB' : item.active ? 'In store' : 'Hidden'}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="sx-table-wrap">
+          <table className="sx-table">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Price</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Status</th>
+                <th scope="col">Last changed</th>
+                <th scope="col"><span className="sx-visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.items.map((item) => {
+                const stock = stockOf(item)
+                const status = statusOf(item)
+                return (
+                  // The whole row opens the product; the Edit button is there for keyboard and screen-reader users.
+                  <tr key={item.id} onClick={() => onEdit(item.id)}>
+                    <td data-label="Product">
+                      <span className="sx-product">
+                        {item.imageUrl ? <img src={mediaUrl(item.imageUrl) ?? ''} alt="" /> : <span className="sx-noimage" />}
+                        <span>
+                          <strong>{item.name}</strong>
+                          {item.variantCount > 0 && <small>{item.variantCount} options</small>}
+                        </span>
+                      </span>
+                    </td>
+                    <td data-label="Price">
+                      <span className="sx-money">{formatPrice(item.salePrice ?? item.price, 'PKR')}</span>
+                      {item.salePrice !== null && <s className="sx-was">{formatPrice(item.price, 'PKR')}</s>}
+                    </td>
+                    <td data-label="Stock"><span className={`sx-stock ${stock.tone}`}>{stock.text}</span></td>
+                    <td data-label="Status"><span className={`mp-status ${status.className}`}>{status.text}</span></td>
+                    <td data-label="Last changed" className="sx-muted">{shortDate(item.updatedAt)}</td>
+                    <td className="sx-row-action">
+                      <button type="button" className="sx-link" onClick={(event) => { event.stopPropagation(); onEdit(item.id) }}
+                        aria-label={`Edit ${item.name}`}>Edit</button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
       {data && pages > 1 && (
         <div className="mp-pager">
@@ -109,11 +149,19 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
   const [error, setError] = useState<string | null>(null)
   const [conflict, setConflict] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
+  // The form as last loaded or saved; anything different is an unsaved change (see unsavedChanges.ts).
+  const [savedForm, setSavedForm] = useState<string | null>(() => (productId ? null : JSON.stringify(emptyForm())))
+  const dirty = form !== null && savedForm !== null && JSON.stringify(form) !== savedForm
+  useUnsavedChanges(dirty, formRef)
+  const close = () => confirmLeave(onClose)
 
   const load = useCallback(() => {
     if (!productId) return
     authFetch<SellerProduct>(sellerProductPaths.one(productId))
-      .then((loaded) => { setProduct(loaded); setForm(formFromProduct(loaded)); setConflict(false); setError(null); setTried(false) })
+      .then((loaded) => {
+        const loadedForm = formFromProduct(loaded)
+        setProduct(loaded); setForm(loadedForm); setSavedForm(JSON.stringify(loadedForm)); setConflict(false); setError(null); setTried(false)
+      })
       .catch((reason: unknown) => setError(reason instanceof ApiError && reason.status === 404 ? 'This product was not found.'
         : reason instanceof ApiError ? reason.message : 'Could not load this product.'))
   }, [authFetch, productId])
@@ -148,12 +196,15 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
     try {
       if (product) {
         const saved = await authFetch<SellerProduct>(sellerProductPaths.one(product.id), 'PUT', productRequest(form, product.version))
+        const savedValues = formFromProduct(saved)
         setProduct(saved)
-        setForm(formFromProduct(saved))
+        setForm(savedValues)
+        setSavedForm(JSON.stringify(savedValues))
         setTried(false)
         setNotice('Saved.')
       } else {
         const saved = await authFetch<SellerProduct>(sellerProductPaths.create, 'POST', productRequest(form))
+        setSavedForm(JSON.stringify(form))
         onCreated(saved.id)
       }
     } catch (reason) {
@@ -169,7 +220,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
   if (!form) {
     return (
       <div className="mp-panel">
-        <button type="button" className="mp-back" onClick={onClose}>Back to my products</button>
+        <button type="button" className="mp-back" onClick={close}>Back</button>
         {error ? <p className="mp-message error" role="alert">{error}</p> : <p className="mp-message">Loading…</p>}
       </div>
     )
@@ -182,7 +233,7 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
 
   return (
     <form ref={formRef} className="mp-panel mp-form mp-editor" onSubmit={save} noValidate>
-      <button type="button" className="mp-back" onClick={onClose}>Back to my products</button>
+      <button type="button" className="mp-back" onClick={close}>Back</button>
       <h2>{product ? `Edit: ${product.name}` : 'Add a product'}</h2>
       {product?.adminHidden && (
         <p className="mp-message error" role="status">
@@ -288,6 +339,14 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
         )}
       </fieldset>
 
+      {/* Photos come before the Save button: they are saved as soon as they are added, moved or deleted. */}
+      <fieldset>
+        <legend>Photos</legend>
+        {product
+          ? <PhotoManager product={product} onChange={setProduct} />
+          : <p className="auth-hint">Save the product first with the button below, then you can add up to {limits.maxImages} photos.</p>}
+      </fieldset>
+
       <label className="mp-check">
         <input type="checkbox" name="active" checked={form.active} onChange={(e) => update({ active: e.target.checked })} />
         Show this product in the store
@@ -303,15 +362,8 @@ function ProductEditor({ productId, onCreated, onClose }: EditorProps) {
       {notice && <p className="mp-message" role="status">{notice}</p>}
       <div className="mp-actions">
         <button type="submit" className="mp-primary" disabled={busy}>{busy ? 'Saving…' : product ? 'Save changes' : 'Save and add photos'}</button>
-        <button type="button" className="mp-chip" onClick={onClose}>Cancel</button>
+        <button type="button" className="mp-chip" onClick={close}>Cancel</button>
       </div>
-
-      <fieldset>
-        <legend>Photos</legend>
-        {product
-          ? <PhotoManager product={product} onChange={setProduct} />
-          : <p className="auth-hint">Save the product first, then you can add up to {limits.maxImages} photos.</p>}
-      </fieldset>
     </form>
   )
 }
@@ -377,7 +429,8 @@ function PhotoManager({ product, onChange }: { product: SellerProduct; onChange:
 
   return (
     <div className="mp-photos">
-      <p className="auth-hint">The first photo is the main photo. JPEG, PNG or WebP, up to 8 MB each, at least 200 x 200 pixels.</p>
+      <p className="auth-hint">The first photo is the main photo. JPEG, PNG or WebP, up to 8 MB each, at least 200 x 200 pixels.
+        Photos are saved as soon as you add, move or delete them; "Save changes" below is only for the product details.</p>
       {images.length > 0 && (
         <ol className="mp-photo-grid">
           {images.map((image, index) => (

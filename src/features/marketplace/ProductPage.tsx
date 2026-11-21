@@ -1,8 +1,12 @@
 // File purpose: E-Commerce product page: photos (open big with left/right), price, colour/size choice, quantity,
 // stock, seller, description, specifications, the "Add to cart" button and customer reviews.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
+import { useSignInRequest } from '../../shared/auth/GuestContext'
+import { Toast } from '../../shared/layout/Toast'
+import type { ToastMessage } from '../../shared/layout/Toast'
 import { fetchProduct, formatPrice } from './api'
 import type { ProductDetails, ProductVariant } from './api'
 import { cartPaths } from './cartApi'
@@ -11,19 +15,16 @@ import { ProductReviews, RatingLine } from './Reviews'
 
 type Props = {
   productId: string
-  onBack: () => void
   // New number of items in the cart after adding.
   onCount: (count: number) => void
   onOpenCart: () => void
   onOpenShop: (merchantId: string) => void
-  // Text of the back button, e.g. "Back to store" or "Back to Lahore Loom".
-  backLabel?: string
 }
 
 // Most units one order line can ask for when stock is not tracked.
 const MaxQuantity = 99
 
-export function ProductPage({ productId, onBack, onCount, onOpenCart, onOpenShop, backLabel = 'Back to store' }: Props) {
+export function ProductPage({ productId, onCount, onOpenCart, onOpenShop }: Props) {
   const [product, setProduct] = useState<ProductDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,9 +44,6 @@ export function ProductPage({ productId, onBack, onCount, onOpenCart, onOpenShop
 
   return (
     <div className="mp-product">
-      <button type="button" className="mp-back" onClick={onBack}>
-        {backLabel}
-      </button>
 
       {error && <div className="mp-message error" role="alert">{error}</div>}
       {!error && !product && <div className="mp-message">Loading product…</div>}
@@ -62,7 +60,8 @@ function unique(values: (string | null)[]): string[] {
 function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
   product: ProductDetails; onCount: (count: number) => void; onOpenCart: () => void; onOpenShop: (merchantId: string) => void
 }) {
-  const { authFetch } = useAuth()
+  const { authFetch, user } = useAuth()
+  const askSignIn = useSignInRequest()
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
   const colors = unique(product.variants.map((v) => v.color))
@@ -75,6 +74,9 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
   const [viewer, setViewer] = useState(false)
   const [choiceError, setChoiceError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  // A problem from the server (e.g. "You cannot buy from your own store.") pops up for a few seconds instead of staying on the page.
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+  const hideToast = useCallback(() => setToast(null), [])
 
   const hasOptions = product.variants.length > 0
   const matches = (v: ProductVariant, c: string | null, s: string | null) =>
@@ -115,6 +117,8 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
       return
     }
     const choice = [selected?.color, selected?.size].filter(Boolean).join(', ')
+    // A visitor browsing without an account signs in first, then comes back to this product.
+    if (!user) { askSignIn(); return }
     setAdding(true)
     try {
       const cart = await authFetch<Cart>(cartPaths.items, 'POST', { productId: product.id, variantId: selected?.id ?? null, quantity })
@@ -123,7 +127,7 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
       setNotice(`Added ${quantity} × ${product.name}${choice ? ` (${choice})` : ''} to your cart.`)
     } catch (reason) {
       // Only what the page cannot know (stock changed a moment ago, your own store, server down) comes from the server.
-      setChoiceError(reason instanceof ApiError ? reason.message : 'Could not add to your cart. Please try again.')
+      setToast({ id: Date.now(), text: reason instanceof ApiError ? reason.message : 'Could not add to your cart. Please try again.' })
     } finally {
       setAdding(false)
     }
@@ -135,12 +139,11 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
 
   return (
     <div className="mp-product-body">
+      <Toast message={toast} onDone={hideToast} />
       <div className="mp-gallery">
         {product.imageUrls.length > 0 ? (
           <>
-            <button type="button" className="mp-main-button" onClick={() => setViewer(true)} aria-label="Open photo full size">
-              <img className="mp-main-photo" src={mediaUrl(product.imageUrls[photo]) ?? ''} alt={product.name} />
-            </button>
+            <ZoomPhoto src={mediaUrl(product.imageUrls[photo]) ?? ''} alt={product.name} onOpen={() => setViewer(true)} />
             {product.imageUrls.length > 1 && (
               <div className="mp-thumbs">
                 {product.imageUrls.map((url, index) => (
@@ -250,6 +253,38 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
 }
 
 type ViewerProps = { urls: string[]; index: number; name: string; onIndex: (index: number) => void; onClose: () => void }
+
+// How many times larger the zoom panel shows the photo; the lens covers 1/ZOOM of the photo's width and height.
+const ZOOM = 2.5
+const LENS = 1 / ZOOM
+
+// The main photo. With a mouse, hovering shows a lens over the photo and that part, enlarged, in a panel beside it
+// (over the product details), like large online stores. Clicking opens the full-screen viewer. Touch screens skip the zoom.
+function ZoomPhoto({ src, alt, onOpen }: { src: string; alt: string; onOpen: () => void }) {
+  // The lens's top-left corner as a fraction of the photo (0 to 1 - LENS), or null when the mouse is not over the photo.
+  const [lens, setLens] = useState<{ x: number; y: number } | null>(null)
+
+  function follow(event: MouseEvent<HTMLButtonElement>) {
+    const box = event.currentTarget.getBoundingClientRect()
+    const clamp = (value: number) => Math.min(Math.max(value - LENS / 2, 0), 1 - LENS)
+    setLens({ x: clamp((event.clientX - box.left) / box.width), y: clamp((event.clientY - box.top) / box.height) })
+  }
+
+  return (
+    <div className="mp-zoom">
+      <button type="button" className="mp-main-button" onClick={onOpen} aria-label="Open photo full size"
+        onMouseMove={follow} onMouseLeave={() => setLens(null)}>
+        <img className="mp-main-photo" src={src} alt={alt} />
+        {lens && <span className="mp-zoom-lens" aria-hidden="true" style={{ left: `${lens.x * 100}%`, top: `${lens.y * 100}%`, width: `${LENS * 100}%`, height: `${LENS * 100}%` }} />}
+      </button>
+      {lens && (
+        <div className="mp-zoom-pane" aria-hidden="true">
+          <img src={src} alt="" style={{ width: `${ZOOM * 100}%`, height: `${ZOOM * 100}%`, transform: `translate(${-lens.x * 100}%, ${-lens.y * 100}%)` }} />
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Full-screen photo viewer: Previous/Next buttons or the left/right arrow keys move between photos, Esc or clicking outside closes it.
 function PhotoViewer({ urls, index, name, onIndex, onClose }: ViewerProps) {

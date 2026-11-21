@@ -1,0 +1,17 @@
+/* The unsaved-changes box (UnsavedChangesDialog.tsx): centred over a dimmed page. */
+.uc-scrim { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 16px; background: var(--hub-scrim); }
+.uc-box { width: min(460px, 100%); padding: 28px; text-align: left; background: var(--hub-surface); border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(16, 24, 32, 0.25); animation: uc-in 0.15s ease-out; }
+.uc-box h2 { margin: 0 0 8px; font-size: 1.3rem; color: var(--hub-heading); }
+.uc-box p { margin: 0 0 22px; color: var(--hub-secondary); line-height: 1.55; }
+.uc-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.uc-actions button { min-height: 44px; padding: 0 20px; border-radius: var(--hub-radius-pill); font-weight: 700; }
+.uc-save { border: 1.5px solid var(--hub-primary); background: var(--hub-primary); color: var(--hub-on-primary); }
+.uc-save:hover { background: #003a2c; }
+.uc-leave { border: 1.5px solid var(--hub-error); background: var(--hub-surface); color: var(--hub-error); }
+.uc-leave:hover { background: var(--hub-error-surface); }
+.uc-stay { border: 1.5px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-heading); }
+.uc-stay:hover { border-color: var(--hub-primary); color: var(--hub-primary); }
+@keyframes uc-in { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .uc-box { animation: none; } }
+@media (max-width: 480px) { .uc-actions button { flex: 1 1 100%; } }

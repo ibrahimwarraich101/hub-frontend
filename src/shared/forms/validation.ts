@@ -12,8 +12,14 @@ export const rules = {
     value.length <= max ? null : `${label} can be at most ${max} characters (you typed ${value.length}).`,
   email: (value: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) ? null : 'Enter a valid email address, for example name@gmail.com.',
-  phone: (value: string) =>
-    /^\+[1-9][0-9]{7,14}$/.test(value.trim()) ? null : 'Enter the phone number with country code and no spaces, for example +923001234567.',
+  // Pakistan mobile number from PhoneField: +92, then 3 digits starting with 3, then 7 digits.
+  phone: (value: string) => {
+    const digits = value.replace(/\D/g, '').replace(/^92/, '')
+    if (digits.length === 0) return 'Please enter your phone number.'
+    if (!digits.startsWith('3')) return 'Mobile numbers start with 3 after +92, for example 301 1234567.'
+    if (digits.length !== 10) return `Enter 3 digits, then 7 digits, for example 301 1234567 (you typed ${digits.length} of 10).`
+    return /^\+923\d{9}$/.test(value.trim()) ? null : 'Enter a mobile number like 301 1234567.'
+  },
 }
 
 // Return the first failing message for one field, or null when the value is fine.

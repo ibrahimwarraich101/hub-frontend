@@ -1,0 +1,123 @@
+/* File purpose: The HUB frame (AppShell.tsx): top bar, account menu, the bar inside each service, and the phone tab bar.
+   Uses the HUB theme variables from index.css. --sh-top is the top bar's height; sticky parts of pages sit below it. */
+:root { --sh-top: 72px; --sh-tabs: 0px; }
+@media (max-width: 720px) { :root { --sh-top: 56px; --sh-tabs: 60px; } }
+
+.sh { min-height: 100svh; display: flex; flex-direction: column; padding-bottom: var(--sh-tabs); }
+.sh-main { flex: 1; display: flex; flex-direction: column; }
+
+/* ---------- Top bar ---------- */
+.sh-top { position: sticky; top: 0; z-index: 60; height: var(--sh-top); background: #ffffff; border-bottom: 1px solid var(--hub-border);
+  box-shadow: 0 1px 12px rgba(16, 24, 32, 0.04); }
+.sh-top-inner { height: 100%; max-width: var(--hub-max-width); margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 40px; }
+.sh-logo { position: relative; padding: 4px 2px 8px; border: none; background: none; font: inherit; font-size: 28px; font-weight: 900; letter-spacing: -1px;
+  line-height: 1; color: var(--hub-primary); }
+.sh-logo::after { content: ''; position: absolute; left: 40%; right: 2px; bottom: 2px; height: 4px; border-radius: 4px; background: var(--hub-bright); }
+
+/* Services in the top bar (desktop) */
+.sh-nav { flex: 1; display: flex; gap: 4px; }
+.sh-nav button { position: relative; height: var(--sh-top); padding: 0 16px; border: none; background: none; color: var(--hub-text);
+  font-size: 0.98rem; font-weight: 600; transition: color 0.15s; }
+.sh-nav button:hover { color: var(--hub-primary); }
+.sh-nav button[aria-current='page'] { color: var(--hub-primary); font-weight: 800; }
+.sh-nav button[aria-current='page']::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 3px;
+  border-radius: 3px 3px 0 0; background: var(--hub-bright); }
+
+/* Account menu */
+.sh-user { position: relative; margin-left: auto; }
+.sh-user-button { display: flex; align-items: center; gap: 10px; padding: 4px 12px 4px 4px; border: 1px solid transparent;
+  border-radius: var(--hub-radius-pill); background: none; color: var(--hub-text); }
+.sh-user-button:hover, .sh-user-button[aria-expanded='true'], .sh-user-button.active { background: var(--hub-surface-muted); }
+.sh-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--hub-primary); color: var(--hub-on-primary);
+  display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; }
+.sh-user-name { font-weight: 600; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sh-user-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 70; min-width: 220px; padding: 6px; display: flex; flex-direction: column;
+  background: var(--hub-surface); border: 1px solid var(--hub-card-border); border-radius: 14px; box-shadow: 0 12px 32px rgba(16, 24, 32, 0.14); }
+.sh-user-menu-name { padding: 10px 12px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--hub-border); font-weight: 700; color: var(--hub-heading);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sh-user-menu button { min-height: 40px; padding: 0 12px; border: none; border-radius: 10px; background: none; color: var(--hub-text);
+  text-align: left; font-weight: 600; }
+.sh-user-menu button:hover { background: var(--hub-surface-muted); }
+.sh-user-menu-line { width: 100%; margin: 4px 0; border: none; border-top: 1px solid var(--hub-border); }
+.sh-user-menu button.danger { color: var(--hub-error); }
+.sh-user-menu button.danger:hover { background: var(--hub-error-surface); }
+
+/* Visitors browsing without an account: Sign in / Sign up in place of the account menu. */
+.sh-guest { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.sh-guest button { min-height: 40px; padding: 0 18px; border-radius: var(--hub-radius-pill); font-weight: 700; white-space: nowrap; }
+.sh-signin { border: 1.5px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-heading); }
+.sh-signin:hover { border-color: var(--hub-primary); color: var(--hub-primary); }
+.sh-signup { border: 1.5px solid var(--hub-primary); background: var(--hub-primary); color: var(--hub-on-primary); }
+.sh-signup:hover { background: #003a2c; }
+
+/* A seller previewing their own store (opened from Seller Center): the way back, instead of the customer footer. */
+.sh-preview { background: var(--hub-heading); color: #d6e6de; }
+.sh-preview-inner { max-width: var(--hub-max-width); margin: 0 auto; padding: 10px 24px; display: flex; align-items: center;
+  justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; font-weight: 600; }
+.sh-preview button { min-height: 36px; padding: 0 16px; border: none; border-radius: var(--hub-radius-pill);
+  background: var(--hub-bright); color: var(--hub-heading); font-weight: 800; white-space: nowrap; }
+.sh-preview button:hover { background: #3fd98a; }
+@media (max-width: 720px) { .sh-preview-inner { padding: 10px 16px; font-size: 0.9rem; } }
+
+/* ---------- The bar inside a service ---------- */
+.sh-module { background: var(--hub-surface); border-bottom: 1px solid var(--hub-border); }
+.sh-module-inner { max-width: var(--hub-max-width); margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sh-module-title { flex: 1; margin: 0; font-size: 20px; font-weight: 800; color: var(--hub-heading); white-space: nowrap; }
+.sh-module-title button { padding: 0; border: none; background: none; color: inherit; font-weight: inherit; letter-spacing: inherit; }
+.sh-module-title button:hover { color: var(--hub-primary); }
+.sh-module-back { min-height: 36px; padding: 0 14px; border: none; border-radius: 10px; background: var(--hub-mint); color: var(--hub-primary); font-weight: 700; }
+.sh-module-back:hover { background: #c9efd8; }
+.sh-module-tabs { display: flex; gap: 6px; }
+.sh-module-tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border: none; border-radius: 10px;
+  background: none; color: var(--hub-secondary); font-weight: 700; white-space: nowrap; }
+.sh-module-tabs button:hover { background: var(--hub-surface-muted); color: var(--hub-heading); }
+.sh-module-tabs button[aria-current='page'] { background: var(--hub-mint); color: var(--hub-primary); }
+.sh-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--hub-radius-pill); background: var(--hub-primary); color: var(--hub-on-primary);
+  display: inline-grid; place-items: center; font-size: 0.75rem; font-weight: 800; }
+
+/* ---------- Footer ---------- */
+.sh-footer { margin-top: auto; background: var(--hub-heading); color: rgba(255, 255, 255, 0.72); }
+.sh-main + .sh-footer { margin-top: 0; }
+.sh-footer-inner { max-width: var(--hub-max-width); margin: 0 auto; padding: 56px 24px 40px; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.3fr; gap: 40px; }
+.sh-logo.light { color: #ffffff; padding-left: 0; }
+.sh-footer-brand p { margin-top: 14px; max-width: 280px; line-height: 1.6; }
+.sh-footer-col { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.sh-footer-col h2 { margin: 0 0 6px; font-size: 0.8rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #ffffff; }
+.sh-footer-col button { padding: 0; border: none; background: none; color: rgba(255, 255, 255, 0.72); font-weight: 500; text-align: left; }
+.sh-footer-col button:hover { color: var(--hub-bright); }
+.sh-footer-col span { line-height: 1.6; }
+.sh-footer-legal { max-width: var(--hub-max-width); margin: 0 auto; padding: 20px 24px; border-top: 1px solid rgba(255, 255, 255, 0.12); font-size: 0.85rem; }
+
+/* ---------- Phone tab bar (services) ---------- */
+.sh-tabs { display: none; }
+
+@media (max-width: 900px) {
+  .sh-footer-inner { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .sh-footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 720px) {
+  .sh-top-inner { padding: 0 16px; gap: 12px; }
+  .sh-footer-inner { padding: 40px 16px 28px; }
+  .sh-footer-legal { padding: 16px; }
+  .sh-logo { font-size: 24px; }
+  .sh-nav { display: none; }
+  .sh-user-name { display: none; }
+  .sh-user-button { padding: 2px; }
+  .sh-guest button { min-height: 36px; padding: 0 12px; font-size: 0.9rem; }
+
+  .sh-module-inner { padding: 10px 16px; gap: 8px; }
+  .sh-module-title { font-size: 18px; }
+  /* The service's pages get their own full-width row that scrolls sideways if needed. */
+  .sh-module-tabs { order: 3; flex: 1 0 100%; overflow-x: auto; scrollbar-width: none; }
+  .sh-module-tabs::-webkit-scrollbar { display: none; }
+  .sh-module-tabs button { flex: 1 0 auto; justify-content: center; background: var(--hub-surface-muted); }
+
+  .sh-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; height: calc(var(--sh-tabs) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom); display: flex; background: var(--hub-surface); border-top: 1px solid var(--hub-border);
+    box-shadow: 0 -4px 16px rgba(16, 24, 32, 0.06); }
+  .sh-tabs button { position: relative; flex: 1; border: none; background: none; color: var(--hub-secondary); font-weight: 600; font-size: 0.9rem; }
+  .sh-tabs button[aria-current='page'] { color: var(--hub-primary); font-weight: 800; }
+  .sh-tabs button[aria-current='page']::before { content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 3px;
+    border-radius: 0 0 3px 3px; background: var(--hub-bright); }
+}

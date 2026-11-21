@@ -5,6 +5,7 @@ import type { FormEvent } from 'react'
 import { ApiError } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { Field } from '../../shared/auth/AuthScreens'
+import { PhoneField } from '../../shared/forms/PhoneField'
 import { collect, firstError, focusFirstError, hasErrors, rules } from '../../shared/forms/validation'
 import type { FieldErrors } from '../../shared/forms/validation'
 import '../../shared/auth/auth.css'
@@ -189,8 +190,8 @@ function Checkout({ cart, onCancel, onOrdered }: { cart: RestaurantCart; onCance
       <h3>Delivery details</h3>
       {fromLastOrder && <p className="fd-meta">Filled in from your last order. Change anything that is different this time.</p>}
       <Field label="Name" name="deliveryName" value={values.deliveryName} onChange={set('deliveryName')} error={errors.deliveryName} autoComplete="name" />
-      <Field label="Phone" name="deliveryPhone" type="tel" value={values.deliveryPhone} onChange={set('deliveryPhone')} error={errors.deliveryPhone}
-        placeholder="+923001234567" hint="The restaurant calls this number when delivering." />
+      <PhoneField label="Phone" name="deliveryPhone" value={values.deliveryPhone} onChange={set('deliveryPhone')} error={errors.deliveryPhone}
+        hint="The restaurant calls this number when delivering." />
       <Field label="Address" name="deliveryAddress" value={values.deliveryAddress} onChange={set('deliveryAddress')} error={errors.deliveryAddress}
         autoComplete="street-address" placeholder="House, street, area" />
       <Field label="City" name="deliveryCity" value={values.deliveryCity} onChange={set('deliveryCity')} error={errors.deliveryCity} autoComplete="address-level2" />

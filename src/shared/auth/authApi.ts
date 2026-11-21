@@ -57,9 +57,20 @@ async function problemMessage(response: Response): Promise<string> {
 }
 
 export const authApi = {
-  // Creates a Customer account; it does not log in by itself.
-  register: (input: RegisterInput) => sendJson<{ id: string }>('/api/auth/register', 'POST', input),
+  // Creates a Customer account; it does not log in by itself. When emailVerificationRequired is true, a 6-digit code
+  // was emailed and the user must enter it (verifyEmail) before logging in.
+  register: (input: RegisterInput) => sendJson<{ id: string; emailVerificationRequired?: boolean }>('/api/auth/register', 'POST', input),
+  // A 403 here means the password was right but the email is not confirmed yet (a code was emailed).
   login: (email: string, password: string) => sendJson<TokenResponse>('/api/auth/login', 'POST', { email, password }),
+  // The right code confirms the email and logs the user in.
+  verifyEmail: (email: string, code: string) => sendJson<TokenResponse>('/api/auth/verify-email', 'POST', { email, code }),
+  // Always answers the same way; a new code arrives at most once a minute.
+  resendCode: (email: string) => sendJson<{ message: string }>('/api/auth/resend-code', 'POST', { email }),
+  // "Forgot password?": always answers the same way; a reset code arrives at most once a minute.
+  forgotPassword: (email: string) => sendJson<{ message: string }>('/api/auth/forgot-password', 'POST', { email }),
+  // The right code sets the new password and logs out every session; the user then logs in again.
+  resetPassword: (email: string, code: string, newPassword: string) =>
+    sendJson<void>('/api/auth/reset-password', 'POST', { email, code, newPassword }),
   // Each refresh returns a NEW refresh token; the old one stops working.
   refresh: (refreshToken: string) => sendJson<TokenResponse>('/api/auth/refresh', 'POST', { refreshToken }),
   logout: (accessToken: string) => sendJson<void>('/api/auth/logout', 'POST', undefined, accessToken),

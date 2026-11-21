@@ -5,12 +5,12 @@ import type { FormEvent } from 'react'
 import { ApiError } from '../../shared/api/client'
 import { fetchProducts, fetchShop, sinceText } from './api'
 import type { ProductPage, ProductSort, Shop } from './api'
-import { ProductGrid, ShopLogo } from './ProductGrid'
+import { ProductGrid, ProductSkeleton, ShopLogo } from './ProductGrid'
 import { Stars } from './Reviews'
 
 const PAGE_SIZE = 12
 
-export function ShopPage({ merchantId, onBack, onOpenProduct }: { merchantId: string; onBack: () => void; onOpenProduct: (id: string) => void }) {
+export function ShopPage({ merchantId, onOpenProduct }: { merchantId: string; onOpenProduct: (id: string) => void }) {
   const [shop, setShop] = useState<Shop | null>(null)
   const [shopError, setShopError] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
@@ -53,7 +53,6 @@ export function ShopPage({ merchantId, onBack, onOpenProduct }: { merchantId: st
   const since = shop ? sinceText(shop.sellingSince) : null
   return (
     <div className="mp-shop-page">
-      <button type="button" className="mp-back" onClick={onBack}>Back</button>
       {shopError && (
         <div className="mp-message error" role="alert">
           {shopError} <button type="button" onClick={() => { setShopError(null); setReload((count) => count + 1) }}>Try again</button>
@@ -103,11 +102,11 @@ export function ShopPage({ merchantId, onBack, onOpenProduct }: { merchantId: st
           {error} <button type="button" onClick={() => setReload((count) => count + 1)}>Try again</button>
         </div>
       )}
-      {!error && loading && !result && <div className="mp-message">Loading products…</div>}
+      {!error && loading && !result && <ProductSkeleton />}
       {!error && !loading && result && result.items.length === 0 && (
         <div className="mp-message">{search ? 'No products in this shop match your search.' : 'This shop has no products on sale right now.'}</div>
       )}
-      {!error && result && <ProductGrid result={result} pageSize={PAGE_SIZE} page={page} onPage={setPage} onOpenProduct={onOpenProduct} showShop={false} />}
+      {!error && result && <ProductGrid result={result} pageSize={PAGE_SIZE} page={page} onPage={setPage} onOpenProduct={onOpenProduct} showShop={false} busy={loading} />}
     </div>
   )
 }

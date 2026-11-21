@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
+import { Toast } from '../../shared/layout/Toast'
+import type { ToastMessage } from '../../shared/layout/Toast'
 import { formatPrice } from './api'
 import { cartPaths, maxCartQuantity } from './cartApi'
 import type { Cart, CartItem } from './cartApi'
@@ -19,9 +21,10 @@ export function CartPage({ onBack, onOpenProduct, onCount, onCheckout }: Props) 
   const { authFetch } = useAuth()
   const [cart, setCart] = useState<Cart | null>(null)
   const [error, setError] = useState<string | null>(null)
-  // Line being saved, and a message for one line (e.g. "Only 2 available").
+  // Line being saved. A problem changing a line (e.g. "Only 2 available") pops up for a few seconds.
   const [busy, setBusy] = useState<string | null>(null)
-  const [lineError, setLineError] = useState<{ id: string; message: string } | null>(null)
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+  const hideToast = useCallback(() => setToast(null), [])
   // Line waiting for a second click to confirm removing it.
   const [confirming, setConfirming] = useState<string | null>(null)
 
@@ -37,13 +40,13 @@ export function CartPage({ onBack, onOpenProduct, onCount, onCheckout }: Props) 
 
   async function change(item: CartItem, action: () => Promise<Cart>) {
     setBusy(item.id)
-    setLineError(null)
+    setToast(null)
     setConfirming(null)
     try {
       show(await action())
     } catch (reason) {
       // Only things the website cannot know (stock changed a moment ago, server down) come from the server.
-      setLineError({ id: item.id, message: reason instanceof ApiError ? reason.message : 'That did not work. Please try again.' })
+      setToast({ id: Date.now(), text: reason instanceof ApiError ? reason.message : 'That did not work. Please try again.' })
     } finally {
       setBusy(null)
     }
@@ -55,8 +58,8 @@ export function CartPage({ onBack, onOpenProduct, onCount, onCheckout }: Props) 
 
   return (
     <div className="mp-cart">
-      <button type="button" className="mp-back" onClick={onBack}>Back to store</button>
       <h2 className="mp-cart-title">Your cart</h2>
+      <Toast message={toast} onDone={hideToast} />
       {error && <p className="mp-message error" role="alert">{error}</p>}
       {!cart && !error && <p className="mp-message">Loading your cart…</p>}
       {cart && cart.stores.length === 0 && (
@@ -92,7 +95,6 @@ export function CartPage({ onBack, onOpenProduct, onCount, onCheckout }: Props) 
                           {item.unitPrice < item.originalPrice && <s>{formatPrice(item.originalPrice, cart.currency)}</s>}
                         </span>
                         {item.message && <span className="mp-choice-error">{item.message}</span>}
-                        {lineError?.id === item.id && <span className="mp-choice-error" role="alert">{lineError.message}</span>}
                       </div>
                       <div className="mp-cart-actions">
                         {item.status !== 'unavailable' && item.status !== 'sold-out' && (

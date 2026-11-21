@@ -371,3 +371,28 @@
   background: var(--hub-error-surface); }
 .fd-reject input { flex: 1 1 260px; min-height: 40px; padding: 0 12px; border: 1px solid var(--hub-border); border-radius: var(--hub-radius-input); font: inherit; }
 .fd-reject .fd-danger { min-height: 40px; background: var(--hub-surface); }
+
+/* ---------- Shared HUB frame (AppShell): the customer side of Food sits under the HUB top bar and the shared service bar ---------- */
+.fd-app.fd-customer { max-width: none; margin: 0; padding: 0; }
+.fd-body { width: 100%; max-width: var(--hub-max-width); margin: 0 auto; padding: 24px 20px 48px; }
+.fd-customer .fd-hero-search { margin: 0; }
+/* Sticky parts stay below the HUB top bar. */
+.fd-customer .fd-menubar { top: var(--sh-top, 0px); }
+.fd-customer .fd-sticky { top: calc(var(--sh-top, 0px) + 16px); }
+.fd-customer .fd-section { scroll-margin-top: calc(var(--sh-top, 0px) + 120px); }
+@media (max-width: 860px) {
+  /* The order bar sits on top of the phone tab bar. */
+  .fd-customer .fd-mobilecart { bottom: var(--sh-tabs, 0px); }
+}
+@media (max-width: 720px) {
+  .fd-body { padding: 16px 16px 40px; }
+}
+
+/* ---------- Buttons: the same shape and colours as every HUB button (.hub-button in index.css) ---------- */
+.fd-primary, .fd-secondary, .fd-danger { border-radius: 12px; font-weight: 700; transition: background-color 0.15s, box-shadow 0.15s; }
+.fd-primary:not(:disabled):hover { filter: none; background: #003a2c; box-shadow: 0 2px 8px rgba(0, 77, 59, 0.25); }
+.fd-secondary { border: none; background: var(--hub-mint); color: var(--hub-primary); }
+.fd-secondary:not(:disabled):hover { background: #c9efd8; }
+.fd-danger { border: none; background: var(--hub-error); color: #ffffff; }
+.fd-danger:not(:disabled):hover { background: #912018; }
+.fd-reject .fd-danger { background: var(--hub-error); }
