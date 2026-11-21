@@ -1,10 +1,12 @@
 // File purpose: E-Commerce product page: photos (open big with left/right), price, colour/size choice, quantity,
 // stock, seller, description, specifications, the "Add to cart" button and customer reviews.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { ApiError, mediaUrl } from '../../shared/api/client'
 import { useAuth } from '../../shared/auth/AuthContext'
 import { useSignInRequest } from '../../shared/auth/GuestContext'
+import { Toast } from '../../shared/layout/Toast'
+import type { ToastMessage } from '../../shared/layout/Toast'
 import { fetchProduct, formatPrice } from './api'
 import type { ProductDetails, ProductVariant } from './api'
 import { cartPaths } from './cartApi'
@@ -72,6 +74,9 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
   const [viewer, setViewer] = useState(false)
   const [choiceError, setChoiceError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  // A problem from the server (e.g. "You cannot buy from your own store.") pops up for a few seconds instead of staying on the page.
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+  const hideToast = useCallback(() => setToast(null), [])
 
   const hasOptions = product.variants.length > 0
   const matches = (v: ProductVariant, c: string | null, s: string | null) =>
@@ -122,7 +127,7 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
       setNotice(`Added ${quantity} × ${product.name}${choice ? ` (${choice})` : ''} to your cart.`)
     } catch (reason) {
       // Only what the page cannot know (stock changed a moment ago, your own store, server down) comes from the server.
-      setChoiceError(reason instanceof ApiError ? reason.message : 'Could not add to your cart. Please try again.')
+      setToast({ id: Date.now(), text: reason instanceof ApiError ? reason.message : 'Could not add to your cart. Please try again.' })
     } finally {
       setAdding(false)
     }
@@ -134,6 +139,7 @@ function ProductBody({ product, onCount, onOpenCart, onOpenShop }: {
 
   return (
     <div className="mp-product-body">
+      <Toast message={toast} onDone={hideToast} />
       <div className="mp-gallery">
         {product.imageUrls.length > 0 ? (
           <>
