@@ -21,6 +21,8 @@ import './marketplace.css'
 
 type Props = {
   onExit?: () => void
+  // Only for sellers: opens their Seller Center from the store's bar.
+  onSellerCenter?: () => void
 }
 
 type View =
@@ -77,7 +79,7 @@ function firstView(): View {
   return { page: 'order', orderId: back.orderId, paymentResult: back.result, message: null }
 }
 
-export function MarketplaceApp({ onExit }: Props) {
+export function MarketplaceApp({ onExit, onSellerCenter }: Props) {
   const { authFetch, user } = useAuth()
   const askSignIn = useSignInRequest()
   // Pages visited since the store home, so the shop page can stay mounted (keeping its search) under a product opened from it.
@@ -138,6 +140,7 @@ export function MarketplaceApp({ onExit }: Props) {
           { label: 'Shop', active: view.page === 'store', onClick: () => open({ page: 'store' }) },
           { label: 'My orders', active: view.page === 'orders' || view.page === 'order', onClick: accountPage({ page: 'orders' }) },
           { label: 'Cart', count: user ? cartCount : undefined, active: view.page === 'cart' || view.page === 'checkout', onClick: accountPage({ page: 'cart' }) },
+          ...(onSellerCenter ? [{ label: 'Seller Center', onClick: onSellerCenter }] : []),
         ]} />
       <div className="mp-store-body">
       {needsAccount && (

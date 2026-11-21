@@ -127,9 +127,17 @@ function App() {
 
   // Customer screens share the HUB frame: top bar with the services and account menu, and the phone tab bar.
   const place: HubPlace = view === 'ecommerce' || view === 'food' || view === 'bills' || view === 'payment-methods' ? view : 'home'
+  // Business pages leave the customer section's address, so a refresh does not reopen the store under them.
+  const openTool = (target: Service) => () => { leaveSection(); setService(target); window.scrollTo({ top: 0 }) }
+  const isAdmin = hasRole('Administrator')
+  const tools = [
+    ...(business.seller ? [{ label: 'Seller Center', onClick: openTool('sell') }] : []),
+    ...(business.restaurant ? [{ label: 'Restaurant Center', onClick: openTool('restaurant') }] : []),
+    ...(isAdmin ? [{ label: 'Admin portal', onClick: openTool('admin') }, { label: 'HUB Food admin', onClick: openTool('food-admin') }] : []),
+  ]
   return (
-    <AppShell active={place} onNavigate={navigate}>
-      {place === 'ecommerce' && <MarketplaceApp onExit={home} />}
+    <AppShell active={place} onNavigate={navigate} tools={tools}>
+      {place === 'ecommerce' && <MarketplaceApp onExit={home} onSellerCenter={business.seller ? openTool('sell') : undefined} />}
       {place === 'food' && <FoodApp onExit={home} />}
       {place === 'bills' && <BillsApp onExit={home} />}
       {place === 'payment-methods' && <PaymentMethodsPage onExit={home} />}

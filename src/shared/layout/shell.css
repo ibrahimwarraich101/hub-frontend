@@ -38,6 +38,7 @@
 .sh-user-menu button { min-height: 40px; padding: 0 12px; border: none; border-radius: 10px; background: none; color: var(--hub-text);
   text-align: left; font-weight: 600; }
 .sh-user-menu button:hover { background: var(--hub-surface-muted); }
+.sh-user-menu-line { width: 100%; margin: 4px 0; border: none; border-top: 1px solid var(--hub-border); }
 .sh-user-menu button.danger { color: var(--hub-error); }
 .sh-user-menu button.danger:hover { background: var(--hub-error-surface); }
 

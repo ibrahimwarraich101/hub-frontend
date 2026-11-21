@@ -4,6 +4,7 @@
 // - Footer: links to the services and the account, on every page.
 // - On phones the services move to a tab bar at the bottom of the screen, like the mobile app.
 // - ModuleBar: the bar under it inside a service: its name, a Back button and its own pages (e.g. My orders, Cart).
+// - Business tools (Seller Center, Restaurant Center, admin pages) are in the account menu for the people who use them.
 // - Visitors browsing without an account (Store and Food) see "Sign in" and "Sign up" instead of the account menu.
 // Buttons are text only, like every HUB button.
 import { useEffect, useRef, useState } from 'react'
@@ -27,12 +28,14 @@ type ShellProps = {
   active: HubPlace
   onNavigate: (place: HubPlace) => void
   children: ReactNode
+  // Business pages this person can open (shown in the account menu), e.g. Seller Center for a seller.
+  tools?: { label: string; onClick: () => void }[]
   // Only for visitors who are not logged in.
   onSignIn?: () => void
   onSignUp?: () => void
 }
 
-export function AppShell({ active, onNavigate, children, onSignIn, onSignUp }: ShellProps) {
+export function AppShell({ active, onNavigate, children, tools = [], onSignIn, onSignUp }: ShellProps) {
   const { user, logout } = useAuth()
   const services = (className: string, label: string) => (
     <nav className={className} aria-label={label}>
@@ -50,7 +53,7 @@ export function AppShell({ active, onNavigate, children, onSignIn, onSignUp }: S
           <button type="button" className="sh-logo" onClick={() => onNavigate('home')} aria-label="HUB home">HUB</button>
           {services('sh-nav', 'Services')}
           {user ? (
-            <UserMenu fullName={user.fullName} active={active === 'payment-methods'}
+            <UserMenu fullName={user.fullName} active={active === 'payment-methods'} tools={tools}
               onPaymentMethods={() => onNavigate('payment-methods')} onLogout={() => void logout()} />
           ) : (
             <div className="sh-guest">
@@ -138,8 +141,10 @@ export function ModuleBar({ title, onTitle, onBack, tabs = [] }: ModuleBarProps)
   )
 }
 
-// The person's initials in the top corner; "Payment methods" and "Log out" are inside the menu that opens from it.
-function UserMenu({ fullName, active, onPaymentMethods, onLogout }: { fullName: string; active: boolean; onPaymentMethods: () => void; onLogout: () => void }) {
+// The person's initials in the top corner; their business tools, "Payment methods" and "Log out" are inside the menu that opens from it.
+function UserMenu({ fullName, active, tools, onPaymentMethods, onLogout }: {
+  fullName: string; active: boolean; tools: { label: string; onClick: () => void }[]; onPaymentMethods: () => void; onLogout: () => void
+}) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -167,6 +172,10 @@ function UserMenu({ fullName, active, onPaymentMethods, onLogout }: { fullName: 
       {open && (
         <div className="sh-user-menu" role="menu">
           <p className="sh-user-menu-name">{fullName}</p>
+          {tools.map((tool) => (
+            <button key={tool.label} type="button" role="menuitem" onClick={() => choose(tool.onClick)}>{tool.label}</button>
+          ))}
+          {tools.length > 0 && <hr className="sh-user-menu-line" />}
           <button type="button" role="menuitem" onClick={() => choose(onPaymentMethods)}>Payment methods</button>
           <button type="button" role="menuitem" className="danger" onClick={() => choose(onLogout)}>Log out</button>
         </div>
