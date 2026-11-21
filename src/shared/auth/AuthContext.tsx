@@ -22,6 +22,8 @@ export type AuthState = {
   verifyEmail: (email: string, code: string) => Promise<void>
   resendCode: (email: string) => Promise<void>
   logout: () => Promise<void>
+  // After "My account" saves a change: updates the name, email or phone shown everywhere (e.g. the top bar).
+  updateUser: (patch: Partial<Pick<CurrentUser, 'fullName' | 'email' | 'phone'>>) => void
   // Calls the API with the user's access key, refreshing it once if it expired.
   authFetch: <T>(path: string, method?: string, body?: unknown) => Promise<T>
   // The business type chosen at sign-up (e.g. "seller"), kept for this tab until the module handles it.
@@ -148,6 +150,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIntentState(intent)
   }, [])
 
+  const updateUser = useCallback((patch: Partial<Pick<CurrentUser, 'fullName' | 'email' | 'phone'>>) => {
+    setUser((current) => (current ? { ...current, ...patch } : current))
+  }, [])
+
   const value = useMemo<AuthState>(() => ({
     restoring,
     user,
@@ -157,10 +163,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     verifyEmail,
     resendCode,
     logout,
+    updateUser,
     authFetch,
     businessIntent,
     setBusinessIntent,
-  }), [restoring, user, login, register, verifyEmail, resendCode, logout, authFetch, businessIntent, setBusinessIntent])
+  }), [restoring, user, login, register, verifyEmail, resendCode, logout, updateUser, authFetch, businessIntent, setBusinessIntent])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

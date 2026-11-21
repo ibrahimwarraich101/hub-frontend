@@ -12,7 +12,7 @@ import type { ReactNode } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import './shell.css'
 
-export type HubPlace = 'home' | 'ecommerce' | 'food' | 'bills' | 'payment-methods'
+export type HubPlace = 'home' | 'ecommerce' | 'food' | 'bills' | 'payment-methods' | 'account'
 
 const SERVICES: { id: HubPlace; label: string }[] = [
   { id: 'home', label: 'Home' },
@@ -55,8 +55,8 @@ export function AppShell({ active, onNavigate, children, tools = [], preview, on
           <button type="button" className="sh-logo" onClick={() => onNavigate('home')} aria-label="HUB home">HUB</button>
           {services('sh-nav', 'Services')}
           {user ? (
-            <UserMenu fullName={user.fullName} active={active === 'payment-methods'} tools={tools}
-              onPaymentMethods={() => onNavigate('payment-methods')} onLogout={() => void logout()} />
+            <UserMenu fullName={user.fullName} active={active === 'payment-methods' || active === 'account'} tools={tools}
+              onAccount={() => onNavigate('account')} onPaymentMethods={() => onNavigate('payment-methods')} onLogout={() => void logout()} />
           ) : (
             <div className="sh-guest">
               <button type="button" className="sh-signin" onClick={onSignIn}>Sign in</button>
@@ -91,6 +91,7 @@ export function AppShell({ active, onNavigate, children, tools = [], preview, on
             <h2>Account</h2>
             {user ? (
               <>
+                <button type="button" onClick={() => onNavigate('account')}>My account</button>
                 <button type="button" onClick={() => onNavigate('payment-methods')}>Payment methods</button>
                 <button type="button" onClick={() => void logout()}>Log out</button>
               </>
@@ -152,8 +153,8 @@ export function ModuleBar({ title, onTitle, onBack, tabs = [] }: ModuleBarProps)
 }
 
 // The person's initials in the top corner; their business tools, "Payment methods" and "Log out" are inside the menu that opens from it.
-function UserMenu({ fullName, active, tools, onPaymentMethods, onLogout }: {
-  fullName: string; active: boolean; tools: { label: string; onClick: () => void }[]; onPaymentMethods: () => void; onLogout: () => void
+function UserMenu({ fullName, active, tools, onAccount, onPaymentMethods, onLogout }: {
+  fullName: string; active: boolean; tools: { label: string; onClick: () => void }[]; onAccount: () => void; onPaymentMethods: () => void; onLogout: () => void
 }) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -182,6 +183,7 @@ function UserMenu({ fullName, active, tools, onPaymentMethods, onLogout }: {
       {open && (
         <div className="sh-user-menu" role="menu">
           <p className="sh-user-menu-name">{fullName}</p>
+          <button type="button" role="menuitem" onClick={() => choose(onAccount)}>My account</button>
           {tools.map((tool) => (
             <button key={tool.label} type="button" role="menuitem" onClick={() => choose(tool.onClick)}>{tool.label}</button>
           ))}

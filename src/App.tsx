@@ -8,7 +8,7 @@ import { FoodApp } from './features/food/FoodApp'
 import { RestaurantCenter } from './features/food/partner/RestaurantCenter'
 import { FoodAdmin } from './features/food/admin/FoodAdmin'
 import { BillsApp } from './features/bills/BillsApp'
-import { PaymentMethodsPage } from './shared/payments/PaymentMethods'
+import { AccountCenter } from './shared/account/AccountCenter'
 import { AuthScreens } from './shared/auth/AuthScreens'
 import { useAuth } from './shared/auth/AuthContext'
 import { GuestProvider } from './shared/auth/GuestContext'
@@ -21,7 +21,7 @@ import { HomePage } from './shared/home/HomePage'
 import { LandingPage } from './shared/home/LandingPage'
 import './App.css'
 
-type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' | 'food-admin' | 'bills' | 'payment-methods'
+type Service = 'home' | 'ecommerce' | 'sell' | 'admin' | 'food' | 'restaurant' | 'food-admin' | 'bills' | 'payment-methods' | 'account'
 
 // Business types whose application form this website already provides (E-Commerce connects "seller", HUB Food "restaurant").
 const AVAILABLE_BUSINESS = ['seller', 'restaurant']
@@ -110,7 +110,7 @@ function App() {
     if (service === 'ecommerce' || service === 'food') {
       // Bills and payment methods need an account; after signing in, the visitor lands on that page.
       const guestNavigate = (place: HubPlace) => {
-        if (place === 'bills' || place === 'payment-methods') openAuth('login', place === 'bills' ? '#bills' : '#payment-methods')
+        if (place === 'bills' || place === 'payment-methods' || place === 'account') openAuth('login', '#' + place)
         else navigate(place)
       }
       return (
@@ -133,9 +133,13 @@ function App() {
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
   if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} onViewRestaurant={() => { setPreview('food'); setService('food') }} />
   if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
+  // My account (profile, addresses, payment methods, password) has its own full-screen workspace, like Seller Center.
+  if (view === 'account' || view === 'payment-methods') {
+    return <AccountCenter onExit={home} start={view === 'payment-methods' ? 'payment-methods' : undefined} />
+  }
 
   // Customer screens share the HUB frame: top bar with the services and account menu, and the phone tab bar.
-  const place: HubPlace = view === 'ecommerce' || view === 'food' || view === 'bills' || view === 'payment-methods' ? view : 'home'
+  const place: HubPlace = view === 'ecommerce' || view === 'food' || view === 'bills' ? view : 'home'
   // Business pages leave the customer section's address, so a refresh does not reopen the store under them.
   const openTool = (target: Service) => () => confirmLeave(() => { setPreview(null); leaveSection(); setService(target); window.scrollTo({ top: 0 }) })
   const isAdmin = hasRole('Administrator')
@@ -154,14 +158,13 @@ function App() {
       {place === 'ecommerce' && <MarketplaceApp onExit={home} onSellerCenter={business.seller ? openTool('sell') : undefined} />}
       {place === 'food' && <FoodApp onExit={home} />}
       {place === 'bills' && <BillsApp onExit={home} />}
-      {place === 'payment-methods' && <PaymentMethodsPage onExit={home} />}
       {place === 'home' && <HomePage open={setService} business={business} availableBusiness={AVAILABLE_BUSINESS} />}
     </AppShell>
   )
 }
 
 // Services whose screens are kept in the address bar (#store/..., #food/..., #bills/..., ...).
-const ADDRESSED: Service[] = ['sell', 'ecommerce', 'food', 'bills', 'payment-methods', 'restaurant', 'food-admin']
+const ADDRESSED: Service[] = ['account', 'sell', 'ecommerce', 'food', 'bills', 'payment-methods', 'restaurant', 'food-admin']
 
 // The service an address belongs to (refresh, Back/Forward), or null for the home page.
 function serviceFromAddress(): Service | null {
@@ -175,7 +178,8 @@ function serviceFromAddress(): Service | null {
     : is('store') ? 'ecommerce'
     : is('seller') ? 'sell'
     : is('bills') ? 'bills'
-    : is('payment-methods') ? 'payment-methods' : null
+    : is('payment-methods') ? 'payment-methods'
+    : is('account') ? 'account' : null
 }
 
 // The login or sign-up form named in the address (#signin, #signup), or null for the public website.

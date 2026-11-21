@@ -1,10 +1,8 @@
 // File purpose: "My payment methods" (shared by every module): the customer's saved JazzCash wallets, choosing the
 // default, removing, and adding a wallet. Cards are shown as coming later: they will be saved only by JazzCash, and
 // HUB never sees card numbers. All mistakes are shown under the field, never as browser popups.
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ModuleBar } from '../layout/AppShell'
-import { enterSection, useSectionHistory } from '../layout/sectionRoute'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { PhoneField } from '../forms/PhoneField'
@@ -15,7 +13,7 @@ import type { SavedPaymentMethod } from './paymentMethodsApi'
 import { usePaymentProvider } from './paymentProvider'
 import './payments.css'
 
-// The list and the add form. Used inside a module (e.g. Bills) or as its own page (PaymentMethodsPage below).
+// The list and the add form. Used inside a module (e.g. Bills) and on the My account > Payment methods page.
 export function PaymentMethods() {
   const { authFetch } = useAuth()
   const payments = usePaymentProvider()
@@ -162,20 +160,4 @@ function AddWallet({ first, onAdded }: { first: boolean; onAdded: (method: Saved
 
 function sortMethods(methods: SavedPaymentMethod[]): SavedPaymentMethod[] {
   return [...methods].sort((a, b) => Number(b.isDefault) - Number(a.isDefault) || a.createdAt.localeCompare(b.createdAt))
-}
-
-// "My payment methods" as its own page (opened from the menu under the person's name on the HUB home page).
-export function PaymentMethodsPage({ onExit }: { onExit: () => void }) {
-  // The page has its own address (#payment-methods), so Refresh keeps it open and the browser's Back button returns home.
-  useEffect(() => { enterSection('payment-methods', '') }, [])
-  useSectionHistory('payment-methods', useCallback((path: string | null) => { if (path === null) onExit() }, [onExit]))
-  return (
-    <>
-      <ModuleBar title="My account" />
-      <main className="pm-page">
-        <h2 className="pm-title">My payment methods</h2>
-        <PaymentMethods />
-      </main>
-    </>
-  )
 }
