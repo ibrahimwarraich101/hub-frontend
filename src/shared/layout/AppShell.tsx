@@ -30,12 +30,14 @@ type ShellProps = {
   children: ReactNode
   // Business pages this person can open (shown in the account menu), e.g. Seller Center for a seller.
   tools?: { label: string; onClick: () => void }[]
+  // A seller previewing their own store from Seller Center: a strip with the way back, and no customer footer.
+  preview?: { text: string; action: string; onAction: () => void }
   // Only for visitors who are not logged in.
   onSignIn?: () => void
   onSignUp?: () => void
 }
 
-export function AppShell({ active, onNavigate, children, tools = [], onSignIn, onSignUp }: ShellProps) {
+export function AppShell({ active, onNavigate, children, tools = [], preview, onSignIn, onSignUp }: ShellProps) {
   const { user, logout } = useAuth()
   const services = (className: string, label: string) => (
     <nav className={className} aria-label={label}>
@@ -63,8 +65,16 @@ export function AppShell({ active, onNavigate, children, tools = [], onSignIn, o
           )}
         </div>
       </header>
+      {preview && (
+        <div className="sh-preview" role="status">
+          <div className="sh-preview-inner">
+            <span>{preview.text}</span>
+            <button type="button" onClick={preview.onAction}>{preview.action}</button>
+          </div>
+        </div>
+      )}
       <div className="sh-main">{children}</div>
-      <footer className="sh-footer">
+      {!preview && <footer className="sh-footer">
         <div className="sh-footer-inner">
           <div className="sh-footer-brand">
             <button type="button" className="sh-logo light" onClick={() => onNavigate('home')} aria-label="HUB home">HUB</button>
@@ -99,7 +109,7 @@ export function AppShell({ active, onNavigate, children, tools = [], onSignIn, o
         <div className="sh-footer-legal">
           <span>&copy; {YEAR} HUB. All rights reserved.</span>
         </div>
-      </footer>
+      </footer>}
       {services('sh-tabs', 'Services')}
     </div>
   )

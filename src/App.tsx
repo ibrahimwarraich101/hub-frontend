@@ -79,7 +79,10 @@ function App() {
   }, [user, authMode])
 
   // Moving with the top bar or the phone tab bar: leave the current service's address, then open the new one.
+  // True while a seller looks at their own store from Seller Center ("View my store"); any top-bar move ends it.
+  const [sellerPreview, setSellerPreview] = useState(false)
   const navigate = useCallback((place: HubPlace) => {
+    setSellerPreview(false)
     leaveSection()
     setService(place)
     window.scrollTo({ top: 0 })
@@ -120,7 +123,7 @@ function App() {
     : service === 'home' && businessIntent === 'restaurant' ? 'restaurant' : service
   const home = () => setService('home')
   // Business tools and admin pages keep their own full-screen layout.
-  if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} onViewStore={() => setService('ecommerce')} />
+  if (view === 'sell') return <SellerCenter onExit={() => { setBusinessIntent(null); home() }} onViewStore={() => { setSellerPreview(true); setService('ecommerce') }} />
   if (view === 'admin' && hasRole('Administrator')) return <AdminPortal onExit={home} />
   if (view === 'restaurant') return <RestaurantCenter onExit={() => { setBusinessIntent(null); home() }} />
   if (view === 'food-admin' && hasRole('Administrator')) return <FoodAdmin onExit={home} />
@@ -128,7 +131,7 @@ function App() {
   // Customer screens share the HUB frame: top bar with the services and account menu, and the phone tab bar.
   const place: HubPlace = view === 'ecommerce' || view === 'food' || view === 'bills' || view === 'payment-methods' ? view : 'home'
   // Business pages leave the customer section's address, so a refresh does not reopen the store under them.
-  const openTool = (target: Service) => () => { leaveSection(); setService(target); window.scrollTo({ top: 0 }) }
+  const openTool = (target: Service) => () => { setSellerPreview(false); leaveSection(); setService(target); window.scrollTo({ top: 0 }) }
   const isAdmin = hasRole('Administrator')
   const tools = [
     ...(business.seller ? [{ label: 'Seller Center', onClick: openTool('sell') }] : []),
@@ -136,7 +139,10 @@ function App() {
     ...(isAdmin ? [{ label: 'Admin portal', onClick: openTool('admin') }, { label: 'HUB Food admin', onClick: openTool('food-admin') }] : []),
   ]
   return (
-    <AppShell active={place} onNavigate={navigate} tools={tools}>
+    <AppShell active={place} onNavigate={navigate} tools={tools}
+      preview={sellerPreview && place === 'ecommerce'
+        ? { text: 'You are seeing your store the way customers see it.', action: 'Back to Seller Center', onAction: openTool('sell') }
+        : undefined}>
       {place === 'ecommerce' && <MarketplaceApp onExit={home} onSellerCenter={business.seller ? openTool('sell') : undefined} />}
       {place === 'food' && <FoodApp onExit={home} />}
       {place === 'bills' && <BillsApp onExit={home} />}

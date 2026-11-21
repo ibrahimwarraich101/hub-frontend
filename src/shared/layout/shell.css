@@ -50,6 +50,15 @@
 .sh-signup { border: 1.5px solid var(--hub-primary); background: var(--hub-primary); color: var(--hub-on-primary); }
 .sh-signup:hover { background: #003a2c; }
 
+/* A seller previewing their own store (opened from Seller Center): the way back, instead of the customer footer. */
+.sh-preview { background: var(--hub-heading); color: #d6e6de; }
+.sh-preview-inner { max-width: var(--hub-max-width); margin: 0 auto; padding: 10px 24px; display: flex; align-items: center;
+  justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; font-weight: 600; }
+.sh-preview button { min-height: 36px; padding: 0 16px; border: none; border-radius: var(--hub-radius-pill);
+  background: var(--hub-bright); color: var(--hub-heading); font-weight: 800; white-space: nowrap; }
+.sh-preview button:hover { background: #3fd98a; }
+@media (max-width: 720px) { .sh-preview-inner { padding: 10px 16px; font-size: 0.9rem; } }
+
 /* ---------- The bar inside a service ---------- */
 .sh-module { background: var(--hub-surface); border-bottom: 1px solid var(--hub-border); }
 .sh-module-inner { max-width: var(--hub-max-width); margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
